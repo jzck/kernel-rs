@@ -1,3 +1,5 @@
+based on [Writing an OS in rust](https://os.phil-opp.com/)
+
 # compiling
 
 a standard development environment can be invoked:
