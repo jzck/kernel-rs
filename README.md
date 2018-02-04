@@ -4,7 +4,7 @@ based on [Writing an OS in rust](https://os.phil-opp.com/)
 
 ## dependencies
 
-for archlinux `pacman -S make grub2 xorriso mtools binutils`
+for archlinux `pacman -S make grub2 xorriso mtools binutils rustup`
 
 ## docker
 a standard development environment can be invoked:
