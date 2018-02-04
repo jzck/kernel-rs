@@ -6,8 +6,7 @@ linker_script		:= src/arch/$(arch)/linker.ld
 grub.cfg			:= src/arch/$(arch)/grub.cfg
 asm_source_files	:= $(wildcard src/arch/$(arch)/*.asm)
 asm_object_files	:= $(patsubst src/arch/$(arch)/%.asm, \
-	build/arch/$(arch)/%.o, $(asm_source_files))
-
+	build/arch/$(arch)/%.o, $(asm_source_files)) 
 .PHONY: all clean run iso
 
 all: $(kernel)
@@ -22,10 +21,10 @@ iso: $(iso)
 
 $(iso): $(kernel) $(grub.cfg)
 	@mkdir -p build/isofiles/boot/grub
-	@cp $(kernel) build/isofiles/boot/kernel.bin
-	@cp $(grub.cfg) build/isofiles/boot/grub
-	@grub-mkrescue -o $(iso) build/isofiles 2>/dev/null
-	@rm -r build/isofiles
+	cp $(kernel) build/isofiles/boot/kernel.bin
+	cp $(grub.cfg) build/isofiles/boot/grub
+	grub-mkrescue -o $(iso) build/isofiles 2>/dev/null
+	rm -r build/isofiles
 
 $(kernel): $(asm_object_files) $(linker_script)
 	@ld -n -T $(linker_script) -o $(kernel) $(asm_object_files)
