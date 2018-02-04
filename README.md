@@ -2,7 +2,7 @@ based on [Writing an OS in rust](https://os.phil-opp.com/)
 
 # compiling
 
-## dependencies for assembly and boot
+## dependencies
 
   - `nasm` compiles the bootcode
   - `ld` links the bootcode
