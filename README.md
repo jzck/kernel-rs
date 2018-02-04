@@ -2,9 +2,18 @@ based on [Writing an OS in rust](https://os.phil-opp.com/)
 
 # compiling
 
-## dependencies
+## dependencies for assembly and boot
 
-for archlinux `pacman -S make grub2 xorriso mtools binutils rustup`
+grub is the default bootloader, we need `ld` and `nasm` to compile the bootcode
+for archlinux `pacman -S make grub2 xorriso mtools binutils`
+
+## rust setup
+
+```
+pacman -S rustup
+rustup component add rust-src
+cargo install xargo
+```
 
 ## docker
 a standard development environment can be invoked:
