@@ -4,7 +4,7 @@ based on [Writing an OS in rust](https://os.phil-opp.com/)
 
 ## dependencies for assembly and boot
 
-grub is the default bootloader, we need `ld` and `nasm` to compile the bootcode
+grub is the default bootloader, we need `ld` and `nasm` to compile the bootcode  
 for archlinux `pacman -S make grub2 xorriso mtools binutils`
 
 ## rust setup
