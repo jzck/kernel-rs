@@ -2,6 +2,15 @@ based on [Writing an OS in rust](https://os.phil-opp.com/)
 
 # compiling
 
+## dependencies
+
+`pacman -S \
+	grub2\
+	xorriso\
+	mtools\
+	binutils
+`
+
 a standard development environment can be invoked:
 
 ```
