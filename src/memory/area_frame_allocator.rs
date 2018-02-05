@@ -34,6 +34,8 @@ impl AreaFrameAllocator {
 
     fn choose_next_area(&mut self) {
         self.current_area = self.areas.clone().filter(|area| {
+            // filter in areas with remaining free frames
+            // i.e. next_free_frame is before the last frame
             let address = area.base_addr + area.length - 1;
             Frame::containing_address(address as usize) >= self.next_free_frame
         }).min_by_key(|area| area.base_addr);
