@@ -16,6 +16,7 @@ on archlinux `pacman -S make grub2 xorriso mtools binutils gcc qemu`
 
 ```
 pacman -S rustup
+rustup override add nightly
 rustup component add rust-src
 cargo install xargo
 ```
