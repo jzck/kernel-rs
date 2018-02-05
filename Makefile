@@ -2,7 +2,7 @@ arch	?= x86_64
 kernel	:= build/kernel-$(arch).bin
 iso		:= build/os-$(arch).iso
 
-target	?= $(arch)-KFS
+target	?= $(arch)-kfs
 rust_os	:= target/$(target)/debug/libkfs.a
 
 linker_script		:= src/arch/$(arch)/linker.ld
@@ -16,9 +16,10 @@ asm_object_files	:= $(patsubst src/arch/$(arch)/%.asm, \
 all: $(kernel)
 
 clean:
+	@cargo clean
 	@rm -r build
 
-run: $(iso)
+run:
 	@qemu-system-x86_64 -cdrom $(iso)
 
 iso: $(iso)
@@ -31,11 +32,10 @@ $(iso): $(kernel) $(grub.cfg)
 	rm -r build/isofiles
 
 $(kernel): kernel $(asm_object_files) $(linker_script)
-	@ld -n -T $(linker_script) -o $(kernel) \
-		$(asm_object_files) $(rust_os)
+	@ld -n --gc-sections -T $(linker_script) -o $(kernel) $(asm_object_files) $(rust_os)
 
 kernel:
-	@xargo build --target $(target)
+	@RUST_TARGET_PATH="$(shell pwd)" xargo build --target $(target)
 
 # compile asm files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm

@@ -6,6 +6,10 @@ bits 32
 start:
 	mov		esp, stack_top
 
+	; Move multiboot info pointer to edi 
+	; which is the first argument for the rust main
+	mov		edi, ebx
+
 	call	check_multiboot
 	call	check_cpuid
 	call	check_long_mode
@@ -86,14 +90,19 @@ check_long_mode:
 	jmp		error
 
 set_up_page_tables:
+	; map P4 511th byte recursively to P4
+	mov		eax, p4_table
+	or		eax, 0b11				; present + writable
+	mov		[p4_table + 511 * 8], eax
+
 	; map first P4 entry to P3 table
 	mov		eax, p3_table
-	or		eax, 0b11				; present + writeable
+	or		eax, 0b11				; present + writable
 	mov		[p4_table], eax
 	
 	; map first P3 entry to P2 table
 	mov		eax, p2_table
-	or		eax, 0b11				; present + writeable
+	or		eax, 0b11				; present + writable
 	mov		[p3_table], eax
 
 	mov		ecx, 0					;counter variable
@@ -142,7 +151,7 @@ p3_table:
 p2_table:
 	resb 4096
 stack_bottom:
-	resb	64
+	resb	4096 * 4
 stack_top:
 
 section .rodata
