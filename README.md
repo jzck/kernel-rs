@@ -10,7 +10,7 @@ Kernel from scratch (KFS) series of projects at Ecole 42 !
   - `xargo` builds rust code
   - `qemu` runs the iso
 
-on archlinux `pacman -S make grub2 xorriso mtools binutils gcc qemu`
+on archlinux `pacman -S make grub xorriso mtools binutils gcc qemu`
 
 ### rust setup
 
