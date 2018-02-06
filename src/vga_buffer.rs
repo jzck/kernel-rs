@@ -5,7 +5,7 @@ use spin::Mutex;
 
 pub static WRITER: Mutex<Writer> = Mutex::new(Writer {
     column_position: 0,
-    color_code: ColorCode::new(Color::LightRed, Color::Black),
+    color_code: ColorCode::new(Color::Green, Color::Black),
     buffer: unsafe { Unique::new_unchecked(0xb8000 as *mut _) },
 });
 
@@ -28,7 +28,7 @@ pub fn print(args: fmt::Arguments) {
 impl fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         for byte in s.bytes() {
-            self.write_byte(byte)
+            self.putchar(byte)
         }
         Ok(())
     }
@@ -87,12 +87,12 @@ pub struct Writer {
 
 #[allow(dead_code)]
 impl Writer {
-    pub fn write_byte(&mut self, byte: u8) {
+    pub fn putchar(&mut self, byte: u8) {
         match byte {
-            b'\n' => self.new_line(),
+            b'\n' => self.put_endl(),
             byte => {
                 if self.column_position >= BUFFER_WIDTH {
-                    self.new_line();
+                    self.put_endl();
                 }
 
                 let row = BUFFER_HEIGHT - 1;
@@ -108,9 +108,9 @@ impl Writer {
         }
     }
 
-    pub fn write_str(&mut self, s: &str) {
+    pub fn putstr(&mut self, s: &str) {
         for byte in s.bytes() {
-            self.write_byte(byte)
+            self.putchar(byte)
         }
     }
     
@@ -118,7 +118,7 @@ impl Writer {
         unsafe{ self.buffer.as_mut()}
     }
 
-    fn new_line(&mut self) {
+    fn put_endl(&mut self) {
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 let buffer = self.buffer();
