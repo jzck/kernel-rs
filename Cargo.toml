@@ -1,14 +1,12 @@
 [package]
-name = "kfs"
+name = "bluesnow"
 version = "0.1.0"
-authors = ["Jack Halford <jack@crans.org>"]
+authors = ["Jack Halford <jack@crans.org>", "William Escande <wescande@student.42.fr>"]
 
 [lib]
 crate-type = ["staticlib"]
 
+[profile.release]
+panic = "abort"
+
 [dependencies]
-rlibc = "1.0"
-volatile = "0.1.0"
-spin = "0.4.5"
-multiboot2 = "0.1.0"
-bitflags = "0.9.1"
