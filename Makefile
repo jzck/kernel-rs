@@ -1,7 +1,7 @@
 project	:= bluesnow
 arch	?= x86
 NASM	:= nasm -f elf
-LD		:= ld -m elf_i386 -n
+LD		:= ld -m elf_i386 -n --gc-sections
 QEMU	:= qemu-system-x86_64 -enable-kvm -monitor telnet:127.0.0.1:1234,server,nowait
 
 kernel	:= build/kernel-$(arch).bin
@@ -9,7 +9,7 @@ iso		:= build/os-$(arch).iso
 DIRISO	:= build/isofiles
 
 target	?= $(arch)-$(project)
-rust_os	:= target/$(target)/release/lib$(project).a
+rust_os	:= target/$(target)/debug/lib$(project).a
 SHELL	:= /bin/bash
 
 linker_script	:= src/arch/$(arch)/linker.ld
@@ -42,9 +42,9 @@ clean:
 	@rm -r build
 
 $(rust_os): $(target).json Makefile
-	@xargo build --release --target $(target)
+	@RUST_TARGET_PATH="$(shell pwd)" xargo build --target $(target)
 
 kernel: $(rust_os)
 iso: $(iso)
 
-.PHONY: run clean kernel iso
+.PHONY: run clean kernel iso $(rust_os)

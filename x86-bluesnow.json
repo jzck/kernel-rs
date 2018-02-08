@@ -10,6 +10,6 @@
 	"target-pointer-width": "32",
 	"target-c-int-width": "32",
 	"features": "-mmx,-fxsr,-sse,-sse2,+soft-float",
-	"eliminate-frame-pointer": false
-
+	"eliminate-frame-pointer": false,
+	"panic-strategy": "abort"
 }

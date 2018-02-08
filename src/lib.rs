@@ -1,36 +1,39 @@
-// #![no_std]
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     fn it_works() {
-//         assert_eq!(2 + 2, 4);
-//     }
-// }
-
 #![feature(lang_items)]
+#![feature(const_fn)]
+#![feature(ptr_internals)]
 #![no_std]
 
-#[lang = "eh_personality"]
-extern fn eh_personality() {
+extern crate spin;
+extern crate volatile;
+extern crate rlibc;
+
+#[macro_use]
+mod vga_buffer;
+
+#[no_mangle]
+pub extern fn kmain() -> ! {
+    vga_buffer::clear_screen();
+    println!("Kernel startup...");
+
+    loop {
+    
+    }
+}
+
+#[lang = "eh_personality"] #[no_mangle]
+pub extern fn eh_personality() {
 
 }
 
-#[lang = "panic_fmt"]
-extern fn rust_begin_panic() -> ! {
+#[lang = "panic_fmt"] #[no_mangle]
+pub extern fn panic_fmt(
+    fmt: core::fmt::Arguments,
+    file: &'static str,
+    line: u32)
+-> ! {
+    println!("\n\nPANIC in {} at line {}:", file, line);
+    println!("    {}", fmt);
     loop {}
 
 }
 
-
-#[no_mangle]
-pub extern fn kmain() -> ! {
-    unsafe {
-        let vga = 0xb8000 as *mut u32;
-
-        *vga = 0x2f592f412f;
-
-    };
-
-    loop {  }
-
-}
