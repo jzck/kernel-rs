@@ -27,8 +27,14 @@ asm_source		:= $(wildcard src/arch/$(arch)/*.asm)
 asm_object		:= $(patsubst src/arch/$(arch)/%.asm, build/arch/$(arch)/%.o, $(asm_source))
 
 KERNEL_RUN		:= $(QEMU) -curses -cdrom $(iso)
-MONITOR 		:= sleep 0.5; telnet 127.0.0.1 $(PORT); kill \`ps -x | grep gdb | head -n 2 | tail -n 1 | cut -d \  -f 1 \`
-GDB 			:= gdb -q -ex \"target remote localhost:$(PORTG)\" -ex \"continue\"
+MONITOR 		:= sleep 0.5;\
+	telnet 127.0.0.1 $(PORT);\
+	kill \`ps -x | grep gdb | head -n 2 | tail -n 1 | cut -d \  -f 1 \`
+GDB 			:= gdb -q\
+	-ex \"set arch i386:x86-64\"\
+	-ex \"file build/kernel-x86.bin\"\
+	-ex \"target remote localhost:$(PORTG)\"\
+	-ex \"continue\"
 
 
 all: $(kernel)
