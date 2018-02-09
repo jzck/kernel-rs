@@ -27,12 +27,6 @@ pub struct Writer {
     vgabuffer: Unique<Buffer>,
 }
 
-struct VScreen {
-    column_position: usize,
-    pub color_code: ColorCode,
-    buffer: Buffer,
-}
-
 macro_rules! println {
     ($fmt:expr) => (print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
