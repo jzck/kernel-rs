@@ -54,7 +54,7 @@ $(iso): $(kernel) $(grub.cfg) Makefile
 
 run: $(iso) Makefile
 	@tmux info >&- || { echo -e "\033[38;5;16m ~~ NOT IN A VALID TMUX SESSION ~~\033[0m" ; exit 1; }
-	tmux new-window 'tmux split-window -h "$(MONITOR)"; tmux split-window -fv "$(GDB)"; tmux select-pane -t 1; tmux resize-pane -x 80 -y 25; $(KERNEL_RUN)'
+	@tmux new-window 'tmux split-window -h "$(MONITOR)"; tmux split-window -fv "$(GDB)"; tmux select-pane -t 1; tmux resize-pane -x 80 -y 25; $(KERNEL_RUN)'
 	@# @$(QEMU) -curses -cdrom $(iso)
 
 clean:
