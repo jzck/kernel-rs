@@ -1,8 +1,18 @@
+SHELL	:= /bin/bash
+
+ifeq ($(shell whoami), william)
+	PORT := 4242
+	PORTG := 4244
+else
+	PORT := 4342
+	PORTG := 4344
+endif
+
 project	:= bluesnow
 arch	?= x86
 NASM	:= nasm -f elf
 LD		:= ld -m elf_i386 -n --gc-sections
-QEMU	:= qemu-system-x86_64 -enable-kvm -monitor telnet:127.0.0.1:1234,server,nowait
+QEMU	:= qemu-system-x86_64 -gdb tcp::$(PORTG) -enable-kvm -monitor telnet:127.0.0.1:$(PORT),server,nowait
 
 kernel	:= build/kernel-$(arch).bin
 iso		:= build/os-$(arch).iso
@@ -10,12 +20,16 @@ DIRISO	:= build/isofiles
 
 target	?= $(arch)-$(project)
 rust_os	:= target/$(target)/debug/lib$(project).a
-SHELL	:= /bin/bash
 
 linker_script	:= src/arch/$(arch)/linker.ld
 grub.cfg		:= src/arch/$(arch)/grub.cfg
 asm_source		:= $(wildcard src/arch/$(arch)/*.asm)
 asm_object		:= $(patsubst src/arch/$(arch)/%.asm, build/arch/$(arch)/%.o, $(asm_source))
+
+KERNEL_RUN		:= $(QEMU) -curses -cdrom $(iso)
+MONITOR 		:= sleep 0.5; telnet 127.0.0.1 $(PORT); kill \`ps -x | grep gdb | head -n 2 | tail -n 1 | cut -d \  -f 2 \`
+GDB 			:= gdb -q -ex \"target remote localhost:$(PORTG)\" -ex \"continue\"
+
 
 all: $(kernel)
 
@@ -34,8 +48,8 @@ $(iso): $(kernel) $(grub.cfg) Makefile
 
 run: $(iso) Makefile
 	@tmux info >&- || { echo -e "\033[38;5;16m ~~ NOT IN A VALID TMUX SESSION ~~\033[0m" ; exit 1; }
-	@tmux split-window "tmux resize-pane -y 20; sleep 0.5; telnet 127.0.0.1 1234"
-	@$(QEMU) -curses -cdrom $(iso)
+	tmux new-window 'tmux split-window -h "$(MONITOR)"; tmux split-window -fv "$(GDB)"; tmux select-pane -t 1; tmux resize-pane -x 80 -y 25; $(KERNEL_RUN)'
+	@# @$(QEMU) -curses -cdrom $(iso)
 
 clean:
 	@cargo clean
