@@ -27,7 +27,7 @@ asm_source		:= $(wildcard src/arch/$(arch)/*.asm)
 asm_object		:= $(patsubst src/arch/$(arch)/%.asm, build/arch/$(arch)/%.o, $(asm_source))
 
 KERNEL_RUN		:= $(QEMU) -curses -cdrom $(iso)
-MONITOR 		:= sleep 0.5; telnet 127.0.0.1 $(PORT); kill \`ps -x | grep gdb | head -n 2 | tail -n 1 | cut -d \  -f 2 \`
+MONITOR 		:= sleep 0.5; telnet 127.0.0.1 $(PORT); kill \`ps -x | grep gdb | head -n 2 | tail -n 1 | cut -d \  -f 1 \`
 GDB 			:= gdb -q -ex \"target remote localhost:$(PORTG)\" -ex \"continue\"
 
 

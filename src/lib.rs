@@ -22,24 +22,23 @@ pub extern fn kmain() -> ! {
     use vga_buffer::ColorCode;
 
     WRITER.lock().reset_screen();
+    WRITER.lock().color_code = ColorCode::new(Color::Yellow, Color::Black);
+    println!(r#"        ,--,               "#);
+    println!(r#"      ,--.'|      ,----,   "#);
+    println!(r#"   ,--,  | :    .'   .' \  "#);
+    println!(r#",---.'|  : '  ,----,'    | "#);
+    println!(r#";   : |  | ;  |    :  .  ; "#);
+    println!(r#"|   | : _' |  ;    |.'  /  "#);
+    println!(r#":   : |.'  |  `----'/  ;   "#);
+    println!(r#"|   ' '  ; :    /  ;  /    "#);
+    println!(r#"\   \  .'. |   ;  /  /-,   "#);
+    println!(r#" `---`:  | '  /  /  /.`|   "#);
+    println!(r#"      '  ; |./__;      :   "#);
+    println!(r#"      |  : ;|   :    .'    "#);
+    println!(r#"      '  ,/ ;   | .'       "#);
+    println!(r#"      '--'  `---'          "#);
+    WRITER.lock().color_code = ColorCode::new(Color::White, Color::Black);
     println!(">> Kernel startup...");
-    println!(">> Kernel startup...");
-
-    WRITER.lock().color_code = ColorCode::new(Color::Blue, Color::Yellow);
-    println!(">> Kernel startup...");
-    println!(">> Kernel startup...");
-    println!(">> Kernel startup...");
-
-    WRITER.lock().color_code = ColorCode::new(Color::Red, Color::Green);
-    println!(">> Kernel startup...");
-    print!("\n");
-    println!(">> Kernel startup...");
-    print!("\n");
-    println!(">> Kernel startup...");
-    print!("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
-
-    // WRITER.lock().color_code = ColorCode::new(Color::White, Color::Black);
-
     loop {
         let control = unsafe { cpuio::inb(0x64) };
         if (control & 1) == 1 {
