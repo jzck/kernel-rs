@@ -21,6 +21,18 @@ pub static WRITER: Mutex<Writer> = Mutex::new(Writer {
     vgabuffer: unsafe { Unique::new_unchecked(0xb8000 as *mut _) },
 });
 
+// cursor is lightgray for everyone
+static CURSOR: ScreenChar = ScreenChar {
+    ascii_character: b' ',
+    color_code: ColorCode::new(Color::LightGray, Color::LightGray),
+};
+
+// blank is black for everyone, could make screens choose this
+static BLANK: ScreenChar = ScreenChar {
+    ascii_character: b' ',
+    color_code: ColorCode::new(Color::White, Color::Black),
+};
+
 pub struct Writer {
     column_position: usize,
     pub color_code: ColorCode,
@@ -67,9 +79,7 @@ impl Writer {
                 }
                 let row = BUFFER_HEIGHT - 1;
                 let col = self.column_position;
-
                 let color_code = self.color_code;
-
                 self.buffer().chars[row][col].write(ScreenChar {
                     ascii_character: byte,
                     color_code: color_code,
@@ -77,6 +87,9 @@ impl Writer {
                 self.column_position += 1;
             }
         }
+        let row = BUFFER_HEIGHT - 1;
+        let col = self.column_position;
+        self.buffer().chars[row][col].write(CURSOR);
     }
 
     fn buffer(&mut self) -> &mut Buffer {
@@ -84,6 +97,11 @@ impl Writer {
     }
 
     fn new_line(&mut self) {
+        // remove cursor if newline isnt from end of screen
+        if self.column_position < BUFFER_WIDTH {
+            let col = self.column_position;
+            self.buffer().chars[BUFFER_HEIGHT - 1][col].write(BLANK);
+        }
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 let buffer = self.buffer();
@@ -96,12 +114,8 @@ impl Writer {
     }
 
     fn clear_row(&mut self, row: usize) {
-        let blank = ScreenChar {
-            ascii_character: b' ',
-            color_code: ColorCode::new(Color::White, Color::Black),
-        };
         for col in 0..BUFFER_WIDTH {
-            self.buffer().chars[row][col].write(blank);
+            self.buffer().chars[row][col].write(BLANK);
         }
     }
 }

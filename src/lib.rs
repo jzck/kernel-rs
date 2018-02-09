@@ -44,10 +44,7 @@ pub extern fn kmain() -> ! {
         if (control & 1) == 1 {
             let keycode = unsafe { cpuio::inb(0x60) };
             match keyboard::KEY_CODE_TO_ASCII.get(keycode as usize) {
-                Some(ascii) => {
-                    print!("{}", *ascii as char);
-                    // unsafe { cpuio::outb(28, 0x64) };
-                },
+                Some(ascii) => print!("{}", *ascii as char),
                 None =>{},
                 // None => println!("nokey ctrl {:x}", control),
             }

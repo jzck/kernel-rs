@@ -36,7 +36,6 @@ GDB 			:= gdb -q\
 	-ex \"target remote localhost:$(PORTG)\"\
 	-ex \"continue\"
 
-
 all: $(kernel)
 
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm Makefile
