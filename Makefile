@@ -1,8 +1,16 @@
+SHELL	:= /bin/bash
+
+ifeq ($(shell whoami), william)
+	PORT := 4321
+else
+	PORT := 1234
+endif
+
 project	:= bluesnow
 arch	?= x86
 NASM	:= nasm -f elf
 LD		:= ld -m elf_i386 -n --gc-sections
-QEMU	:= qemu-system-x86_64 -enable-kvm -monitor telnet:127.0.0.1:1234,server,nowait
+QEMU	:= qemu-system-x86_64 -enable-kvm -monitor telnet:127.0.0.1:$(PORT),server,nowait
 
 kernel	:= build/kernel-$(arch).bin
 iso		:= build/os-$(arch).iso
@@ -10,7 +18,6 @@ DIRISO	:= build/isofiles
 
 target	?= $(arch)-$(project)
 rust_os	:= target/$(target)/debug/lib$(project).a
-SHELL	:= /bin/bash
 
 linker_script	:= src/arch/$(arch)/linker.ld
 grub.cfg		:= src/arch/$(arch)/grub.cfg
@@ -34,7 +41,7 @@ $(iso): $(kernel) $(grub.cfg) Makefile
 
 run: $(iso) Makefile
 	@tmux info >&- || { echo -e "\033[38;5;16m ~~ NOT IN A VALID TMUX SESSION ~~\033[0m" ; exit 1; }
-	@tmux split-window "tmux resize-pane -y 20; sleep 0.5; telnet 127.0.0.1 1234"
+	@tmux split-window "tmux resize-pane -y 20; sleep 0.5; telnet 127.0.0.1 $(PORT)"
 	@$(QEMU) -curses -cdrom $(iso)
 
 clean:
