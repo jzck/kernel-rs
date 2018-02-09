@@ -12,11 +12,28 @@ mod vga_buffer;
 
 #[no_mangle]
 pub extern fn kmain() -> ! {
-    vga_buffer::clear_screen();
-    println!("Kernel startup...");
+    use vga_buffer::WRITER;
+    use vga_buffer::Color;
+    use vga_buffer::ColorCode;
+
+    WRITER.lock().reset_screen();
+    println!(">> Kernel startup...");
+    println!(">> Kernel startup...");
+
+    WRITER.lock().color_code = ColorCode::new(Color::Blue, Color::Yellow);
+    println!(">> Kernel startup...");
+    println!(">> Kernel startup...");
+    println!(">> Kernel startup...");
+
+    WRITER.lock().color_code = ColorCode::new(Color::Red, Color::Green);
+    println!(">> Kernel startup...");
+    println!(">> Kernel startup...");
+    println!(">> Kernel startup...");
+
+    WRITER.lock().color_code = ColorCode::new(Color::White, Color::Black);
 
     loop {
-    
+        
     }
 }
 

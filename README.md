@@ -21,18 +21,9 @@ rustup component add rust-src
 cargo install xargo
 ```
 
-### docker
-a standard development environment can be invoked:
-
-```
-docker run jzck/arch-kernel -it /usr/bin/zsh
-```
-
-clone the repo and `make iso`
-
 # running
 
-`make run` in your host operating system to launch qemu gtk window
+`make run` runs the OS + a tmux split for the qemu terminal
 
 # References
 
