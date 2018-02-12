@@ -87,6 +87,9 @@ impl Writer {
                 self.column_position += 1;
             }
         }
+        if self.column_position >= BUFFER_WIDTH {
+            self.new_line();
+        }
         let row = BUFFER_HEIGHT - 1;
         let col = self.column_position;
         self.buffer().chars[row][col].write(CURSOR);

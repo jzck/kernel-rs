@@ -15,6 +15,15 @@ mod vga_buffer;
 mod cpuio;
 mod keyboard;
 
+// fn check_shift(key: u8) -> u8 {
+//     print!("{:b} vs {:b}\n", key as u8, (1<<7) as u8);
+//     if (key >> 7  & 1) == 1 {
+//         print!("MATCH");
+//         key - (1 << 7)
+//     } else {
+//         key
+//     }
+// }
 #[no_mangle]
 pub extern fn kmain() -> ! {
     use vga_buffer::WRITER;
@@ -40,15 +49,16 @@ pub extern fn kmain() -> ! {
     WRITER.lock().color_code = ColorCode::new(Color::White, Color::Black);
     println!(">> Kernel startup...");
     loop {
-        let control = unsafe { cpuio::inb(0x64) };
-        if (control & 1) == 1 {
-            let keycode = unsafe { cpuio::inb(0x60) };
-            match keyboard::KEY_CODE_TO_ASCII.get(keycode as usize) {
-                Some(ascii) => print!("{}", *ascii as char),
-                None =>{},
-                // None => println!("nokey ctrl {:x}", control),
-            }
-        }
+        keyboard::kbd_loop();
+        // let control = unsafe { cpuio::inb(0x64) };
+        // if (control & 1) == 1 {
+        //     let keycode = unsafe { cpuio::inb(0x60) };
+        //     match keyboard::KEY_CODE_TO_ASCII.get(keycode as usize) {
+        //         Some(ascii) => print!("{}", *ascii as char),
+        //         None =>{},
+        //         // None => println!("nokey ctrl {:x}", control),
+        //     }
+        // }
     }
 }
 
