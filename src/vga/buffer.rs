@@ -16,20 +16,41 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
+// macro_rules! print {
+//     ($($arg:tt)*) => ({
+//             $crate::vga_buffer::print(format_args!($($arg)*));
+//         });
+// }
+
+// macro_rules! println {
+//     ($fmt:expr) => (print!(concat!($fmt, "\n")));
+//     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
+// }
+
+// pub fn print(args: fmt::Arguments) {
+//     use core::fmt::Write;
+//     context.current_screen().write_fmt(args).unwrap();
+// }
+
+
+extern crate core;
+
+// pub const unsafe fn vga_slice() -> &'static [u8] {
+//     unsafe { core::slice::from_raw_parts_mut(0xb8000 as *mut u8, 4000) }
+// }
+
 const BUFFER_ROWS: usize = 25;
 const BUFFER_COLS: usize = 80 * 2;
 
-pub struct Writer<T: AsMut<[u8]>> {
+pub struct Writer {
     pub position: usize,
     color_code: ColorCode,
-    slice: T,
     buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
 }
 
-impl<T: AsMut<[u8]>> Writer<T> {
-    pub fn new(slice: T) -> Writer<T> {
+impl Writer {
+    pub fn new() -> Writer {
         Writer {
-            slice,
             position: 0,
             color_code: ColorCode::new(Color::White, Color::Black),
             buffer: [0; BUFFER_ROWS * BUFFER_COLS],
@@ -70,7 +91,8 @@ impl<T: AsMut<[u8]>> Writer<T> {
     }
 
     pub fn flush(&mut self) {
-        self.slice.as_mut().clone_from_slice(&self.buffer);
+        let slice = unsafe { core::slice::from_raw_parts_mut(0xb8000 as *mut u8, 4000) };
+        slice.as_mut().clone_from_slice(&self.buffer);
     }
 
     fn scroll(&mut self) {
@@ -92,7 +114,7 @@ impl<T: AsMut<[u8]>> Writer<T> {
 }
 
 use core::fmt;
-impl<T: AsMut<[u8]>> fmt::Write for Writer<T> {
+impl fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> ::core::fmt::Result {
         for byte in s.bytes() {
             self.write_byte(byte)
