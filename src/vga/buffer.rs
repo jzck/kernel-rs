@@ -31,6 +31,7 @@ macro_rules! println {
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
     unsafe { CONTEXT.current_term().write_fmt(args).unwrap() };
+    unsafe { CONTEXT.current_term().flush() };
 }
 
 
@@ -45,7 +46,7 @@ const BUFFER_COLS: usize = 80 * 2;
 
 pub struct Writer {
     pub position: usize,
-    color_code: ColorCode,
+    pub color_code: ColorCode,
     buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
 }
 
@@ -120,7 +121,6 @@ impl fmt::Write for Writer {
         for byte in s.bytes() {
             self.write_byte(byte)
         }
-        self.flush();
         Ok(())
     }
 }
