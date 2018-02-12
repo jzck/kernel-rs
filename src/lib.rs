@@ -12,10 +12,22 @@ extern crate rlibc;
 mod vga;
 
 #[allow(dead_code)]
-mod cpuio;
-mod keyboard;
+#[macro_use]
 mod context;
+mod keyboard;
 
+#[allow(dead_code)]
+mod cpuio;
+
+// fn check_shift(key: u8) -> u8 {
+//     print!("{:b} vs {:b}\n", key as u8, (1<<7) as u8);
+//     if (key >> 7  & 1) == 1 {
+//         print!("MATCH");
+//         key - (1 << 7)
+//     } else {
+//         key
+//     }
+// }
 #[no_mangle]
 pub extern fn kmain() -> ! {
     // use vga::VgaScreen;
