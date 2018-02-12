@@ -1,10 +1,9 @@
 #[macro_use]
 pub mod buffer;
 pub mod color;
-pub mod terminal;
 
 pub use self::color::{Color, ColorCode};
-pub use self::buffer::{WRITER, Screen, BufferAction};
+pub use self::buffer::{Writer};
 
 // use self::buffer::Writer;
 // use core::fmt;

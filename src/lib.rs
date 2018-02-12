@@ -14,6 +14,7 @@ mod vga;
 #[allow(dead_code)]
 mod cpuio;
 mod keyboard;
+mod context;
 
 #[no_mangle]
 pub extern fn kmain() -> ! {
@@ -40,7 +41,11 @@ pub extern fn kmain() -> ! {
     // WRITER.lock().color_code = ColorCode::new(Color::White, Color::Black);
     // println!(">> Kernel startup...");
 
-    unsafe { loop { keyboard::kbd_loop(&mut vga::buffer::WRITER); } };
+    let mut context = context::Context::new();
+
+    loop {
+        keyboard::kbd_callback(&mut context);
+    }
 }
 
 #[lang = "eh_personality"] #[no_mangle]

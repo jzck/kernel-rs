@@ -7,11 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use volatile::Volatile;
-
 use super::{Color, ColorCode};
-use core::ptr::Unique;
-use core::fmt;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -20,114 +16,87 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
+const BUFFER_ROWS: usize = 25;
+const BUFFER_COLS: usize = 80 * 2;
 
-pub struct Writer {
-    pub column_position: usize,
-    pub color_code: ColorCode,
-    vgabuffer: Unique<Buffer>,
+pub struct Writer<T: AsMut<[u8]>> {
+    pub position: usize,
+    color_code: ColorCode,
+    slice: T,
+    buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
 }
 
-// Writer is the default object to use to print to screen
-pub static mut WRITER: Writer = Writer {
-    column_position: 0,
-    color_code: ColorCode::new(Color::White, Color::Black),
-    vgabuffer: unsafe { Unique::new_unchecked(0xb8000 as *mut _) },
-};
-
-// blank is black for everyone, could make screens choose this
-static BLANK: ScreenChar = ScreenChar {
-    ascii_character: b' ',
-    color_code: ColorCode::new(Color::White, Color::Black),
-};
-
-impl Writer {
-    pub fn action(&mut self, action: BufferAction) {
-        match action {
-            BufferAction::WRITE_BYTE(ascii) => self.write_byte(ascii as u8),
-            BufferAction::CLEAR_SCREEN => self.reset_screen(),
+impl<T: AsMut<[u8]>> Writer<T> {
+    pub fn new(slice: T) -> Writer<T> {
+        Writer {
+            slice,
+            position: 0,
+            color_code: ColorCode::new(Color::White, Color::Black),
+            buffer: [0; BUFFER_ROWS * BUFFER_COLS],
         }
     }
 
-    pub fn reset_screen(&mut self)
-    {
-        let color_code = self.color_code;
-        for row in 1..BUFFER_HEIGHT {
-            for col in 0..BUFFER_WIDTH {
-                self.buffer().chars[row][col].write(ScreenChar {
-                    ascii_character: b' ',
-                    color_code,
-                });
-            }
-        }
-        self.column_position = 0;
+    pub fn keypress(&mut self, ascii: u8) {
+        self.write_byte(ascii);
     }
 
     pub fn write_byte(&mut self, byte: u8) {
+        let i = self.position;
+
         match byte {
-            b'\n' => { self.new_line(); }
+
+            b'\n' => {
+                //reset cursor
+                self.buffer[self.position + 1] = ColorCode::new(Color::White, Color::Black).0;
+                let current_line = self.position / (BUFFER_COLS);
+                self.position = (current_line + 1) * BUFFER_COLS;
+            }
             byte => {
-                if self.column_position >= BUFFER_WIDTH {
-                    self.new_line();
-                }
-                let row = BUFFER_HEIGHT - 1;
-                let col = self.column_position;
-                let color_code = self.color_code;
-                self.buffer().chars[row][col].write(ScreenChar {
-                    ascii_character: byte,
-                    color_code: color_code,
-                });
-                self.column_position += 1;
+                self.buffer[i] = byte;
+                self.buffer[i + 1] = self.color_code.0;
+                self.position += 2;
             }
         }
+
+        if self.position >= self.buffer.len() {
+            self.scroll();
+        }
+
+        // cursor
+        self.buffer[self.position] = b' ';
+        self.buffer[self.position + 1] = ColorCode::new(Color::LightGray, Color::LightGray).0;
+
+        self.flush();
     }
 
-    fn buffer(&mut self) -> &mut Buffer {
-        unsafe { self.vgabuffer.as_mut() }
+    pub fn flush(&mut self) {
+        self.slice.as_mut().clone_from_slice(&self.buffer);
     }
 
-    fn new_line(&mut self) {
-        for row in 1..BUFFER_HEIGHT {
-            for col in 0..BUFFER_WIDTH {
-                let buffer = self.buffer();
-                let character = buffer.chars[row][col].read();
-                buffer.chars[row - 1][col].write(character);
+    fn scroll(&mut self) {
+
+        for row in 1..BUFFER_ROWS {
+            for col in 0..BUFFER_COLS {
+                let prev_position = ((row - 1) * BUFFER_COLS) + col;
+                let current_position = (row * BUFFER_COLS) + col;
+                self.buffer[prev_position] = self.buffer[current_position];
             }
         }
-        self.clear_row(BUFFER_HEIGHT - 1);
-        self.column_position = 0;
-    }
 
-    fn clear_row(&mut self, row: usize) {
-        for col in 0..BUFFER_WIDTH {
-            self.buffer().chars[row][col].write(BLANK);
+        for col in 0..BUFFER_COLS/2 {
+            self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col * 2)] = b' ';
         }
+
+        self.position = (BUFFER_ROWS - 1) * BUFFER_COLS;
     }
 }
 
-impl fmt::Write for Writer {
+use core::fmt;
+impl<T: AsMut<[u8]>> fmt::Write for Writer<T> {
     fn write_str(&mut self, s: &str) -> ::core::fmt::Result {
         for byte in s.bytes() {
             self.write_byte(byte)
         }
         Ok(())
     }
-}
-
-struct Buffer {
-    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
-}
-
-pub enum BufferAction {
-    WRITE_BYTE(char),
-    CLEAR_SCREEN,
-}
-
-/// Implementors of this trait can use the vga screen for any purpose
-pub trait Screen {
-    fn new() -> Self; //
-    fn keypress(self, keycode: char) -> Option<BufferAction>;
-    // fn load();
-    // fn unload() -> ;
 }
