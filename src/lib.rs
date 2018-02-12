@@ -51,6 +51,7 @@ fn reboot()  {
 fn shutdown() -> ! {
     cpuio::outb(0xf4, 0x00);//TODO doesn't work :(
     println!("Reicv shutdown command. System cannot shutdown properly yet, he is now halt\n");
+    test
     cpuio::halt();
 }
 #[no_mangle]
