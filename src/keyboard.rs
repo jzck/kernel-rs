@@ -19,6 +19,7 @@ pub fn kbd_callback() {
                 }
                 Some(ascii) => {
                     CONTEXT.current_term().keypress(*ascii);
+                    CONTEXT.current_term().flush();
                 },
                 None =>{},
                 // None => println!("nokey ctrl {:x}", control),
