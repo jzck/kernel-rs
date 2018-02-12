@@ -12,6 +12,7 @@ project	:= bluesnow
 arch	?= x86
 NASM	:= nasm -f elf
 LD		:= ld -m elf_i386 -n --gc-sections
+# QEMU	:= qemu-system-x86_64 -device isa-debug-exit,iobase=0xf4,iosize=0x04 -gdb tcp::$(PORTG) -enable-kvm -monitor telnet:127.0.0.1:$(PORT),server,nowait
 QEMU	:= qemu-system-x86_64 -gdb tcp::$(PORTG) -enable-kvm -monitor telnet:127.0.0.1:$(PORT),server,nowait
 
 kernel	:= build/kernel-$(arch).bin

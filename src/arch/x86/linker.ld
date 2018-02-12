@@ -12,4 +12,8 @@ SECTIONS {
 	.text : {
 		*(.text)
 	}
+
+	.stack : {
+		*(.bss)
+	}
 }
