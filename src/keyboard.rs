@@ -1,7 +1,7 @@
 extern crate core;
 
 use cpuio;
-use context;
+use context::CONTEXT;
 // use vga::color::{Color, ColorCode};
 
 const MAX_KEYS: usize = 59;
@@ -77,7 +77,7 @@ fn check_key_state(key: u8) -> (bool, usize) {
     }
 }
 
-pub fn kbd_callback(context: &mut context::Context) {
+pub fn kbd_callback() {
     static mut SHIFT: bool = false;
     static mut CTRL: bool = false;
     static mut ALT: bool = false;
@@ -95,28 +95,28 @@ pub fn kbd_callback(context: &mut context::Context) {
                     0x38 => {ALT = !is_release},
                     0x1D => {CTRL = !is_release},
                     0x0F => {
-                context.current_term().keypress('T' as u8);
-                        context.switch_term();
-                context.current_term().keypress('T' as u8);
-                        context.current_term().flush();
-                context.current_term().keypress('T' as u8);
-                context.current_term().keypress('T' as u8);
-                context.current_term().keypress('T' as u8);
+                CONTEXT.current_term().keypress('T' as u8);
+                        CONTEXT.switch_term();
+                CONTEXT.current_term().keypress('T' as u8);
+                        CONTEXT.current_term().flush();
+                CONTEXT.current_term().keypress('T' as u8);
+                CONTEXT.current_term().keypress('T' as u8);
+                CONTEXT.current_term().keypress('T' as u8);
                     },
                     _ => {}
                 }
             },
             // Some(b"2@") if ALT => {
-            //     context.switch_term();
-            //     context.current_term().flush();
+            //     CONTEXT.switch_term();
+            //     CONTEXT.current_term().flush();
             // },
             Some(b"1!") if CTRL => {
-                context.switch_term();
-                context.current_term().keypress('>' as u8);
-                context.current_term().flush();
+                CONTEXT.switch_term();
+                CONTEXT.current_term().keypress('>' as u8);
+                CONTEXT.current_term().flush();
             },
             Some(ascii) if !is_release => {
-                let mut terminal = context.current_term();
+                let mut terminal = CONTEXT.current_term();
                 if SHIFT {
                     terminal.keypress(ascii[1]);
                 }
