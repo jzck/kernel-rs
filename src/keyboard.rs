@@ -92,16 +92,11 @@ pub fn kbd_callback() {
             Some(b"\0\0") => {
                 match scancode {
                     0x2A | 0x36 => {SHIFT = !is_release},
-                    0x38 => {ALT = !is_release},
-                    0x1D => {CTRL = !is_release},
-                    0x0F => {
-                CONTEXT.current_term().keypress('T' as u8);
+                    0x38 => {ALT = !is_release; println!("atl")},
+                    0x1D => {CTRL = !is_release; println!("ctrl")},
+                    0x0F if !is_release => {
                         CONTEXT.switch_term();
-                CONTEXT.current_term().keypress('T' as u8);
                         CONTEXT.current_term().flush();
-                CONTEXT.current_term().keypress('T' as u8);
-                CONTEXT.current_term().keypress('T' as u8);
-                CONTEXT.current_term().keypress('T' as u8);
                     },
                     _ => {}
                 }
@@ -110,11 +105,11 @@ pub fn kbd_callback() {
             //     CONTEXT.switch_term();
             //     CONTEXT.current_term().flush();
             // },
-            Some(b"1!") if CTRL => {
-                CONTEXT.switch_term();
-                CONTEXT.current_term().keypress('>' as u8);
-                CONTEXT.current_term().flush();
-            },
+            // Some(b"1!") if CTRL && !is_release => {
+            //     CONTEXT.switch_term();
+            //     CONTEXT.current_term().keypress('>' as u8);
+            //     CONTEXT.current_term().flush();
+            // },
             Some(ascii) if !is_release => {
                 let mut terminal = CONTEXT.current_term();
                 if SHIFT {

@@ -8,6 +8,7 @@
 // except according to those terms.
 
 use super::{Color, ColorCode};
+use ::context::CONTEXT;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -16,21 +17,21 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
-// macro_rules! print {
-//     ($($arg:tt)*) => ({
-//             $crate::vga_buffer::print(format_args!($($arg)*));
-//         });
-// }
+macro_rules! print {
+    ($($arg:tt)*) => ({
+            $crate::vga::buffer::print(format_args!($($arg)*));
+        });
+}
 
-// macro_rules! println {
-//     ($fmt:expr) => (print!(concat!($fmt, "\n")));
-//     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
-// }
+macro_rules! println {
+    ($fmt:expr) => (print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
+}
 
-// pub fn print(args: fmt::Arguments) {
-//     use core::fmt::Write;
-//     context.current_screen().write_fmt(args).unwrap();
-// }
+pub fn print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    unsafe { CONTEXT.current_term().write_fmt(args).unwrap() };
+}
 
 
 extern crate core;
@@ -59,6 +60,7 @@ impl Writer {
 
     pub fn keypress(&mut self, ascii: u8) {
         self.write_byte(ascii);
+        self.flush();
     }
 
     pub fn write_byte(&mut self, byte: u8) {
@@ -87,7 +89,6 @@ impl Writer {
         self.buffer[self.position] = b' ';
         self.buffer[self.position + 1] = ColorCode::new(Color::LightGray, Color::LightGray).0;
 
-        self.flush();
     }
 
     pub fn flush(&mut self) {
@@ -119,6 +120,7 @@ impl fmt::Write for Writer {
         for byte in s.bytes() {
             self.write_byte(byte)
         }
+        self.flush();
         Ok(())
     }
 }

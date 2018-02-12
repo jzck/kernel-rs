@@ -34,24 +34,21 @@ pub extern fn kmain() -> ! {
     // use vga::color::Color;
     // use vga::color::ColorCode;
 
-    // WRITER.lock().reset_screen();
-    // WRITER.lock().color_code = ColorCode::new(Color::Yellow, Color::Black);
-    // println!(r#"        ,--,               "#);
-    // println!(r#"      ,--.'|      ,----,   "#);
-    // println!(r#"   ,--,  | :    .'   .' \  "#);
-    // println!(r#",---.'|  : '  ,----,'    | "#);
-    // println!(r#";   : |  | ;  |    :  .  ; "#);
-    // println!(r#"|   | : _' |  ;    |.'  /  "#);
-    // println!(r#":   : |.'  |  `----'/  ;   "#);
-    // println!(r#"|   ' '  ; :    /  ;  /    "#);
-    // println!(r#"\   \  .'. |   ;  /  /-,   "#);
-    // println!(r#" `---`:  | '  /  /  /.`|   "#);
-    // println!(r#"      '  ; |./__;      :   "#);
-    // println!(r#"      |  : ;|   :    .'    "#);
-    // println!(r#"      '  ,/ ;   | .'       "#);
-    // println!(r#"      '--'  `---'          "#);
-    // WRITER.lock().color_code = ColorCode::new(Color::White, Color::Black);
-    // println!(">> Kernel startup...");
+    println!(r#"        ,--,               "#);
+    println!(r#"      ,--.'|      ,----,   "#);
+    println!(r#"   ,--,  | :    .'   .' \  "#);
+    println!(r#",---.'|  : '  ,----,'    | "#);
+    println!(r#";   : |  | ;  |    :  .  ; "#);
+    println!(r#"|   | : _' |  ;    |.'  /  "#);
+    println!(r#":   : |.'  |  `----'/  ;   "#);
+    println!(r#"|   ' '  ; :    /  ;  /    "#);
+    println!(r#"\   \  .'. |   ;  /  /-,   "#);
+    println!(r#" `---`:  | '  /  /  /.`|   "#);
+    println!(r#"      '  ; |./__;      :   "#);
+    println!(r#"      |  : ;|   :    .'    "#);
+    println!(r#"      '  ,/ ;   | .'       "#);
+    println!(r#"      '--'  `---'          "#);
+    println!(">> Kernel startup...");
 
     loop {
         keyboard::kbd_callback();
