@@ -49,7 +49,7 @@ pub struct Writer {
 }
 
 impl Writer {
-    pub fn new() -> Writer {
+    pub const fn new() -> Writer {
         Writer {
             position: 0,
             color_code: ColorCode::new(Color::White, Color::Black),

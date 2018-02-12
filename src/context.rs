@@ -2,6 +2,11 @@ extern crate core;
 
 use vga;
 
+pub static mut CONTEXT: Context = Context {
+    current_term: 0,
+    vga1: vga::Writer::new(),
+    vga2: vga::Writer::new(),
+};
 
 pub struct Context {
     pub current_term: u8,
@@ -10,14 +15,6 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new() -> Context {
-        Context {
-            current_term: 0,
-            vga1: vga::Writer::new(),
-            vga2: vga::Writer::new(),
-        }
-    }
-
     pub fn switch_term(&mut self) {
         self.current_term = {
             if self.current_term == 0 { 1 }

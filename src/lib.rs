@@ -41,10 +41,8 @@ pub extern fn kmain() -> ! {
     // WRITER.lock().color_code = ColorCode::new(Color::White, Color::Black);
     // println!(">> Kernel startup...");
 
-    let mut context = context::Context::new();
-
     loop {
-        keyboard::kbd_callback(&mut context);
+        keyboard::kbd_callback();
     }
 }
 
