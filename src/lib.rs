@@ -38,7 +38,7 @@ pub extern fn kmain() -> ! {
     // use vga::color::ColorCode;
 
     unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
-    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}\n",
+    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
     format_args!("{: ^80}", r#"        ,--,               "#),
     format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
     format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
