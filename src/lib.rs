@@ -11,14 +11,11 @@ extern crate rlibc;
 #[macro_use]
 mod vga;
 
-#[allow(dead_code)]
-#[macro_use]
 mod context;
 mod keyboard;
 
 #[allow(dead_code)]
 mod cpuio;
-
 
 //TODO implement ACPI to have such functionality 
 /// Reboot the kernel
