@@ -55,10 +55,6 @@ fn shutdown() -> ! {
 }
 #[no_mangle]
 pub extern fn kmain() -> ! {
-    // use vga::VgaScreen;
-    // use vga::color::Color;
-    // use vga::color::ColorCode;
-
     println!(r#"        ,--,               "#);
     println!(r#"      ,--.'|      ,----,   "#);
     println!(r#"   ,--,  | :    .'   .' \  "#);
@@ -78,15 +74,6 @@ pub extern fn kmain() -> ! {
     loop {
         keyboard::kbd_callback();
     }
-    // let control = unsafe { cpuio::inb(0x64) };
-    // if (control & 1) == 1 {
-    //     let keycode = unsafe { cpuio::inb(0x60) };
-    //     match keyboard::KEY_CODE_TO_ASCII.get(keycode as usize) {
-    //         Some(ascii) => print!("{}", *ascii as char),
-    //         None =>{},
-    //         // None => println!("nokey ctrl {:x}", control),
-    //     }
-    // }
 }
 
 #[lang = "eh_personality"] #[no_mangle]
@@ -96,12 +83,12 @@ pub extern fn eh_personality() {
 
 #[lang = "panic_fmt"] #[no_mangle]
 pub extern fn panic_fmt(
-    // fmt: core::fmt::Arguments, file: &'static str, line: u32
+    fmt: core::fmt::Arguments, file: &'static str, line: u32
     )
 -> ! {
-    // println!("PANIC: {}", fmt);
-    // println!("FILE: {}", file);
-    // println!("LINE: {}", line);
+    println!("PANIC: {}", fmt);
+    println!("FILE: {}", file);
+    println!("LINE: {}", line);
     loop {}
 
 }
