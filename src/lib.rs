@@ -14,6 +14,9 @@ mod vga;
 mod context;
 mod keyboard;
 
+use context::CONTEXT;
+use vga::{Color, ColorCode};
+
 #[allow(dead_code)]
 mod cpuio;
 
@@ -52,21 +55,24 @@ fn shutdown() -> ! {
 }
 #[no_mangle]
 pub extern fn kmain() -> ! {
-    println!(r#"        ,--,               "#);
-    println!(r#"      ,--.'|      ,----,   "#);
-    println!(r#"   ,--,  | :    .'   .' \  "#);
-    println!(r#",---.'|  : '  ,----,'    | "#);
-    println!(r#";   : |  | ;  |    :  .  ; "#);
-    println!(r#"|   | : _' |  ;    |.'  /  "#);
-    println!(r#":   : |.'  |  `----'/  ;   "#);
-    println!(r#"|   ' '  ; :    /  ;  /    "#);
-    println!(r#"\   \  .'. |   ;  /  /-,   "#);
-    println!(r#" `---`:  | '  /  /  /.`|   "#);
-    println!(r#"      '  ; |./__;      :   "#);
-    println!(r#"      |  : ;|   :    .'    "#);
-    println!(r#"      '  ,/ ;   | .'       "#);
-    println!(r#"      '--'  `---'          "#);
-    println!(">> Kernel startup...");
+    unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
+    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
+    format_args!("{: ^80}", r#"        ,--,               "#),
+    format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
+    format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
+    format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
+    format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
+    format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
+    format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
+    format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
+    format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
+    format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
+    format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
+    format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
+    format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
+    format_args!("{: ^80}", r#"      '--'  `---'          "#));
+    unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Black); }
+    print!(">");
 
     loop {
         keyboard::kbd_callback();

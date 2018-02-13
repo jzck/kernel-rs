@@ -9,6 +9,7 @@
 
 use super::{Color, ColorCode};
 use ::context::CONTEXT;
+use cpuio;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -31,21 +32,17 @@ macro_rules! println {
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
     unsafe { CONTEXT.current_term().write_fmt(args).unwrap() };
+    unsafe { CONTEXT.current_term().flush() };
 }
 
-
 extern crate core;
-
-// pub const unsafe fn vga_slice() -> &'static [u8] {
-//     unsafe { core::slice::from_raw_parts_mut(0xb8000 as *mut u8, 4000) }
-// }
 
 const BUFFER_ROWS: usize = 25;
 const BUFFER_COLS: usize = 80 * 2;
 
 pub struct Writer {
     pub position: usize,
-    color_code: ColorCode,
+    pub color_code: ColorCode,
     buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
 }
 
@@ -69,8 +66,6 @@ impl Writer {
         match byte {
 
             b'\n' => {
-                //reset cursor
-                self.buffer[self.position + 1] = ColorCode::new(Color::White, Color::Black).0;
                 let current_line = self.position / (BUFFER_COLS);
                 self.position = (current_line + 1) * BUFFER_COLS;
             }
@@ -85,10 +80,11 @@ impl Writer {
             self.scroll();
         }
 
-        // cursor
-        self.buffer[self.position] = b' ';
-        self.buffer[self.position + 1] = ColorCode::new(Color::LightGray, Color::LightGray).0;
-
+        let cursor_position = self.position / 2;
+        cpuio::outb(14, 0x3D4);
+        cpuio::outb((cursor_position >> 8) as u8, 0x3D5);
+        cpuio::outb(15, 0x3D4);
+        cpuio::outb((cursor_position >> 0) as u8 & 0x00ff, 0x3D5);
     }
 
     pub fn flush(&mut self) {
@@ -120,7 +116,6 @@ impl fmt::Write for Writer {
         for byte in s.bytes() {
             self.write_byte(byte)
         }
-        self.flush();
         Ok(())
     }
 }
