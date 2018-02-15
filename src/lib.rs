@@ -25,7 +25,6 @@ mod cpuio;
 ///
 /// If reboot failed, will loop on a halt cmd
 ///
-#[allow(dead_code)]
 fn reboot()  {
     //TODO disable interrupt here something like : asm volatile ("cli");
 
@@ -47,11 +46,17 @@ fn reboot()  {
 ///
 /// If shutdown failed, will loop on a halt cmd
 ///
-#[allow(dead_code)]
 fn shutdown() -> ! {
     cpuio::outb(0xf4, 0x00);//TODO doesn't work :(
     println!("Reicv shutdown command. System cannot shutdown properly yet, he is now halt\n");
     cpuio::halt();
+}
+
+/// Print the kernel stack
+///
+fn print_kernel_stack() {
+    println!("It's a stack print");
+
 }
 
 #[no_mangle]
@@ -73,7 +78,8 @@ pub extern fn kmain() -> ! {
     format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
     format_args!("{: ^80}", r#"      '--'  `---'          "#));
     unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Black); }
-    print!(">");
+    unsafe { CONTEXT.vga1.prompt();CONTEXT.vga1.flush(); }
+    unsafe { CONTEXT.vga2.prompt(); }
 
     loop {
         keyboard::kbd_callback();

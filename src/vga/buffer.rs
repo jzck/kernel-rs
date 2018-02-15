@@ -44,18 +44,42 @@ pub struct Writer {
     pub buffer_pos: usize,
     pub color_code: ColorCode,
     buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
-    command: [u8; 10],
+    command: [char; 10],
     command_len: usize,
 }
 
+// enum shell_command {
+//     "reboot" => super::reboot();
+// }
+
+const NULL: [char; 10] = ['\0'; 10];
+const REBOOT: [char; 10] = ['r', 'e', 'b', 'o', 'o', 't', '\0', '\0', '\0', '\0'];
+const HALT: [char; 10] = ['h', 'a', 'l', 't', '\0', '\0', '\0', '\0', '\0', '\0'];
+const SHUTDOWN: [char; 10] = ['s', 'h', 'u', 't', 'd', 'o', 'w', 'n', '\0', '\0'];
+const STACK: [char; 10] = ['s', 't', 'a', 'c', 'k', '\0', '\0', '\0', '\0', '\0'];
 impl Writer {
     pub const fn new() -> Writer {
         Writer {
             buffer_pos: 0,
             color_code: ColorCode::new(Color::White, Color::Black),
             buffer: [0; BUFFER_ROWS * BUFFER_COLS],
-            command: [0; 10],
+            command: NULL,
             command_len: 0,
+        }
+    }
+
+    pub fn prompt(&mut self) {
+        let color_code_save = self.color_code;
+        self.color_code = ColorCode::new(Color::Blue, Color::Black);
+        self.write_str("> ");
+        self.color_code =  color_code_save;
+    }
+
+    pub fn backspace(&mut self) {
+        if self.command_len > 0 {
+            self.command_len -= 1;
+            self.command[self.command_len] = '\0';
+            self.erase_byte();
         }
     }
 
@@ -64,16 +88,43 @@ impl Writer {
             b'\n' => {
                 self.command_len = 0;
                 self.write_byte(b'\n');
-                println!("{:?}", self.command.iter());
-                self.write_byte(b'>');
+                // println!("{:?}", self.command.iter());
+                match self.command {
+                    SHUTDOWN | HALT => {
+                        super::super::shutdown();
+                    }
+                    REBOOT => {
+                        super::super::reboot();
+                    }
+                    STACK => {
+                        super::super::print_kernel_stack();
+                    }
+                    _ => {
+                        let color_code_save = self.color_code;
+                        self.color_code = ColorCode::new(Color::Red, Color::Black);
+                        println!("Command unknown !");
+                        self.color_code =  color_code_save;
+                    }
+                }
+                self.command = NULL;
+                self.prompt();
             }
             byte => {
                 if self.command_len >= 10 { return };
 
+                self.command[self.command_len] = byte as char;
                 self.write_byte(byte);
                 self.command_len += 1;
             }
         }
+        self.flush();
+    }
+
+    pub fn erase_byte(&mut self) {
+        self.buffer_pos -= 2;
+        let i = self.buffer_pos;
+        self.buffer[i] = b' ';
+        self.buffer[i + 1] = 0;
         self.flush();
     }
 
@@ -95,6 +146,12 @@ impl Writer {
 
         if self.buffer_pos >= self.buffer.len() {
             self.scroll();
+        }
+    }
+
+    fn write_str(&mut self, s: &str) {
+        for byte in s.bytes() {
+            self.write_byte(byte)
         }
     }
 
