@@ -82,9 +82,9 @@ pub fn kbd_callback() {
     static mut CTRL: bool = false;
     static mut ALT: bool = false;
     // let terminal_two: vga::terminal::Terminal = vga::Screen::new();
-    let control = unsafe { cpuio::inb(0x64) };
+    let control = cpuio::inb(0x64);
     if (control & 1) == 1 {
-        let scancode = unsafe { cpuio::inb(0x60) };
+        let scancode = cpuio::inb(0x60);
         let (is_release, scancode) = check_key_state(scancode);
         //TODO implement logic to translate scancode->ascii
         unsafe {//TODO remove unsafe 
