@@ -86,44 +86,41 @@ pub fn kbd_callback() {
     if (control & 1) == 1 {
         let scancode = cpuio::inb(0x60);
         let (is_release, scancode) = check_key_state(scancode);
-        //TODO implement logic to translate scancode->ascii
         unsafe {//TODO remove unsafe 
-        match self::KEYMAP_US.get(scancode as usize) {
-            Some(b"\0\0") => {
-                match scancode {
-                    0x2A | 0x36 => {SHIFT = !is_release},
-                    0x38 => {ALT = !is_release; println!("atl")},
-                    0x1D => {CTRL = !is_release; println!("ctrl")},
-                    0x0F if !is_release => {
-                        CONTEXT.switch_term();
-                        CONTEXT.current_term().flush();
-                    },
-                    _ => {}
-                }
-            },
-            // Some(b"2@") if ALT => {
-            //     CONTEXT.switch_term();
-            //     CONTEXT.current_term().flush();
-            // },
-            // Some(b"1!") if CTRL && !is_release => {
-            //     CONTEXT.switch_term();
-            //     CONTEXT.current_term().keypress('>' as u8);
-            //     CONTEXT.current_term().flush();
-            // },
-            Some(ascii) if !is_release => {
-                let mut terminal = CONTEXT.current_term();
-                if SHIFT {
-                    terminal.keypress(ascii[1]);
-                }
-                else {
-                    terminal.keypress(ascii[0]);
-                }
-            },
-            Some(_) => {},
-            None =>{},
-            // None => println!("nokey ctrl {:x}", control),
+            match self::KEYMAP_US.get(scancode as usize) {
+                Some(b"\0\0") => {
+                    match scancode {
+                        0x2A | 0x36 => {SHIFT = !is_release},
+                        0x38 => {ALT = !is_release; println!("atl")},
+                        0x1D => {CTRL = !is_release; println!("ctrl")},
+                        0x0F if !is_release => {
+                            CONTEXT.switch_term();
+                            CONTEXT.current_term().flush();
+                        },
+                        _ => {}
+                    }
+                },
+                // Some(b"2@") if ALT => {
+                //     CONTEXT.switch_term();
+                //     CONTEXT.current_term().flush();
+                // },
+                // Some(b"1!") if CTRL && !is_release => {
+                //     CONTEXT.switch_term();
+                //     CONTEXT.current_term().keypress('>' as u8);
+                //     CONTEXT.current_term().flush();
+                // },
+                Some(ascii) if !is_release => {
+                    let mut terminal = CONTEXT.current_term();
+                    if SHIFT {
+                        terminal.keypress(ascii[1]);
+                    }
+                    else {
+                        terminal.keypress(ascii[0]);
+                    }
+                },
+                Some(_) => {},
+                None =>{},
+            }
         }
-        }
-        // current_screen.flush();
     }
 }

@@ -9,6 +9,7 @@
 
 use super::{Color, ColorCode};
 use ::context::CONTEXT;
+use cpuio;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -31,69 +32,87 @@ macro_rules! println {
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
     unsafe { CONTEXT.current_term().write_fmt(args).unwrap() };
+    unsafe { CONTEXT.current_term().flush() };
 }
 
-
 extern crate core;
-
-// pub const unsafe fn vga_slice() -> &'static [u8] {
-//     unsafe { core::slice::from_raw_parts_mut(0xb8000 as *mut u8, 4000) }
-// }
 
 const BUFFER_ROWS: usize = 25;
 const BUFFER_COLS: usize = 80 * 2;
 
 pub struct Writer {
-    pub position: usize,
-    color_code: ColorCode,
+    pub buffer_pos: usize,
+    pub color_code: ColorCode,
     buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
+    command: [u8; 10],
+    command_len: usize,
 }
 
 impl Writer {
     pub const fn new() -> Writer {
         Writer {
-            position: 0,
+            buffer_pos: 0,
             color_code: ColorCode::new(Color::White, Color::Black),
             buffer: [0; BUFFER_ROWS * BUFFER_COLS],
+            command: [0; 10],
+            command_len: 0,
         }
     }
 
     pub fn keypress(&mut self, ascii: u8) {
-        self.write_byte(ascii);
+        match ascii {
+            b'\n' => {
+                self.command_len = 0;
+                self.write_byte(b'\n');
+                println!("{:?}", self.command.iter());
+                self.write_byte(b'>');
+            }
+            byte => {
+                if self.command_len >= 10 { return };
+
+                self.write_byte(byte);
+                self.command_len += 1;
+            }
+        }
         self.flush();
     }
 
     pub fn write_byte(&mut self, byte: u8) {
-        let i = self.position;
+        let i = self.buffer_pos;
 
         match byte {
 
             b'\n' => {
-                //reset cursor
-                self.buffer[self.position + 1] = ColorCode::new(Color::White, Color::Black).0;
-                let current_line = self.position / (BUFFER_COLS);
-                self.position = (current_line + 1) * BUFFER_COLS;
+                let current_line = self.buffer_pos / (BUFFER_COLS);
+                self.buffer_pos = (current_line + 1) * BUFFER_COLS;
             }
             byte => {
                 self.buffer[i] = byte;
                 self.buffer[i + 1] = self.color_code.0;
-                self.position += 2;
+                self.buffer_pos += 2;
             }
         }
 
-        if self.position >= self.buffer.len() {
+        if self.buffer_pos >= self.buffer.len() {
             self.scroll();
         }
+    }
 
-        // cursor
-        self.buffer[self.position] = b' ';
-        self.buffer[self.position + 1] = ColorCode::new(Color::LightGray, Color::LightGray).0;
-
+    fn flush_cursor(&self)
+    {
+        let cursor_position = self.buffer_pos / 2;
+        // 14 awaits the rightmost 8bits
+        cpuio::outb(14, 0x3D4);
+        cpuio::outb((cursor_position >> 8) as u8, 0x3D5);
+        // 15 awaits the leftmost 8bits
+        cpuio::outb(15, 0x3D4);
+        cpuio::outb((cursor_position >> 0) as u8 & 0x00ff, 0x3D5);
     }
 
     pub fn flush(&mut self) {
         let slice = unsafe { core::slice::from_raw_parts_mut(0xb8000 as *mut u8, 4000) };
         slice.as_mut().clone_from_slice(&self.buffer);
+        self.flush_cursor();
     }
 
     fn scroll(&mut self) {
@@ -110,7 +129,7 @@ impl Writer {
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col * 2)] = b' ';
         }
 
-        self.position = (BUFFER_ROWS - 1) * BUFFER_COLS;
+        self.buffer_pos = (BUFFER_ROWS - 1) * BUFFER_COLS;
     }
 }
 
@@ -120,7 +139,6 @@ impl fmt::Write for Writer {
         for byte in s.bytes() {
             self.write_byte(byte)
         }
-        self.flush();
         Ok(())
     }
 }
