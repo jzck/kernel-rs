@@ -1,12 +1,11 @@
-#![no_std]
+//! project hosted at [https://github.com/jzck/kernel]
 
+#![no_std]
 #![feature(lang_items)]
 #![feature(const_fn)]
 #![feature(ptr_internals)]
 #![feature(asm)]                //needed by cpuio for inline asm
 
-// extern crate spin;
-// extern crate volatile;
 extern crate rlibc;
 
 #[macro_use]
