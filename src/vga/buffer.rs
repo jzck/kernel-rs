@@ -10,6 +10,7 @@
 use super::{Color, ColorCode};
 use ::context::CONTEXT;
 use cpuio;
+use ::console;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -20,8 +21,8 @@ struct ScreenChar {
 
 macro_rules! print {
     ($($arg:tt)*) => ({
-            $crate::vga::buffer::print(format_args!($($arg)*));
-        });
+        $crate::vga::buffer::print(format_args!($($arg)*));
+    });
 }
 
 macro_rules! println {
@@ -44,26 +45,17 @@ pub struct Writer {
     pub buffer_pos: usize,
     pub color_code: ColorCode,
     buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
-    command: [char; 10],
+    command: [u8; 10],
     command_len: usize,
 }
 
-// enum shell_command {
-//     "reboot" => super::reboot();
-// }
-
-const NULL: [char; 10] = ['\0'; 10];
-const REBOOT: [char; 10] = ['r', 'e', 'b', 'o', 'o', 't', '\0', '\0', '\0', '\0'];
-const HALT: [char; 10] = ['h', 'a', 'l', 't', '\0', '\0', '\0', '\0', '\0', '\0'];
-const SHUTDOWN: [char; 10] = ['s', 'h', 'u', 't', 'd', 'o', 'w', 'n', '\0', '\0'];
-const STACK: [char; 10] = ['s', 't', 'a', 'c', 'k', '\0', '\0', '\0', '\0', '\0'];
 impl Writer {
     pub const fn new() -> Writer {
         Writer {
             buffer_pos: 0,
             color_code: ColorCode::new(Color::White, Color::Black),
             buffer: [0; BUFFER_ROWS * BUFFER_COLS],
-            command: NULL,
+            command: [b'\0'; 10],
             command_len: 0,
         }
     }
@@ -78,7 +70,6 @@ impl Writer {
     pub fn backspace(&mut self) {
         if self.command_len > 0 {
             self.command_len -= 1;
-            self.command[self.command_len] = '\0';
             self.erase_byte();
         }
     }
@@ -86,33 +77,28 @@ impl Writer {
     pub fn keypress(&mut self, ascii: u8) {
         match ascii {
             b'\n' => {
-                self.command_len = 0;
                 self.write_byte(b'\n');
-                // println!("{:?}", self.command.iter());
-                match self.command {
-                    SHUTDOWN | HALT => {
-                        super::super::shutdown();
-                    }
-                    REBOOT => {
-                        super::super::reboot();
-                    }
-                    STACK => {
-                        super::super::print_kernel_stack();
-                    }
-                    _ => {
-                        let color_code_save = self.color_code;
-                        self.color_code = ColorCode::new(Color::Red, Color::Black);
-                        println!("Command unknown !");
-                        self.color_code =  color_code_save;
+                {
+                    let command: &str = &core::str::from_utf8(&self.command).unwrap()[..self.command_len];
+                    match command {
+                        "shutdown" | "halt" => console::shutdown(),
+                        "reboot" => console::reboot(),
+                        "stack" => console::print_kernel_stack(),
+                        _ => {
+                            let color_code_save = self.color_code;
+                            self.color_code = ColorCode::new(Color::Red, Color::Black);
+                            println!("`{}': Command unknown ", command);
+                            self.color_code =  color_code_save;
+                        }
                     }
                 }
-                self.command = NULL;
+                self.command_len = 0;
                 self.prompt();
             }
             byte => {
                 if self.command_len >= 10 { return };
 
-                self.command[self.command_len] = byte as char;
+                self.command[self.command_len] = byte;
                 self.write_byte(byte);
                 self.command_len += 1;
             }
@@ -190,6 +176,7 @@ impl Writer {
     }
 }
 
+// trait needed by formatting macros
 use core::fmt;
 impl fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> ::core::fmt::Result {
