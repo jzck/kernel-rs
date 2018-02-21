@@ -1,0 +1,18 @@
+language: rust
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y nasm build-essential gcc
+  - cargo install xargo
+  - rustup override add nightly
+  - rustup component add rust-src
+script:
+  - make
+after_success: |
+  cargo doc &&
+  echo "<meta http-equiv=refresh content=0;url=`echo $TRAVIS_REPO_SLUG | cut -d '/' -f 2`/index.html>" > target/doc/index.html &&
+  sudo pip install ghp-import &&
+  ghp-import -n target/doc &&
+  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+env:
+  global:
+    secure: KugnyzyUuT4x292BIJoXYBcHbGb1o8961gzrmQzdxCkn0sjg+UI9WUmQj2rZqxxRXCHK9VOaT/vYk9oYXoRv3cISDmsQbJpisUapmil8u3NWn2UVU6oePQrdj2+gF+hy7/K8NeEFE2X8Gv8MX6lsv7NZLTiN67UEpkuxWTrX4RKHDvIQDonUlI+56vgY3hvl4/kI6mE+BSVw9RPK8OWD1T0wwMzAjTCKERonAwI846HDNadWjXRq0+j+n84BJekxICAQRquO2MM94j+MQgCIV0ZQsa9bpG7CfvgLVXLh3NWjEYwkmWFz6hyxLhY4XnG9MNlBh+dN391tDuRoRUlsoI7P1Ym10aYAz1uEEfTQKemVWXOI8DqZDJL0MO3y9+LePb9hTjJ9GOoQ7q9v6v1l9MzWYCy4KBv4QWDEpIKsa7WM/ExfqlZ7MuVW6rzTZmmCScElSk295Z6aH993FrzsyREP16Ch2RniewA598lwinahYR8eYXKjkasi1WTJcLMvQN9nnUe0vhFUFNXPDQPLeX7ZEvzvvcOBY7kZG5zHUeXzIWq7D7tXZTqu/48cgwTvjQ5Q/FARXoffd+RaX/nZInVMdeI7phruOEawUNPXSEdNjNxIedi4PPnIRXT+DgstQeBSKrgl7HYNwnFC3Q+NfoU7oWoyivUtcQ1xZZj03f8=
