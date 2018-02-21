@@ -1,11 +1,8 @@
 #[macro_use]
-pub mod buffer;
 pub mod color;
 
 pub use self::color::{Color, ColorCode};
-pub use self::buffer::{Writer};
 
-use super::{Color, ColorCode};
 use ::context::CONTEXT;
 use cpuio;
 use ::console;
@@ -19,7 +16,7 @@ struct ScreenChar {
 
 macro_rules! print {
     ($($arg:tt)*) => ({
-        $crate::vga::buffer::print(format_args!($($arg)*));
+        $crate::vga::print(format_args!($($arg)*));
     });
 }
 
