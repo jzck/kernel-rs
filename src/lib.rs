@@ -10,11 +10,16 @@
 extern crate rlibc;
 
 #[macro_use]
-mod vga;            // 80x25 screen and terminal
-mod context;        // kernel init and environment
-mod keyboard;       // PS/2 detection and processing
-mod console;        // vga terminal commands
-mod cpuio;          // asm wrapper to cpu i/o
+/// 80x25 screen and simplistic terminal driver
+pub mod vga;
+/// kernel init and environment
+pub mod context;
+/// PS/2 detection and processing
+pub mod keyboard;
+/// simplisitc kernel commands
+pub mod console;
+/// wrappers around the x86-family I/O instructions.
+pub mod cpuio;
 
 use context::CONTEXT;
 use vga::{Color, ColorCode};

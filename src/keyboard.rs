@@ -2,7 +2,6 @@ extern crate core;
 
 use cpuio;
 use context::CONTEXT;
-// use vga::color::{Color, ColorCode};
 
 const MAX_KEYS: usize = 59;
 const KEYMAP_US: [[u8;2]; MAX_KEYS] = [

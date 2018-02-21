@@ -1,7 +1,3 @@
-//! Rust wrappers around the x86-family I/O instructions.
-//! this cmodule uses inline assembly so you need to add
-//! `#![feature(asm)]` to yourcrate attributes
-
 #![allow(dead_code)]
 
 /// Read a `u8`-sized value from `port`.
