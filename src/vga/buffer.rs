@@ -69,7 +69,10 @@ impl Writer {
         if self.position >= self.buffer.len() {
             self.scroll();
         }
+        self.flush_cursor();
+    }
 
+    fn flush_cursor(&self) {
         let cursor_position = self.position / 2;
         cpuio::outb(14, 0x3D4);
         cpuio::outb((cursor_position >> 8) as u8, 0x3D5);
@@ -80,6 +83,7 @@ impl Writer {
     pub fn flush(&mut self) {
         let slice = unsafe { core::slice::from_raw_parts_mut(0xb8000 as *mut u8, 4000) };
         slice.as_mut().clone_from_slice(&self.buffer);
+        self.flush_cursor();
     }
 
     fn scroll(&mut self) {
