@@ -1,12 +1,3 @@
-// Copyright 2016 Philipp Oppermann. See the README.md
-// file at the top-level directory of this distribution.
-//
-// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
-// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
-// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
-// option. This file may not be copied, modified, or distributed
-// except according to those terms.
-
 use super::{Color, ColorCode};
 use ::context::CONTEXT;
 use cpuio;
@@ -20,8 +11,8 @@ struct ScreenChar {
 
 macro_rules! print {
     ($($arg:tt)*) => ({
-            $crate::vga::buffer::print(format_args!($($arg)*));
-        });
+        $crate::vga::buffer::print(format_args!($($arg)*));
+    });
 }
 
 macro_rules! println {
@@ -64,7 +55,6 @@ impl Writer {
         let i = self.position;
 
         match byte {
-
             b'\n' => {
                 let current_line = self.position / (BUFFER_COLS);
                 self.position = (current_line + 1) * BUFFER_COLS;
@@ -93,7 +83,6 @@ impl Writer {
     }
 
     fn scroll(&mut self) {
-
         for row in 1..BUFFER_ROWS {
             for col in 0..BUFFER_COLS {
                 let prev_position = ((row - 1) * BUFFER_COLS) + col;

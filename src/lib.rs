@@ -22,20 +22,8 @@ use vga::{Color, ColorCode};
 #[allow(dead_code)]
 mod cpuio;
 
-// fn check_shift(key: u8) -> u8 {
-//     print!("{:b} vs {:b}\n", key as u8, (1<<7) as u8);
-//     if (key >> 7  & 1) == 1 {
-//         print!("MATCH");
-//         key - (1 << 7)
-//     } else {
-//         key
-//     }
-// }
 #[no_mangle]
 pub extern fn kmain() -> ! {
-    // use vga::VgaScreen;
-    // use vga::color::Color;
-    // use vga::color::ColorCode;
 
     unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
     print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
@@ -68,13 +56,12 @@ pub extern fn eh_personality() {
 
 #[lang = "panic_fmt"] #[no_mangle]
 pub extern fn panic_fmt(
-    // fmt: core::fmt::Arguments, file: &'static str, line: u32
+    fmt: core::fmt::Arguments, file: &'static str, line: u32
     )
 -> ! {
-    // println!("PANIC: {}", fmt);
-    // println!("FILE: {}", file);
-    // println!("LINE: {}", line);
+    println!("PANIC: {}", fmt);
+    println!("FILE: {}", file);
+    println!("LINE: {}", line);
     loop {}
-
 }
 
