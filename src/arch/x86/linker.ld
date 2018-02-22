@@ -12,14 +12,14 @@ SECTIONS {
 
 	. = 1M;
 	kernel_start = . ;
+
 	/* ensure that the multiboot header is at the beginning */
 	.multiboot_header : { KEEP(*(.multiboot_header)) }
 	.text : { *(.text .text.*) }
 	.rodata : { *(.rodata .rodata.*) }
-	.data.rel.ro : { *(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*) }
+	.data : { *(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*) *(.data.*) }
 	.debug : { *(.debug_*) }
+	.bss : {*(.bss .bss.*)}
 
-/* load stack */
-.bss : {*(.bss .bss.*)}
-/* kernel_end = . ; */
+	/* kernel_end = . ; */
 }
