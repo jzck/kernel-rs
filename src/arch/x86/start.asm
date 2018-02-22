@@ -4,17 +4,12 @@ extern kmain
 section .text
 bits 32
 x86_start:
-; we should clear register but it does not work, it's okay with 0x10 instead of 0
-mov ax, 0x10
-mov ss, ax
-mov ds, ax
-mov es, ax
-mov fs, ax
-mov gs, ax
-
-; PRINT OK
-; mov dword [0xb8000], 0x2f4b2f4f
-; hlt
+	mov ax, 0x10	; 16 bytes (0x10) is where the offset for data section (gdt_ds)
+	mov ss, ax
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
 
 	call kmain
 
