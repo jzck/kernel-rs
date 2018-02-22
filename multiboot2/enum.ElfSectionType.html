@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ElfSectionType` enum in crate `multiboot2`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ElfSectionType">
+
+    <title>multiboot2::ElfSectionType - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../main.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc enum">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Enum ElfSectionType</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#variants">Variants</a><div class="sidebar-links"><a href="#variant.Unused">Unused</a><a href="#variant.ProgramSection">ProgramSection</a><a href="#variant.LinkerSymbolTable">LinkerSymbolTable</a><a href="#variant.StringTable">StringTable</a><a href="#variant.RelaRelocation">RelaRelocation</a><a href="#variant.SymbolHashTable">SymbolHashTable</a><a href="#variant.DynamicLinkingTable">DynamicLinkingTable</a><a href="#variant.Note">Note</a><a href="#variant.Uninitialized">Uninitialized</a><a href="#variant.RelRelocation">RelRelocation</a><a href="#variant.Reserved">Reserved</a><a href="#variant.DynamicLoaderSymbolTable">DynamicLoaderSymbolTable</a></div></div><p class='location'><a href='index.html'>multiboot2</a></p><script>window.sidebarCurrent = {name: 'ElfSectionType', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>multiboot2</a>::<wbr><a class="enum" href=''>ElfSectionType</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/multiboot2/elf_sections.rs.html#83-98' title='goto source code'>[src]</a></span></h1>
+<pre class='rust enum'><div class="docblock attributes">#[repr(u32)]
+</div>pub enum ElfSectionType {
+    Unused,
+    ProgramSection,
+    LinkerSymbolTable,
+    StringTable,
+    RelaRelocation,
+    SymbolHashTable,
+    DynamicLinkingTable,
+    Note,
+    Uninitialized,
+    RelRelocation,
+    Reserved,
+    DynamicLoaderSymbolTable,
+}</pre><h2 id='variants' class='variants small-section-header'>
+                   Variants<a href='#variants' class='anchor'></a></h2>
+<span id="variant.Unused" class="variant small-section-header"><a href="#variant.Unused" class="anchor field"></a><span id='Unused.v' class='invisible'><code>Unused</code></span></span><span id="variant.ProgramSection" class="variant small-section-header"><a href="#variant.ProgramSection" class="anchor field"></a><span id='ProgramSection.v' class='invisible'><code>ProgramSection</code></span></span><span id="variant.LinkerSymbolTable" class="variant small-section-header"><a href="#variant.LinkerSymbolTable" class="anchor field"></a><span id='LinkerSymbolTable.v' class='invisible'><code>LinkerSymbolTable</code></span></span><span id="variant.StringTable" class="variant small-section-header"><a href="#variant.StringTable" class="anchor field"></a><span id='StringTable.v' class='invisible'><code>StringTable</code></span></span><span id="variant.RelaRelocation" class="variant small-section-header"><a href="#variant.RelaRelocation" class="anchor field"></a><span id='RelaRelocation.v' class='invisible'><code>RelaRelocation</code></span></span><span id="variant.SymbolHashTable" class="variant small-section-header"><a href="#variant.SymbolHashTable" class="anchor field"></a><span id='SymbolHashTable.v' class='invisible'><code>SymbolHashTable</code></span></span><span id="variant.DynamicLinkingTable" class="variant small-section-header"><a href="#variant.DynamicLinkingTable" class="anchor field"></a><span id='DynamicLinkingTable.v' class='invisible'><code>DynamicLinkingTable</code></span></span><span id="variant.Note" class="variant small-section-header"><a href="#variant.Note" class="anchor field"></a><span id='Note.v' class='invisible'><code>Note</code></span></span><span id="variant.Uninitialized" class="variant small-section-header"><a href="#variant.Uninitialized" class="anchor field"></a><span id='Uninitialized.v' class='invisible'><code>Uninitialized</code></span></span><span id="variant.RelRelocation" class="variant small-section-header"><a href="#variant.RelRelocation" class="anchor field"></a><span id='RelRelocation.v' class='invisible'><code>RelRelocation</code></span></span><span id="variant.Reserved" class="variant small-section-header"><a href="#variant.Reserved" class="anchor field"></a><span id='Reserved.v' class='invisible'><code>Reserved</code></span></span><span id="variant.DynamicLoaderSymbolTable" class="variant small-section-header"><a href="#variant.DynamicLoaderSymbolTable" class="anchor field"></a><span id='DynamicLoaderSymbolTable.v' class='invisible'><code>DynamicLoaderSymbolTable</code></span></span></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "multiboot2";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

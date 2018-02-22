@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["eh_personality",""],["kmain",""],["panic_fmt",""]],"mod":[["console","simplisitc kernel commands"],["context","kernel init and environment"],["cpuio","wrappers around the x86-family I/O instructions."],["keyboard","PS/2 detection and processing"],["vga","80x25 screen and simplistic terminal driver"]]});

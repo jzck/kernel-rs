@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["print_kernel_stack","Print the kernel stack"],["reboot","Reboot the kernel"],["shutdown","Shutdown the kernel"]]});
