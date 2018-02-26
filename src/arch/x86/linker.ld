@@ -5,9 +5,10 @@ SECTIONS {
 	/* GDT for the win */
 	. = 0x800;
 	.gdt : {KEEP(*(.gdt))}
+
 	 /* VGA, cannot use section for this */
+	VGA_PTR = 0xb8000;
 	. = 0xb8000;
-	VGA_PTR = . ;
 	. += 80 * 25 * 2;
 
 	. = 1M;

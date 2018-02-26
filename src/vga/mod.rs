@@ -39,8 +39,7 @@ const BUFFER_COLS: usize = 80 * 2;
 pub struct Writer {
     pub buffer_pos: usize,
     pub color_code: ColorCode,
-    buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
-    command: [u8; 10],
+    buffer: [u8; BUFFER_ROWS * BUFFER_COLS], command: [u8; 10],
     command_len: usize,
 }
 
@@ -154,7 +153,6 @@ impl Writer {
     }
 
     fn scroll(&mut self) {
-
         for row in 1..BUFFER_ROWS {
             for col in 0..BUFFER_COLS {
                 let prev_position = ((row - 1) * BUFFER_COLS) + col;
