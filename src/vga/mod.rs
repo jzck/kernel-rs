@@ -25,10 +25,13 @@ macro_rules! println {
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
 }
 
+macro_rules! flush {
+    () => (unsafe { CONTEXT.current_term().flush() });
+}
+
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
     unsafe { CONTEXT.current_term().write_fmt(args).unwrap() };
-    unsafe { CONTEXT.current_term().flush() };
 }
 
 extern crate core;
@@ -59,6 +62,8 @@ impl Writer {
         self.color_code = ColorCode::new(Color::Blue, Color::Black);
         self.write_str("> ");
         self.color_code =  color_code_save;
+        // self.flush();
+        flush!();
     }
 
     pub fn backspace(&mut self) {
@@ -66,8 +71,7 @@ impl Writer {
             self.command_len -= 1;
             self.erase_byte();
         }
-    }
-
+    } 
     pub fn keypress(&mut self, ascii: u8) {
         match ascii {
             b'\n' => {
@@ -106,6 +110,7 @@ impl Writer {
         self.buffer[i] = b' ';
         self.buffer[i + 1] = 0;
         self.flush();
+        // flush!();
     }
 
     pub fn write_byte(&mut self, byte: u8) {

@@ -21,10 +21,10 @@ pub mod console;
 pub mod cpuio;
 
 use context::CONTEXT;
-use vga::{Color, ColorCode};
 
 #[no_mangle]
 pub extern fn kmain(multiboot_information_address: usize) -> ! {
+    // use vga::{Color, ColorCode};
     // unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
     // print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
     // format_args!("{: ^80}", r#"        ,--,               "#),
