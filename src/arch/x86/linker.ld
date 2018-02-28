@@ -15,7 +15,7 @@ SECTIONS {
 	kernel_start = . ;
 
 	/* ensure that the multiboot header is at the beginning */
-	.multiboot_header : { KEEP(*(.multiboot_header)) }
+	.multiboot : { KEEP(*(.multiboot)) }
 	.text : { *(.text .text.*) }
 	.rodata : { *(.rodata .rodata.*) }
 	.data : { *(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*) *(.data.*) }

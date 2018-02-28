@@ -86,3 +86,8 @@ GDTR:
 .ptr:
 	DW .gdt_bottom - .gdt_top - 1	; length of the structure minus 1
 	DD .gdt_top						; pointer to top of gdt
+
+section .bss
+stack_bottom:
+    resb 4096 * 16
+stack_top:

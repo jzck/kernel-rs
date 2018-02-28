@@ -24,25 +24,7 @@ use context::CONTEXT;
 
 #[no_mangle]
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
-    let boot_info = unsafe { multiboot2::load(multiboot_info_addr) };
-
-    let memory_map_tag = boot_info.memory_map_tag()
-        .expect("Memory map tag required");
-
-    println!("memory areas:");
-    for area in memory_map_tag.memory_areas() {
-        println!("    start: 0x{:x}, length: 0x{:x}",
-                 area.base_addr, area.length);
-    }
-
-    let elf_sections_tag = boot_info.elf_sections_tag()
-        .expect("Elf-sections tag required");
-
-    println!("kernel sections:");
-    for section in elf_sections_tag.sections() {
-        println!("    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}",
-                 section.addr, section.size, section.flags);
-    }
+    unsafe { CONTEXT.boot_info_addr = multiboot_info_addr };
 
     unsafe { CONTEXT.vga1.prompt();CONTEXT.vga1.flush(); }
     unsafe { CONTEXT.vga2.prompt(); }

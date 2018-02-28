@@ -29,6 +29,15 @@ macro_rules! flush {
     () => (unsafe { CONTEXT.current_term().flush() });
 }
 
+macro_rules! set_color {
+    () => (unsafe { CONTEXT.current_term().color_code =
+        ColorCode::new(Color::White, Color::Black) });
+    ($fg:ident) => (unsafe { CONTEXT.current_term().color_code =
+        ColorCode::new(Color::$fg, Color::Black) });
+    ($fg:ident, $bg:ident) => (unsafe { CONTEXT.current_term().color_code =
+        ColorCode::new(Color::$fg, Color::$bg) });
+}
+
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
     unsafe { CONTEXT.current_term().write_fmt(args).unwrap() };
@@ -58,10 +67,9 @@ impl Writer {
     }
 
     pub fn prompt(&mut self) {
-        let color_code_save = self.color_code;
-        self.color_code = ColorCode::new(Color::Blue, Color::Black);
+        set_color!(Blue);
         self.write_str("> ");
-        self.color_code =  color_code_save;
+        set_color!();
         flush!();
     }
 
@@ -77,17 +85,7 @@ impl Writer {
                 self.write_byte(b'\n');
                 {
                     let command: &str = &core::str::from_utf8(&self.command).unwrap()[..self.command_len];
-                    match command {
-                        "shutdown" | "halt" => console::shutdown(),
-                        "reboot" => console::reboot(),
-                        "stack" => console::print_kernel_stack(),
-                        _ => {
-                            let color_code_save = self.color_code;
-                            self.color_code = ColorCode::new(Color::Red, Color::Black);
-                            println!("`{}': Command unknown ", command);
-                            self.color_code =  color_code_save;
-                        }
-                    }
+                    console::dispatch(command);
                 }
                 self.command_len = 0;
                 self.prompt();
