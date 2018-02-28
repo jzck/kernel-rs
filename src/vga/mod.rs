@@ -62,7 +62,6 @@ impl Writer {
         self.color_code = ColorCode::new(Color::Blue, Color::Black);
         self.write_str("> ");
         self.color_code =  color_code_save;
-        // self.flush();
         flush!();
     }
 

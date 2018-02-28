@@ -1,0 +1,3 @@
+[submodule "multiboot2-elf64"]
+	path = multiboot2-elf64
+	url = git@github.com:jzck/multiboot2-elf64.git

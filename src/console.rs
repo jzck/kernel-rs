@@ -49,7 +49,7 @@ fn is_control(c: char) -> bool {
 }
 
 fn print_line(line: &[u8], address: usize) {
-    print!("\n{:08x}: ", address);
+    print!("\n{:#08x}: ", address);
     for byte in line {
         print!("{:02x} ", *byte);
     }

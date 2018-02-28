@@ -7,7 +7,7 @@
 #![feature(asm)]                //needed by cpuio for inline asm
 
 extern crate rlibc;
-extern crate multiboot2;
+extern crate multiboot2;        //slightly modified fork from official 0.3.2
 
 /// 80x25 screen and simplistic terminal driver
 #[macro_use] pub mod vga;
@@ -23,51 +23,31 @@ pub mod cpuio;
 use context::CONTEXT;
 
 #[no_mangle]
-pub extern fn kmain(multiboot_information_address: usize) -> ! {
-    // use vga::{Color, ColorCode};
-    // unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
-    // print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
-    // format_args!("{: ^80}", r#"        ,--,               "#),
-    // format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
-    // format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
-    // format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
-    // format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
-    // format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
-    // format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
-    // format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
-    // format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
-    // format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
-    // format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
-    // format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
-    // format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
-    // format_args!("{: ^80}", r#"      '--'  `---'          "#));
-    // unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Black); }
-    
-    // let boot_info = unsafe{ multiboot2::load(multiboot_information_address) };
-    // let memory_map_tag = boot_info.memory_map_tag()
-    //     .expect("Memory map tag required");
+pub extern fn kmain(multiboot_info_addr: usize) -> ! {
+    let boot_info = unsafe { multiboot2::load(multiboot_info_addr) };
 
-    // println!("memory areas:");
-    // for area in memory_map_tag.memory_areas() {
-    //     println!("    start: 0x{:x}, length: 0x{:x}",
-    //              area.base_addr, area.length);
-    // }
+    let memory_map_tag = boot_info.memory_map_tag()
+        .expect("Memory map tag required");
 
-    // let elf_sections_tag = boot_info.elf_sections_tag()
-    //     .expect("Elf-sections tag required");
+    println!("memory areas:");
+    for area in memory_map_tag.memory_areas() {
+        println!("    start: 0x{:x}, length: 0x{:x}",
+                 area.base_addr, area.length);
+    }
 
-    // println!("kernel sections:");
-    // for section in elf_sections_tag.sections() {
-    //     println!("    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}",
-    //              section.addr, section.size, section.flags);
-    // }
+    let elf_sections_tag = boot_info.elf_sections_tag()
+        .expect("Elf-sections tag required");
+
+    println!("kernel sections:");
+    for section in elf_sections_tag.sections() {
+        println!("    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}",
+                 section.addr, section.size, section.flags);
+    }
 
     unsafe { CONTEXT.vga1.prompt();CONTEXT.vga1.flush(); }
     unsafe { CONTEXT.vga2.prompt(); }
 
-    loop {
-        keyboard::kbd_callback();
-    }
+    loop { keyboard::kbd_callback(); }
 }
 
 #[lang = "eh_personality"] #[no_mangle]
