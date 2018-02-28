@@ -21,6 +21,8 @@ pub mod console;
 pub mod cpuio;
 /// ACPI self-content module
 pub mod acpi;
+/// simple area frame allocator implementation
+pub mod memory;
 
 use context::CONTEXT;
 
