@@ -1,11 +1,10 @@
-#[macro_use]
 pub mod color;
 
 pub use self::color::{Color, ColorCode};
 
-use ::context::CONTEXT;
+use context::*;
 use cpuio;
-use ::console;
+use console;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -26,21 +25,21 @@ macro_rules! println {
 }
 
 macro_rules! flush {
-    () => (unsafe { CONTEXT.current_term().flush() });
+    () => (context().current_term().flush());
 }
 
 macro_rules! set_color {
-    () => (unsafe { CONTEXT.current_term().color_code =
-        ColorCode::new(Color::White, Color::Black) });
-    ($fg:ident) => (unsafe { CONTEXT.current_term().color_code =
-        ColorCode::new(Color::$fg, Color::Black) });
-    ($fg:ident, $bg:ident) => (unsafe { CONTEXT.current_term().color_code =
-        ColorCode::new(Color::$fg, Color::$bg) });
+    () => (context().current_term().color_code =
+        ColorCode::new(Color::White, Color::Black));
+    ($fg:ident) => (context().current_term().color_code =
+        ColorCode::new(Color::$fg, Color::Black));
+    ($fg:ident, $bg:ident) => (context().current_term().color_code =
+        ColorCode::new(Color::$fg, Color::$bg));
 }
 
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
-    unsafe { CONTEXT.current_term().write_fmt(args).unwrap() };
+    context().current_term().write_fmt(args).unwrap();
 }
 
 extern crate core;

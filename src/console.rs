@@ -4,7 +4,7 @@ extern crate multiboot2;
 use acpi;
 use cpuio;
 use core::char;
-use context::CONTEXT;
+use context::*;
 use vga::*;
 
 fn dispatch(command: &str) -> Result <(), &'static str> {
@@ -120,7 +120,7 @@ fn print_stack() -> Result <(), &'static str> {
 }
 
 fn mb2_memory() -> Result <(), &'static str> {
-    let boot_info = unsafe { multiboot2::load(CONTEXT.boot_info_addr) };
+    let boot_info = &context().boot_info;
 
     let memory_map_tag = boot_info.memory_map_tag()
         .expect("Memory map tag required");
@@ -134,7 +134,8 @@ fn mb2_memory() -> Result <(), &'static str> {
 }
 
 fn mb2_sections() -> Result <(), &'static str> {
-    let boot_info = unsafe { multiboot2::load(CONTEXT.boot_info_addr) };
+    let boot_info = &context().boot_info;
+
     let elf_sections_tag = boot_info.elf_sections_tag()
         .expect("Elf-sections tag required");
 
@@ -147,7 +148,7 @@ fn mb2_sections() -> Result <(), &'static str> {
 }
 
 fn mb2_info() -> Result <(), &'static str> {
-    let boot_info = unsafe { multiboot2::load(CONTEXT.boot_info_addr) };
+    let boot_info = &context().boot_info;
 
     let command_line_tag = boot_info.command_line_tag()
         .expect("Elf-sections tag required");

@@ -8,6 +8,8 @@
 
 extern crate rlibc;
 extern crate multiboot2;        //slightly modified fork from official 0.3.2
+#[macro_use]
+extern crate lazy_static;
 
 /// 80x25 screen and simplistic terminal driver
 #[macro_use] pub mod vga;
@@ -24,21 +26,15 @@ pub mod acpi;
 /// simple area frame allocator implementation
 pub mod memory;
 
-use context::CONTEXT;
+use context::*;
 
-fn init_kernel(multiboot_information_address: usize) -> Result <(), &'static str> {
-    unsafe { CONTEXT.boot_info_addr = multiboot_information_address };
-    acpi::init()?;
-    Ok(())
-}
 use vga::{Color, ColorCode};
 
 #[no_mangle]
-pub extern fn kmain(multiboot_information_address: usize) -> ! {
-    if let Err(msg) = init_kernel(multiboot_information_address) {
-        println!("Kernel initialization has failed: {}", msg);
-        cpuio::halt();
-    }
+pub extern fn kmain(multiboot_info_addr: usize) -> ! {
+    unsafe { CONTEXT = Some(Context::new(multiboot_info_addr)) };
+    acpi::init().unwrap();
+
     set_color!(White, Cyan);
     print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
     format_args!("{: ^80}", r#"        ,--,               "#),
@@ -57,9 +53,7 @@ pub extern fn kmain(multiboot_information_address: usize) -> ! {
     format_args!("{: ^80}", r#"      '--'  `---'          "#));
     set_color!();
 
-    unsafe { CONTEXT.vga1.prompt();CONTEXT.vga1.flush(); }
-    unsafe { CONTEXT.vga2.prompt(); }
-
+    context();
     loop { keyboard::kbd_callback(); }
 }
 
