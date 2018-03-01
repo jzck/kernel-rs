@@ -1,7 +1,6 @@
 use multiboot2;
 use memory;
 use vga;
-use cpuio;
 
 pub static mut CONTEXT: Option<Context> = None;
 
@@ -37,6 +36,9 @@ impl Context
             kernel_start, kernel_end, multiboot_start,
             multiboot_end, memory_map_tag.memory_areas());
 
+        let vga1 = vga::Writer::new();
+        let vga2 = vga::Writer::new();
+
         Context {
             current_term: 0,
             multiboot_start,
@@ -45,11 +47,16 @@ impl Context
             kernel_end,
             boot_info,
             frame_allocator,
-            vga1: vga::Writer::new(),
-            vga2: vga::Writer::new(),
+            vga1,
+            vga2,
         }
     }
 
+    pub fn init_screen(&mut self) {
+        self.vga1.prompt();
+        self.vga2.prompt();
+        self.vga1.flush();
+    }
 
     pub fn switch_term(&mut self) {
         self.current_term = {
@@ -67,11 +74,11 @@ impl Context
     }
 }
 
-pub fn context() -> Context {
+pub fn context() -> &'static mut Context {
     unsafe {
-        match CONTEXT.take() {
-            Some(context) => context,
-            None => panic!("heeelp"),
+        match CONTEXT {
+            Some(ref mut x) => &mut *x,
+            None => panic!(),
         }
     }
 }

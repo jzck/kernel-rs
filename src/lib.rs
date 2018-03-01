@@ -10,6 +10,7 @@ extern crate rlibc;
 extern crate multiboot2;        //slightly modified fork from official 0.3.2
 #[macro_use]
 extern crate lazy_static;
+extern crate spin;
 
 /// 80x25 screen and simplistic terminal driver
 #[macro_use] pub mod vga;
@@ -34,6 +35,7 @@ use vga::{Color, ColorCode};
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     unsafe { CONTEXT = Some(Context::new(multiboot_info_addr)) };
     acpi::init().unwrap();
+    context().init_screen();
 
     set_color!(White, Cyan);
     print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
@@ -53,7 +55,6 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     format_args!("{: ^80}", r#"      '--'  `---'          "#));
     set_color!();
 
-    context();
     loop { keyboard::kbd_callback(); }
 }
 
