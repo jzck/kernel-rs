@@ -10,7 +10,7 @@ pub fn inb(port: u16) -> u8 {
 }
 
 /// Write a `u8`-sized `value` to `port`.
-pub fn outb(value: u8, port: u16) {
+pub fn outb(port: u16, value: u8) {
     unsafe {asm!("outb %al, %dx" :: "{dx}"(port), "{al}"(value) :: "volatile")};
 }
 
@@ -22,7 +22,7 @@ pub fn inw(port: u16) -> u16 {
 }
 
 /// Write a `u8`-sized `value` to `port`.
-pub fn outw(value: u16, port: u16) {
+pub fn outw(port: u16, value: u16) {
     unsafe {asm!("outw %ax, %dx" :: "{dx}"(port), "{ax}"(value) :: "volatile")};
 }
 
@@ -34,11 +34,12 @@ pub fn inl(port: u16) -> u32 {
 }
 
 /// Write a `u32`-sized `value` to `port`.
-pub fn outl(value: u32, port: u16) {
+pub fn outl(port: u16, value: u32) {
     unsafe {asm!("outl %eax, %dx" :: "{dx}"(port), "{eax}"(value) :: "volatile")};
 }
 
 pub fn halt() -> ! {
+    unsafe {asm!("cli")};//TODO sure here ?
     loop {
         unsafe {asm!("hlt")}; //TODO volatile ?????
     }

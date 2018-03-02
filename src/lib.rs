@@ -4,7 +4,7 @@
 #![feature(lang_items)]
 #![feature(const_fn)]
 #![feature(ptr_internals)]
-#![feature(asm)]                //needed by cpuio for inline asm
+#![feature(asm)]
 
 extern crate rlibc;
 extern crate multiboot2;
@@ -19,29 +19,40 @@ pub mod keyboard;
 pub mod console;
 /// wrappers around the x86-family I/O instructions.
 pub mod cpuio;
+/// ACPI self-content module
+pub mod acpi;
 
 use context::CONTEXT;
+
+fn init_kernel() -> Result <(), &'static str> {
+    acpi::init()?;
+    Ok(())
+}
 use vga::{Color, ColorCode};
 
 #[no_mangle]
 pub extern fn kmain(multiboot_information_address: usize) -> ! {
-    // unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
-    // print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
-    // format_args!("{: ^80}", r#"        ,--,               "#),
-    // format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
-    // format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
-    // format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
-    // format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
-    // format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
-    // format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
-    // format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
-    // format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
-    // format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
-    // format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
-    // format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
-    // format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
-    // format_args!("{: ^80}", r#"      '--'  `---'          "#));
-    // unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Black); }
+    if let Err(msg) = init_kernel() {
+        println!("Kernel initialization has failed: {}", msg);
+        cpuio::halt();
+    }
+    unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
+    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
+    format_args!("{: ^80}", r#"        ,--,               "#),
+    format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
+    format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
+    format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
+    format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
+    format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
+    format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
+    format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
+    format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
+    format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
+    format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
+    format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
+    format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
+    format_args!("{: ^80}", r#"      '--'  `---'          "#));
+    unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Black); }
     let boot_info = unsafe{ multiboot2::load(multiboot_information_address) };
     let memory_map_tag = boot_info.memory_map_tag()
         .expect("Memory map tag required");

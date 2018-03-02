@@ -1,41 +1,44 @@
 use cpuio;
+use acpi;
 
-//TODO implement ACPI to have such functionality 
 /// Reboot the kernel
 ///
 /// If reboot failed, will loop on a halt cmd
 ///
-pub fn reboot()  {
-    //TODO disable interrupt here something like : asm volatile ("cli");
-
+pub fn reboot() -> ! {
+    unsafe {asm!("cli")}; //TODO volatile ?????
     // I will now clear the keyboard buffer
     let mut buffer: u8 = 0x02;
-    while buffer == 0x02 {
+    while buffer & 0x02 != 0 {
+        cpuio::inb(0x60);
         buffer = cpuio::inb(0x64);
     }
-    cpuio::outb(0x64, 0xFE);//Send reset value to CPU //TODO doesn't work
-    println!("Reicv reboot command. System cannot reboot yet, he is now halt\n");
+    cpuio::outb(0x64, 0xFE);//Send reset value to CPU //TODO doesn't work in QEMU ==> it seems that qemu cannot reboot
+    println!("Unable to perform reboot. Kernel will be halted");
     cpuio::halt();
 }
 
 /// Shutdown the kernel
 ///
-/// # Pre-requist:
-/// Seems that he have to use following line command :
-/// `-device isa-debug-exit,iobase=0xf4,iosize=0x04`
+/// If shutdown is performed but failed, will loop on a halt cmd
+/// If shutdown cannot be called, return a Err(&str)
 ///
-/// If shutdown failed, will loop on a halt cmd
-///
-pub fn shutdown() -> ! {
-    cpuio::outb(0xf4, 0x00);//TODO doesn't work :(
-    println!("Reicv shutdown command. System cannot shutdown properly yet, he is now halt\n");
+pub fn shutdown() -> Result <(), &'static str> {
+    println!("RECV SHUTDOWN");
+    acpi::shutdown()?;
+    println!("Unable to perform ACPI shutdown. Kernel will be halted");
     cpuio::halt();
 }
 
 /// Print the kernel stack
 ///
-pub fn print_kernel_stack() {
+pub fn print_kernel_stack() -> Result <(), &'static str> {
     println!("It's a stack print");
+    Ok(())
 
 }
 
+pub fn acpi_info() -> Result <(), &'static str> {
+    acpi::info()?;
+    Ok(())
+}
