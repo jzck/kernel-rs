@@ -78,21 +78,38 @@ impl Writer {
             self.command_len -= 1;
             self.erase_byte();
         }
-    } 
+    }
+
+    pub fn get_command(&self) -> Result <&str, &'static str> {
+
+        match core::str::from_utf8(&self.command) {
+            Ok(y) => Ok(&y[..self.command_len]),
+            Err(_) => Err("Command is not utf8 char")
+        }
+
+    }
+
     pub fn keypress(&mut self, ascii: u8) {
         match ascii {
+            b'\n' if self.command_len == 0 => {
+                self.write_byte(b'\n');
+                self.prompt();
+            }
             b'\n' => {
                 self.write_byte(b'\n');
-                {
-                    let command: &str = &core::str::from_utf8(&self.command).unwrap()[..self.command_len];
-                    console::dispatch(command);
+                if let Err(msg) = console::exec(&self) {
+                    let color_code_save = self.color_code;
+                    self.color_code = ColorCode::new(Color::Red, Color::Black);
+                    println!("Something wrong: {}", msg);
+                    self.color_code = color_code_save;
                 }
                 self.command_len = 0;
                 self.prompt();
             }
+            _ if self.command_len >= 10 => (),
+            byte if self.command_len == 0  && byte == b' ' => (),
             byte => {
                 if self.command_len >= 10 { return };
-
                 self.command[self.command_len] = byte;
                 self.write_byte(byte);
                 self.command_len += 1;
@@ -137,15 +154,14 @@ impl Writer {
         }
     }
 
-    fn flush_cursor(&self)
-    {
+    fn flush_cursor(&self) {
         let cursor_position = self.buffer_pos / 2;
         // 14 awaits the rightmost 8bits
-        cpuio::outb(14, 0x3D4);
-        cpuio::outb((cursor_position >> 8) as u8, 0x3D5);
+        cpuio::outb(0x3D4, 14);
+        cpuio::outb(0x3D5, (cursor_position >> 8) as u8);
         // 15 awaits the leftmost 8bits
-        cpuio::outb(15, 0x3D4);
-        cpuio::outb((cursor_position >> 0) as u8 & 0x00ff, 0x3D5);
+        cpuio::outb(0x3D4, 15);
+        cpuio::outb(0x3D5, (cursor_position >> 0) as u8 & 0x00ff);
     }
 
     pub fn flush(&mut self) {

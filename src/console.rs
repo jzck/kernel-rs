@@ -1,56 +1,74 @@
 extern crate core;
 extern crate multiboot2;
 
+use acpi;
 use cpuio;
 use core::char;
 use context::CONTEXT;
 use vga::*;
 
-pub fn dispatch(command: &str) {
+fn dispatch(command: &str) -> Result <(), &'static str> {
     match command {
-        "shutdown" | "halt" => self::shutdown(),
-        "reboot" => self::reboot(),
-        "stack" => self::print_stack(),
-        "multiboot" => self::mb2_info(),
-        "memory" => self::mb2_memory(),
-        "sections" => self::mb2_sections(),
-        _ => {
-            set_color!(Red);
-            println!("`{}': Command unknown ", command);
-            set_color!();
-        }
+        "acpi"                      => self::acpi_info(),
+        "help" | "h"                => self::help(),
+        "memory"                    => self::mb2_memory(),
+        "multiboot"                 => self::mb2_info(),
+        "reboot"                    => self::reboot(),
+        "sections"                  => self::mb2_sections(),
+        "shutdown" | "halt" | "q"   => self::shutdown(),
+        "stack"                     => self::print_stack(),
+        _                           => Err("Command unknown. (h|help for help)"),
     }
 }
 
-//TODO implement ACPI to have such functionality 
+pub fn exec(cli: &Writer) -> Result <(), &'static str> {
+    let command = cli.get_command()?;
+    if let Err(msg) = self::dispatch(command) {
+        set_color!(Red);
+        println!("`{}`: {}", command, msg);
+        set_color!();
+    }
+    Ok(())
+}
+
+fn help() -> Result <(), &'static str> {
+    print!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
+    "acpi                         => Return acpi state (ENABLED|DISABLE)",
+    "help | h                     => Print this help",
+    "memory                       => lolilol", // TODO
+    "multiboot                    => lolilol", // TODO
+    "reboot                       => reboot",
+    "sections                     => lolilol", // TODO
+    "shutdown | halt | q          => Kill a kitten, then shutdown",
+    "stack                        => Print kernel stack in a fancy way");
+    Ok(())
+}
+
 /// Reboot the kernel
 ///
 /// If reboot failed, will loop on a halt cmd
 ///
-fn reboot()  {
-    //TODO disable interrupt here something like : asm volatile ("cli");
-
+fn reboot() -> ! {
+    unsafe {asm!("cli")}; //TODO volatile ?????
     // I will now clear the keyboard buffer
     let mut buffer: u8 = 0x02;
-    while buffer == 0x02 {
+    while buffer & 0x02 != 0 {
+        cpuio::inb(0x60);
         buffer = cpuio::inb(0x64);
     }
-    cpuio::outb(0x64, 0xFE);//Send reset value to CPU //TODO doesn't work
-    println!("Reicv reboot command. System cannot reboot yet, he is now halt\n");
+    cpuio::outb(0x64, 0xFE);//Send reset value to CPU //TODO doesn't work in QEMU ==> it seems that qemu cannot reboot
+    println!("Unable to perform reboot. Kernel will be halted");
     cpuio::halt();
 }
 
 /// Shutdown the kernel
 ///
-/// # Pre-requist:
-/// Seems that he have to use following line command :
-/// `-device isa-debug-exit,iobase=0xf4,iosize=0x04`
+/// If shutdown is performed but failed, will loop on a halt cmd
+/// If shutdown cannot be called, return a Err(&str)
 ///
-/// If shutdown failed, will loop on a halt cmd
-///
-fn shutdown() -> ! {
-    cpuio::outb(0xf4, 0x00);//TODO doesn't work :(
-    println!("Reicv shutdown command. System cannot shutdown properly yet, he is now halt\n");
+fn shutdown() -> Result <(), &'static str> {
+    acpi::shutdown()?;
+    println!("Unable to perform ACPI shutdown. Kernel will be halted");
     cpuio::halt();
 }
 
@@ -84,7 +102,9 @@ fn print_line(line: &[u8], address: usize) {
     print!("|");
 }
 
-fn print_stack() {
+/// Print the kernel stack
+///
+fn print_stack() -> Result <(), &'static str> {
     let esp: usize;
     let ebp: usize;
     unsafe { asm!("" : "={esp}"(esp), "={ebp}"(ebp):::) };
@@ -92,9 +112,10 @@ fn print_stack() {
     println!("ebp = {:#x}", ebp);
     println!("size = {:#X} bytes", ebp - esp);
     hexdump(esp, ebp);
+    Ok(())
 }
 
-fn mb2_memory() {
+fn mb2_memory() -> Result <(), &'static str> {
     let boot_info = unsafe { multiboot2::load(CONTEXT.boot_info_addr) };
 
     let memory_map_tag = boot_info.memory_map_tag()
@@ -105,22 +126,23 @@ fn mb2_memory() {
         println!("    start: 0x{:x}, length: 0x{:x}",
                  area.start_address(), area.size());
     }
+    Ok(())
 }
 
-fn mb2_sections() {
+fn mb2_sections() -> Result <(), &'static str> {
     let boot_info = unsafe { multiboot2::load(CONTEXT.boot_info_addr) };
-
     let elf_sections_tag = boot_info.elf_sections_tag()
         .expect("Elf-sections tag required");
 
     println!("kernel sections:");
     for section in elf_sections_tag.sections() {
         println!("    {: <10} {:#x}, size: {:#x}, flags: {:#X}",
-             section.name(), section.start_address(), section.size(), section.flags());
+                 section.name(), section.start_address(), section.size(), section.flags());
     }
+    Ok(())
 }
 
-fn mb2_info() {
+fn mb2_info() -> Result <(), &'static str> {
     let boot_info = unsafe { multiboot2::load(CONTEXT.boot_info_addr) };
 
     let command_line_tag = boot_info.command_line_tag()
@@ -133,4 +155,10 @@ fn mb2_info() {
     if command_line_tag.command_line().len() != 0 {
         println!("command line: {}", command_line_tag.command_line());
     }
+    Ok(())
+}
+
+pub fn acpi_info() -> Result <(), &'static str> {
+    acpi::info()?;
+    Ok(())
 }

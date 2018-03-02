@@ -4,7 +4,7 @@
 #![feature(lang_items)]
 #![feature(const_fn)]
 #![feature(ptr_internals)]
-#![feature(asm)]                //needed by cpuio for inline asm
+#![feature(asm)]
 
 extern crate rlibc;
 extern crate multiboot2;        //slightly modified fork from official 0.3.2
@@ -19,12 +19,41 @@ pub mod keyboard;
 pub mod console;
 /// wrappers around the x86-family I/O instructions.
 pub mod cpuio;
+/// ACPI self-content module
+pub mod acpi;
 
 use context::CONTEXT;
 
+fn init_kernel(multiboot_information_address: usize) -> Result <(), &'static str> {
+    unsafe { CONTEXT.boot_info_addr = multiboot_information_address };
+    acpi::init()?;
+    Ok(())
+}
+use vga::{Color, ColorCode};
+
 #[no_mangle]
-pub extern fn kmain(multiboot_info_addr: usize) -> ! {
-    unsafe { CONTEXT.boot_info_addr = multiboot_info_addr };
+pub extern fn kmain(multiboot_information_address: usize) -> ! {
+    if let Err(msg) = init_kernel(multiboot_information_address) {
+        println!("Kernel initialization has failed: {}", msg);
+        cpuio::halt();
+    }
+    unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
+    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
+    format_args!("{: ^80}", r#"        ,--,               "#),
+    format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
+    format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
+    format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
+    format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
+    format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
+    format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
+    format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
+    format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
+    format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
+    format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
+    format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
+    format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
+    format_args!("{: ^80}", r#"      '--'  `---'          "#));
+    unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Black); }
 
     unsafe { CONTEXT.vga1.prompt();CONTEXT.vga1.flush(); }
     unsafe { CONTEXT.vga2.prompt(); }
