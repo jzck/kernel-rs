@@ -98,10 +98,9 @@ impl Writer {
             b'\n' => {
                 self.write_byte(b'\n');
                 if let Err(msg) = console::exec(&self) {
-                    let color_code_save = self.color_code;
-                    self.color_code = ColorCode::new(Color::Red, Color::Black);
+                    set_color!(Red, Black);
                     println!("Something wrong: {}", msg);
-                    self.color_code = color_code_save;
+                    set_color!();
                 }
                 self.command_len = 0;
                 self.prompt();

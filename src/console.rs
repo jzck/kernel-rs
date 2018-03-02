@@ -92,6 +92,10 @@ fn print_line(line: &[u8], address: usize) {
     for byte in line {
         print!("{:02x} ", *byte);
     }
+    let length : usize = 16 - line.len();
+    for _ in 0..length {
+        print!("   ");
+    }
     print!("|");
     for byte in line {
         match is_control(*byte as char) {

@@ -37,7 +37,7 @@ pub extern fn kmain(multiboot_information_address: usize) -> ! {
         println!("Kernel initialization has failed: {}", msg);
         cpuio::halt();
     }
-    unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Cyan); }
+    set_color!(White, Cyan);
     print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
     format_args!("{: ^80}", r#"        ,--,               "#),
     format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
@@ -53,7 +53,7 @@ pub extern fn kmain(multiboot_information_address: usize) -> ! {
     format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
     format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
     format_args!("{: ^80}", r#"      '--'  `---'          "#));
-    unsafe { CONTEXT.current_term().color_code = ColorCode::new(Color::White, Color::Black); }
+    set_color!();
 
     unsafe { CONTEXT.vga1.prompt();CONTEXT.vga1.flush(); }
     unsafe { CONTEXT.vga2.prompt(); }
