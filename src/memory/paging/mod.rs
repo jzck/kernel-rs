@@ -1,3 +1,6 @@
+mod entry;
+mod table;
+
 use memory::PAGE_SIZE;
 
 const ENTRY_COUNT: usize = 512;

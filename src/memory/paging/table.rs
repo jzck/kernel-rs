@@ -8,8 +8,10 @@ pub struct Table {
 }
 
 impl Table {
-    for entry in self.entries.iter_mut() {
-        entry.set_unused();
+    pub fn zero(&mut self) {
+        for entry in self.entries.iter_mut() {
+            entry.set_unused();
+        }
     }
 }
 
@@ -22,7 +24,7 @@ impl Index<usize> for Table {
 }
 
 impl IndexMut<usize> for Table {
-    fn index(&self, index: usize) -> &mut Entry {
+    fn index_mut(&mut self, index: usize) -> &mut Entry {
         &mut self.entries[index]
     }
 }
