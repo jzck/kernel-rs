@@ -25,34 +25,13 @@ pub mod acpi;
 /// simple area frame allocator implementation
 pub mod memory;
 
-use context::*;
-use memory::*;
-
-use vga::{Color, ColorCode};
+// use vga::{Color, ColorCode};
 
 #[no_mangle]
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
-    unsafe { CONTEXT = Some(Context::new(multiboot_info_addr)) };
+    context::init(multiboot_info_addr);
+    context::init_screen();
     acpi::init().unwrap();
-    context().init_screen();
-
-    set_color!(White, Cyan);
-    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
-    format_args!("{: ^80}", r#"        ,--,               "#),
-    format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
-    format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
-    format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
-    format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
-    format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
-    format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
-    format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
-    format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
-    format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
-    format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
-    format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
-    format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
-    format_args!("{: ^80}", r#"      '--'  `---'          "#));
-    set_color!();
 
     loop { keyboard::kbd_callback(); }
 }

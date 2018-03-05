@@ -1,7 +1,7 @@
 extern crate core;
 
 use cpuio;
-use context::*;
+use context;
 
 const MAX_KEYS: usize = 59;
 const KEYMAP_US: [[u8;2]; MAX_KEYS] = [
@@ -93,18 +93,18 @@ pub fn kbd_callback() {
                         0x38 => {ALT = !is_release},
                         0x1D => {CTRL = !is_release},
                         0x0F if !is_release => {
-                            context().switch_term();
-                            context().current_term().flush();
+                            context::switch_term();
+                            context::current_term().flush();
                         },
                         0x0E if !is_release => {
-                            context().current_term().backspace();
+                            context::current_term().backspace();
                         }
                         _ => {}
                     }
                 },
                 Some(ascii) if !is_release => {
                     let sym = if SHIFT { ascii[1] } else { ascii[0] };
-                    context().current_term().keypress(sym);
+                    context::current_term().keypress(sym);
                 },
                 Some(_) => {},
                 None =>{},

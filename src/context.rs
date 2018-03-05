@@ -52,33 +52,59 @@ impl Context
         }
     }
 
-    pub fn init_screen(&mut self) {
-        self.vga1.prompt();
-        self.vga2.prompt();
-        self.vga1.flush();
-    }
+}
 
-    pub fn switch_term(&mut self) {
-        self.current_term = {
-            if self.current_term == 0 { 1 }
-            else { 0 }
-        };
-    }
+pub fn init_screen() {
+    set_color!(White, Cyan);
+    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
+    format_args!("{: ^80}", r#"        ,--,               "#),
+    format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
+    format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
+    format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
+    format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
+    format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
+    format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
+    format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
+    format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
+    format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
+    format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
+    format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
+    format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
+    format_args!("{: ^80}", r#"      '--'  `---'          "#));
+    set_color!();
+    context().vga1.prompt();
+    context().vga2.prompt();
+    context().vga1.flush();
+}
 
-    pub fn current_term(&mut self) -> &mut vga::Writer{
-        if self.current_term == 0 {
-            &mut self.vga1
-        } else {
-            &mut self.vga2
-        }
+pub fn switch_term() {
+    context().current_term = {
+        if context().current_term == 0 { 1 }
+        else { 0 }
+    };
+}
+
+pub fn current_term() -> &'static mut vga::Writer{
+    if context().current_term == 0 {
+        &mut context().vga1
+    } else {
+        &mut context().vga2
     }
 }
 
-pub fn context() -> &'static mut Context {
+pub fn boot_info() -> &'static multiboot2::BootInformation {
+    &context().boot_info
+}
+
+fn context() -> &'static mut Context {
     unsafe {
         match CONTEXT {
             Some(ref mut x) => &mut *x,
             None => panic!(),
         }
     }
+}
+
+pub fn init(multiboot_info_addr: usize) {
+    unsafe { CONTEXT = Some(Context::new(multiboot_info_addr)) };
 }

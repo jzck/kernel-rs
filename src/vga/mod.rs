@@ -2,7 +2,7 @@ pub mod color;
 
 pub use self::color::{Color, ColorCode};
 
-use context::*;
+use context;
 use cpuio;
 use console;
 
@@ -25,21 +25,21 @@ macro_rules! println {
 }
 
 macro_rules! flush {
-    () => (context().current_term().flush());
+    () => (context::current_term().flush());
 }
 
 macro_rules! set_color {
-    () => (context().current_term().color_code =
-        ColorCode::new(Color::White, Color::Black));
-    ($fg:ident) => (context().current_term().color_code =
-        ColorCode::new(Color::$fg, Color::Black));
-    ($fg:ident, $bg:ident) => (context().current_term().color_code =
-        ColorCode::new(Color::$fg, Color::$bg));
+    () => ($crate::context::current_term().color_code =
+        $crate::vga::ColorCode::new($crate::vga::Color::White, $crate::vga::Color::Black));
+    ($fg:ident) => ($crate::context::current_term().color_code =
+        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::Black));
+    ($fg:ident, $bg:ident) => ($crate::context::current_term().color_code =
+        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::$bg));
 }
 
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
-    context().current_term().write_fmt(args).unwrap();
+    context::current_term().write_fmt(args).unwrap();
 }
 
 extern crate core;

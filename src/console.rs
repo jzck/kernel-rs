@@ -1,10 +1,11 @@
 extern crate core;
-extern crate multiboot2;
+// extern crate multiboot2;
 
 use acpi;
 use cpuio;
+use context;
+// use multiboot2;
 use core::char;
-use context::*;
 use vga::*;
 
 fn dispatch(command: &str) -> Result <(), &'static str> {
@@ -35,10 +36,10 @@ fn help() -> Result <(), &'static str> {
     print!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
     "acpi                         => Return acpi state (ENABLED|DISABLE)",
     "help | h                     => Print this help",
-    "memory                       => lolilol", // TODO
-    "multiboot                    => lolilol", // TODO
+    "memory                       => print memory areas", // TODO
+    "multiboot                    => print multiboot information", // TODO
     "reboot                       => reboot",
-    "sections                     => lolilol", // TODO
+    "sections                     => print elf sections", // TODO
     "shutdown | halt | q          => Kill a kitten, then shutdown",
     "stack                        => Print kernel stack in a fancy way");
     Ok(())
@@ -120,7 +121,7 @@ fn print_stack() -> Result <(), &'static str> {
 }
 
 fn mb2_memory() -> Result <(), &'static str> {
-    let boot_info = &context().boot_info;
+    let boot_info = context::boot_info();
 
     let memory_map_tag = boot_info.memory_map_tag()
         .expect("Memory map tag required");
@@ -134,7 +135,7 @@ fn mb2_memory() -> Result <(), &'static str> {
 }
 
 fn mb2_sections() -> Result <(), &'static str> {
-    let boot_info = &context().boot_info;
+    let boot_info = context::boot_info();
 
     let elf_sections_tag = boot_info.elf_sections_tag()
         .expect("Elf-sections tag required");
@@ -148,7 +149,7 @@ fn mb2_sections() -> Result <(), &'static str> {
 }
 
 fn mb2_info() -> Result <(), &'static str> {
-    let boot_info = &context().boot_info;
+    let boot_info = context::boot_info();
 
     let command_line_tag = boot_info.command_line_tag()
         .expect("Elf-sections tag required");
