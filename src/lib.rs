@@ -8,9 +8,7 @@
 
 extern crate rlibc;
 extern crate multiboot2;        //slightly modified fork from official 0.3.2
-#[macro_use]
-extern crate lazy_static;
-extern crate spin;
+#[macro_use] extern crate bitflags;
 
 /// 80x25 screen and simplistic terminal driver
 #[macro_use] pub mod vga;
@@ -28,6 +26,7 @@ pub mod acpi;
 pub mod memory;
 
 use context::*;
+use memory::*;
 
 use vga::{Color, ColorCode};
 

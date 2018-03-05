@@ -19,7 +19,7 @@ pub struct Context {
 impl Context
 {
     pub fn new(multiboot_start: usize) -> Context {
-        let boot_info = multiboot2::load(multiboot_start);
+        let boot_info = unsafe { multiboot2::load(multiboot_start) };
         let multiboot_end = multiboot_start + boot_info.total_size();
 
         let elf_sections_tag = boot_info.elf_sections_tag().unwrap();

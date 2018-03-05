@@ -8,9 +8,10 @@ crate-type = ["staticlib"]
 
 [dependencies]
 rlibc = "1.0"
-spin = "0.4.5"
+bitflags = "1.0.1"
+# spin = "0.4.5"
 multiboot2 = { path = "multiboot2-elf64" }
 
-[dependencies.lazy_static]
-version = "0.2.4"
-features = ["spin_no_std"]
+# [dependencies.lazy_static]
+# version = "0.2.4"
+# features = ["spin_no_std"]
