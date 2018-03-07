@@ -13,10 +13,38 @@ SECTIONS {
 
 	. = 1M;
 	/* ensure that the multiboot header is at the beginning */
-	.multiboot : { KEEP(*(.multiboot)) }
-	.text : { *(.text .text.*) }
-	.rodata : { *(.rodata .rodata.*) }
-	.data : { *(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*) *(.data.*) }
-	.debug : { *(.debug_*) }
-	.bss : {*(.bss .bss.*)}
-}
+	.multiboot :
+	{
+		KEEP(*(.multiboot))
+		. = ALIGN(4K);
+	}
+
+	.text :
+	{
+		*(.text .text.*)
+		. = ALIGN(4K);
+	}
+
+	.rodata :
+	{
+		*(.rodata .rodata.*)
+		. = ALIGN(4K);
+	}
+
+	.data :
+	{
+		*(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*) *(.data.*)
+		. = ALIGN(4K);
+	}
+
+	.debug :
+	{
+		*(.debug_*)
+		. = ALIGN(4K);
+	}
+
+	.bss :
+	{
+		*(.bss .bss.*)}
+		. = ALIGN(4K);
+	}

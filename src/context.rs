@@ -6,10 +6,6 @@ pub static mut CONTEXT: Option<Context> = None;
 
 pub struct Context {
     pub current_term: u8,
-    pub multiboot_start: usize,
-    pub multiboot_end: usize,
-    pub kernel_start: usize,
-    pub kernel_end: usize,
     pub boot_info: multiboot2::BootInformation,
     pub frame_allocator: memory::AreaFrameAllocator,
     pub vga1: vga::Writer,
@@ -41,10 +37,6 @@ impl Context
 
         Context {
             current_term: 0,
-            multiboot_start,
-            multiboot_end,
-            kernel_start,
-            kernel_end,
             boot_info,
             frame_allocator,
             vga1,
@@ -52,29 +44,39 @@ impl Context
         }
     }
 
+
+
 }
 
 pub fn init_screen() {
     set_color!(White, Cyan);
     print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
-    format_args!("{: ^80}", r#"        ,--,               "#),
-    format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
-    format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
-    format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
-    format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
-    format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
-    format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
-    format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
-    format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
-    format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
-    format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
-    format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
-    format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
-    format_args!("{: ^80}", r#"      '--'  `---'          "#));
+           format_args!("{: ^80}", r#"        ,--,               "#),
+           format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
+           format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
+           format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
+           format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
+           format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
+           format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
+           format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
+           format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
+           format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
+           format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
+           format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
+           format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
+           format_args!("{: ^80}", r#"      '--'  `---'          "#));
     set_color!();
     context().vga1.prompt();
     context().vga2.prompt();
     context().vga1.flush();
+}
+
+pub fn frame_allocator() -> &'static mut memory::AreaFrameAllocator {
+    &mut context().frame_allocator
+}
+
+pub fn boot_info() -> &'static multiboot2::BootInformation {
+    &context().boot_info
 }
 
 pub fn switch_term() {
@@ -92,10 +94,6 @@ pub fn current_term() -> &'static mut vga::Writer{
     }
 }
 
-pub fn boot_info() -> &'static multiboot2::BootInformation {
-    &context().boot_info
-}
-
 fn context() -> &'static mut Context {
     unsafe {
         match CONTEXT {
@@ -107,4 +105,7 @@ fn context() -> &'static mut Context {
 
 pub fn init(multiboot_info_addr: usize) {
     unsafe { CONTEXT = Some(Context::new(multiboot_info_addr)) };
+
+    // memory::remap_the_kernel(frame_allocator(), boot_info());
+    self::init_screen();
 }

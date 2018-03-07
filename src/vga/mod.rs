@@ -25,7 +25,7 @@ macro_rules! println {
 }
 
 macro_rules! flush {
-    () => (context::current_term().flush());
+    () => ($crate::context::current_term().flush());
 }
 
 macro_rules! set_color {

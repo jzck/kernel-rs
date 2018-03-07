@@ -1,4 +1,4 @@
-//! project hosted at (https://github.com/jzck/kernel)
+//! project hosted on [github](https://github.com/jzck/kernel)
 
 #![no_std]
 #![feature(lang_items)]
@@ -22,17 +22,15 @@ pub mod console;
 pub mod cpuio;
 /// ACPI self-content module
 pub mod acpi;
-/// simple area frame allocator implementation
+/// physical frame allocator + paging module
 pub mod memory;
-
-// use vga::{Color, ColorCode};
+/// a few x86 instruction wrappers
+pub mod x86;
 
 #[no_mangle]
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     context::init(multiboot_info_addr);
-    context::init_screen();
     acpi::init().unwrap();
-
     loop { keyboard::kbd_callback(); }
 }
 
@@ -42,13 +40,12 @@ pub extern fn eh_personality() {
 }
 
 #[lang = "panic_fmt"] #[no_mangle]
-pub extern fn panic_fmt(
-    fmt: core::fmt::Arguments, file: &'static str, line: u32
-    )
+pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32)
 -> ! {
     println!("PANIC: {}", fmt);
     println!("FILE: {}", file);
     println!("LINE: {}", line);
+    flush!();
     loop {}
 
 }

@@ -4,12 +4,61 @@ extern x86_start
 section .text
 bits 32
 start:
+	; our stack, located in bss, linker.ld puts bss at the end of the binary
+	mov esp, stack_top
+	; multiboot information pointer
 	push ebx
 
 	call check_multiboot
+
+	call set_up_page_tables
+	; call enable_paging
+
 	lgdt [GDTR.ptr]					; load the new gdt
 	jmp GDTR.gdt_cs:x86_start
-	; jmp x86_start
+
+check_multiboot:
+	cmp eax, 0x36d76289
+	jne .no_multiboot
+	ret
+.no_multiboot:
+	mov al, "0"
+	jmp error
+
+set_up_page_tables:
+	; map P2 table recursively
+	mov eax, p2_table
+	or eax, 0b11 ; present + writable
+	mov [p2_table + 1023 * 8], eax
+
+    ; map each P2 entry to a huge 2MiB page
+    mov ecx, 0         ; counter variable
+
+.map_p2_table:
+    ; map ecx-th P2 entry to a huge page that starts at address 2MiB*ecx
+    mov eax, 0x200000  ; 2MiB
+	; mov eax, 0x2		; WRITABLE, not PRESENT
+    mul ecx            ; start address of ecx-th page
+    or eax, 0b10000011 ; present + writable + huge
+    mov [p2_table + ecx * 8], eax ; map ecx-th entry
+
+    inc ecx            ; increase counter
+    cmp ecx, 1023      ; if counter == 1023, the whole P2 table is mapped
+    jne .map_p2_table  ; else map the next entry
+
+    ret
+
+enable_paging:
+    ; load P2 to cr3 register (cpu uses this to access the P2 table)
+    mov eax, p2_table
+    mov cr3, eax
+
+    ; enable paging in the cr0 register
+    mov eax, cr0
+    or eax, 1 << 31
+    mov cr0, eax
+
+    ret
 
 error:
 	mov dword [0xb8000], 0x4f524f45
@@ -20,14 +69,6 @@ error:
 HALT:
 	hlt
 	jmp HALT
-
-check_multiboot:
-	cmp eax, 0x36d76289
-	jne .no_multiboot
-	ret
-.no_multiboot:
-	mov al, "0"
-	jmp error
 
 section .gdt
 GDTR:
@@ -88,6 +129,12 @@ GDTR:
 	DD .gdt_top						; pointer to top of gdt
 
 section .bss
+align 4096
+p2_table:
+    resb 4096
+p1_table:
+	resb 4096
 stack_bottom:
-    resb 4096 * 16
+    resb 4096 * 4
 stack_top:
+

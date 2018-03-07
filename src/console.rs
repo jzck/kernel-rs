@@ -4,6 +4,7 @@ extern crate core;
 use acpi;
 use cpuio;
 use context;
+use memory;
 // use multiboot2;
 use core::char;
 use vga::*;
@@ -18,6 +19,7 @@ fn dispatch(command: &str) -> Result <(), &'static str> {
         "sections"                  => self::mb2_sections(),
         "shutdown" | "halt" | "q"   => self::shutdown(),
         "stack"                     => self::print_stack(),
+        "test"                      => self::test(),
         _                           => Err("Command unknown. (h|help for help)"),
     }
 }
@@ -42,6 +44,12 @@ fn help() -> Result <(), &'static str> {
     "sections                     => print elf sections", // TODO
     "shutdown | halt | q          => Kill a kitten, then shutdown",
     "stack                        => Print kernel stack in a fancy way");
+    Ok(())
+}
+
+fn test() -> Result<(), &'static str>
+{
+    memory::test_paging(context::frame_allocator());
     Ok(())
 }
 
