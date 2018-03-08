@@ -30,6 +30,7 @@ pub fn load(addr: u32) -> Result <bool, &'static str> {
         let ptr_tmp = addr as *const RSDP20;
         let revision = unsafe {(*ptr_tmp).rsdp.revision};
         if (revision == 0 && check_checksum(addr, mem::size_of::<RSDP>())) || (revision == 2 && check_checksum(addr, mem::size_of::<RSDP20>())) {
+            println!("REAL FOUND AT {:x}", addr);
             unsafe {RSDPTR = Some(ptr_tmp)};
             return Ok(revision == 2);
         }
@@ -37,17 +38,13 @@ pub fn load(addr: u32) -> Result <bool, &'static str> {
     Err("Not a valid RSD ptr")
 }
 
-fn memory_finding(bound: u32) -> Result <bool, &'static str> {
+fn memory_finding() -> Result <bool, &'static str> {
     let mut i = 0;
     while i < 0x1000000 {
-        i += bound;
+        i += 8;
         if let Ok(result) = load(i) {
             return Ok(result)
         }
-    }
-    // HACK because RSDP is not always aligned on 16 bytes boundary with QEMU
-    if bound > 1 {
-        return memory_finding(bound / 2);
     }
     Err("Can not find Root System Description Pointer (RSDP).")
 }
@@ -56,10 +53,6 @@ fn is_init() -> Result <*const RSDP20, &'static str> {
     match unsafe {RSDPTR} {
         Some(ptr)   => Ok(ptr),
         None        => Err("Root System Description Pointer (RSDP) is not initialized")
-        // if ptr == 0 as *const RSDP20
-        //     => Err("Root System Description Pointer (RSDP) is not initialized"),
-        //     ptr
-        //         => Ok(ptr)
     }
 }
 
@@ -85,5 +78,5 @@ pub fn rsdtaddr() -> Result <u32, &'static str> {
 /// if you already know the location, you should prefer to use load function
 /// return an Error if there is no RSDP in memory, or return the value of load function
 pub fn init() -> Result <bool, &'static str> {
-    memory_finding(16)
+    memory_finding()
 }

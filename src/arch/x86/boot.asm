@@ -62,7 +62,7 @@ GDTR:
 	DW 0xffff		; Limit ( bits 0 -15 )
 	DW 0x0			; Base ( bits 0 -15 )
 	DB 0x0			; Base ( bits 16 -23 )
-	DB 0xFE			; [ Access Flags: 0x9A=11111110b = (present)|(Privilege Ring 3=11b)|(1)|(code => 1)|(expand up => 1)|(readable)|(0) ]
+	DB 0xFE			; [ Access Flags: 0xFE=11111110b = (present)|(Privilege Ring 3=11b)|(1)|(code => 1)|(expand up => 1)|(readable)|(0) ]
 	DB 0xCF			; [ Flags: C=1100b = (granularity)|(32bit)|(!64bit)|(0) ] / [ Limits: (bits 16-19): F=1111b ]
 	DB 0x0			; Base ( bits 24 -31 )
 
@@ -70,7 +70,7 @@ GDTR:
 	DW 0xffff		; Limit ( bits 0 -15 )
 	DW 0x0			; Base ( bits 0 -15 )
 	DB 0x0			; Base ( bits 16 -23 )
-	DB 0xF2			; [ Access Flags: 0x9A=11110010b = (present)|(Privilege Ring 3=11b)|(1)|(data => 0)|(expand down => 0)|(readable)|(0) ]
+	DB 0xF2			; [ Access Flags: 0xF2=11110010b = (present)|(Privilege Ring 3=11b)|(1)|(data => 0)|(expand down => 0)|(readable)|(0) ]
 	DB 0xCF			; [ Flags: C=1100b = (granularity)|(32bit)|(!64bit)|(0) ] / [ Limits: (bits 16-19): F=1111b ]
 	DB 0x0			; Base ( bits 24 -31 )
 
@@ -78,8 +78,8 @@ GDTR:
 	DW 0x0			; Limit ( bits 0 -15 )
 	DW 0x0			; Base ( bits 0 -15 )
 	DB 0x0			; Base ( bits 16 -23 )
-	DB 0x00			; [ Access Flags: 0x9A=11110110b = (present)|(Privilege Ring 3=11b)|(1)|(data => 0)|(expand up => 1)|(readable)|(0) ]
-	DB 0x00			; [ Flags: C=1100b = (granularity)|(32bit)|(!64bit)|(0) ] / [ Limits: (bits 16-19): F=1111b ]
+	DB 0xF6			; [ Access Flags: 0xF2=11110110b = (present)|(Privilege Ring 3=11b)|(1)|(data => 0)|(expand up => 1)|(readable)|(0) ]
+	DB 0xCF			; [ Flags: C=1100b = (granularity)|(32bit)|(!64bit)|(0) ] / [ Limits: (bits 16-19): F=1111b ]
 	DB 0x0			; Base ( bits 24 -31 )
 
 .gdt_bottom:

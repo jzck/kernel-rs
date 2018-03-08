@@ -35,10 +35,10 @@ fn help() -> Result <(), &'static str> {
     print!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
     "acpi                         => Return acpi state (ENABLED|DISABLE)",
     "help | h                     => Print this help",
-    "memory                       => lolilol", // TODO
-    "multiboot                    => lolilol", // TODO
-    "reboot                       => reboot",
-    "sections                     => lolilol", // TODO
+    "memory                       => Print memory areas",
+    "multiboot                    => Print multiboot information",
+    "reboot                       => Reboot",
+    "sections                     => Print elf sections",
     "shutdown | halt | q          => Kill a kitten, then shutdown",
     "stack                        => Print kernel stack in a fancy way");
     Ok(())

@@ -26,7 +26,17 @@ use context::CONTEXT;
 
 fn init_kernel(multiboot_information_address: usize) -> Result <(), &'static str> {
     unsafe { CONTEXT.boot_info_addr = multiboot_information_address };
-    acpi::init()?;
+    let mtboot = unsafe { multiboot2::load(multiboot_information_address)};
+    if let Some(rsdp) = mtboot.rsdp_v2_tag() {
+        println!("rsdp at {:x}", rsdp);
+        acpi::load(rsdp)?;
+    } else if let Some(rsdp) = mtboot.rsdp_tag() {
+        println!("rsdp2 at {:x}", rsdp);
+        acpi::load(rsdp)?;
+    }
+    else {
+        acpi::init()?;
+    }
     Ok(())
 }
 use vga::{Color, ColorCode};
