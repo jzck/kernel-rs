@@ -30,7 +30,6 @@ pub fn load(addr: u32) -> Result <bool, &'static str> {
         let ptr_tmp = addr as *const RSDP20;
         let revision = unsafe {(*ptr_tmp).rsdp.revision};
         if (revision == 0 && check_checksum(addr, mem::size_of::<RSDP>())) || (revision == 2 && check_checksum(addr, mem::size_of::<RSDP20>())) {
-            println!("REAL FOUND AT {:x}", addr);
             unsafe {RSDPTR = Some(ptr_tmp)};
             return Ok(revision == 2);
         }
