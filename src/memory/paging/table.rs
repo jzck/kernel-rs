@@ -29,7 +29,7 @@ impl<L> Table<L> where L: HierarchicalLevel
         let entry_flags = self[index].flags();
         if entry_flags.contains(EntryFlags::PRESENT) && !entry_flags.contains(EntryFlags::HUGE_PAGE) {
             let table_address = self as *const _ as usize;
-            Some((table_address << 9) | (index << 12))
+            Some((table_address << 10) | (index << 12))
         } else {
             None
         }

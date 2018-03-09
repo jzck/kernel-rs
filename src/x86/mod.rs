@@ -1,8 +1,20 @@
 //! x86 (32 bit) only
 
+pub fn cr0() -> usize {
+    let ret: usize;
+    unsafe { asm!("mov %cr0, $0" : "=r" (ret)) };
+    ret
+}
+
 pub fn cr3() -> usize {
     let ret: usize;
     unsafe { asm!("mov %cr3, $0" : "=r" (ret)) };
+    ret
+}
+
+pub fn cr4() -> usize {
+    let ret: usize;
+    unsafe { asm!("mov %cr4, $0" : "=r" (ret)) };
     ret
 }
 

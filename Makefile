@@ -34,7 +34,7 @@ MONITOR 		:= sleep 0.5;\
 	kill \`ps -x | grep \"[g]db\" | cut -d \  -f 1 \`;\
 	kill \`ps -x | grep \"[g]db\" | cut -d \  -f 2 \`
 GDB 			:= gdb -q\
-	-ex \"set arch i386:x86-64\"\
+	-ex \"set arch i386:x64-32\"\
 	-ex \"file $(kernel)\"\
 	-ex \"target remote localhost:$(PORTG)\" \
 	-ex \"continue\"

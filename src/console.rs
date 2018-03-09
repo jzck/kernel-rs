@@ -5,7 +5,7 @@ use acpi;
 use cpuio;
 use context;
 use memory;
-// use multiboot2;
+use x86;
 use core::char;
 use vga::*;
 
@@ -20,6 +20,7 @@ fn dispatch(command: &str) -> Result <(), &'static str> {
         "shutdown" | "halt" | "q"   => self::shutdown(),
         "stack"                     => self::print_stack(),
         "test"                      => self::test(),
+        "regs"                      => self::regs(),
         _                           => Err("Command unknown. (h|help for help)"),
     }
 }
@@ -176,3 +177,11 @@ pub fn acpi_info() -> Result <(), &'static str> {
     acpi::info()?;
     Ok(())
 }
+
+pub fn regs() -> Result <(), &'static str> {
+    println!("cr0={:#b}", x86::cr0());
+    println!("cr3={:#x}", x86::cr3());
+    println!("cr4={:#b}", x86::cr4());
+    Ok(())
+}
+

@@ -40,11 +40,11 @@ impl Page {
     }
 
     fn p2_index(&self) -> usize {
-        (self.number >> 9) & 0o777
+        (self.number >> 10) & 0x3ff
     }
 
     fn p1_index(&self) -> usize {
-        (self.number >> 0) & 0o777
+        (self.number >> 0) & 0x3ff
     }
 }
 

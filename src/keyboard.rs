@@ -80,7 +80,6 @@ pub fn kbd_callback() {
     static mut SHIFT: bool = false;
     static mut CTRL: bool = false;
     static mut ALT: bool = false;
-    // let terminal_two: vga::terminal::Terminal = vga::Screen::new();
     let control = cpuio::inb(0x64);
     if (control & 1) == 1 {
         let scancode = cpuio::inb(0x60);

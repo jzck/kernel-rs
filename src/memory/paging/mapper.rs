@@ -49,7 +49,7 @@ impl Mapper {
         where A: FrameAllocator
         {
             let p2 = self.p2_mut();
-            let mut p1 = p2.next_table_create(page.p2_index(), allocator);
+            let p1 = p2.next_table_create(page.p2_index(), allocator);
 
             assert!(p1[page.p1_index()].is_unused());
             p1[page.p1_index()].set(frame, flags | EntryFlags::PRESENT);
