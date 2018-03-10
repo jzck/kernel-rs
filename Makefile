@@ -10,8 +10,8 @@ endif
 
 project	:= bluesnow
 arch	?= x86
-NASM	:= nasm -f elf
-LD		:= ld -m elf_i386 -L ./ -n --gc-sections
+NASM	:= /usr/bin/nasm -f elf
+LD		:= /usr/bin/ld -m elf_i386 -L ./ -n --gc-sections
 # QEMU	:= qemu-system-x86_64 -device isa-debug-exit,iobase=0xf4,iosize=0x04 -gdb tcp::$(PORTG) -enable-kvm -monitor telnet:127.0.0.1:$(PORT),server,nowait
 QEMU	:= qemu-system-x86_64 -gdb tcp::$(PORTG) -enable-kvm -monitor telnet:127.0.0.1:$(PORT),server,nowait
 
@@ -34,20 +34,19 @@ MONITOR 		:= sleep 0.5;\
 	kill \`ps -x | grep \"[g]db\" | cut -d \  -f 1 \`;\
 	kill \`ps -x | grep \"[g]db\" | cut -d \  -f 2 \`
 GDB 			:= gdb -q\
-	-ex \"set arch i386:x64-32\"\
+	-ex \"set arch i386:x86-64\"\
 	-ex \"file $(kernel)\"\
-	-ex \"target remote localhost:$(PORTG)\" \
-	-ex \"continue\"
+	-ex \"target remote :$(PORTG)\"
+	# -ex \"continue\"
 
 all: $(kernel)
 
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm Makefile
 	@mkdir -p $(shell dirname $@)
-	@$(NASM) $< -o $@
-	@echo "Compiling (ASM) $@..."
+	$(NASM) $< -o $@
 
 $(kernel): $(rust_os) $(asm_object) $(linker_script) Makefile
-	@$(LD) -o $@ -T $(linker_script) $(asm_object) $(rust_os)
+	$(LD) -o $@ -T $(linker_script) $(asm_object) $(rust_os)
 
 $(iso): $(kernel) $(grub.cfg) Makefile
 	@mkdir -p $(DIRISO)/boot/grub
@@ -71,7 +70,7 @@ R:
 	@tmux new-window 'tmux split-window -h "$(MONITOR)"; tmux split-window -fv "$(GDB)"; tmux select-pane -t 1; tmux resize-pane -x 80 -y 25; $(KERNEL_RUN)'
 
 clean:
-	@cargo clean
+	@xargo clean
 	@rm -r build
 
 $(rust_os): $(target).json Makefile

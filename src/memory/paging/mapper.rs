@@ -33,14 +33,24 @@ impl Mapper {
 
     pub fn translate_page(&self, page: Page) -> Option<Frame> {
 
-        // huge page handler, unimplemented
-        let huge_page = || {
-            unimplemented!()
-        };
+        let p1 = self.p2().next_table(page.p2_index());
 
-        self.p2().next_table(page.p2_index())
-            .and_then(|p1| p1[page.p1_index()].pointed_frame())
-            .or_else(huge_page)
+        let huge_page = || {
+            let p2_entry = &self.p2()[page.p2_index()];
+            if let Some(start_frame) = p2_entry.pointed_frame() {
+                if p2_entry.flags().contains(EntryFlags::HUGE_PAGE) {
+                    // 2MiB alignment check
+                    assert!(start_frame.number % ENTRY_COUNT == 0);
+                    return Some(Frame {
+                        number: start_frame.number + page.p1_index()
+                    });
+                }
+            }
+            None
+        }; 
+
+        p1.and_then(|p1| p1[page.p1_index()].pointed_frame())
+          .or_else(huge_page)
     }
 
 

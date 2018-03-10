@@ -13,7 +13,6 @@ x86_start:
 
 	call kmain
 
-; if main return, loop forever ; that should NEVER append
 	cli ; clear interrupt
 HALT:
 	hlt

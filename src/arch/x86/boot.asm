@@ -12,9 +12,12 @@ start:
 	call check_multiboot
 
 	call set_up_page_tables
-	call enable_paging
+	; call enable_pse
+	; call enable_paging
 
-	lgdt [GDTR.ptr]					; load the new gdt
+	; load the new gdt
+	lgdt [GDTR.ptr]
+
 	jmp GDTR.gdt_cs:x86_start
 
 check_multiboot:
@@ -45,13 +48,22 @@ set_up_page_tables:
     cmp ecx, 1023      ; if counter == 1023, the whole P2 table is mapped
     jne .map_p2_table  ; else map the next entry
 
-    ; load P2 to cr3 register (cpu uses this to access the P2 table)
-    mov eax, p2_table
-    mov cr3, eax
+    ret
+
+; PSE (Page Size Extension) allows huge pages to exist
+enable_pse:
+    ; enable PSE in the cr4 register
+    mov eax, cr4
+    or eax, 1 << 2
+    mov cr4, eax
 
     ret
 
 enable_paging:
+    ; load P2 to cr3 register (cpu uses this to access the P2 table)
+    mov eax, p2_table
+    mov cr3, eax
+
     ; enable paging in the cr0 register
     mov eax, cr0
     or eax, 1 << 31

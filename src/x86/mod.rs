@@ -1,5 +1,9 @@
 //! x86 (32 bit) only
 
+pub unsafe fn cr0_write(val: usize) {
+     asm!("mov $0, %cr0" :: "r"(val) : "memory");
+}
+
 pub fn cr0() -> usize {
     let ret: usize;
     unsafe { asm!("mov %cr0, $0" : "=r" (ret)) };

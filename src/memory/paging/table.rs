@@ -51,11 +51,12 @@ impl<L> Table<L> where L: HierarchicalLevel
         where A: FrameAllocator
         {
             if self.next_table(index).is_none() {
-                // assert!(!self.entries[index].flags().contains(EntryFlags::HUGE_PAGE),
-                // "mapping code does not support huge pages");
+                assert!(!self[index].flags().contains(EntryFlags::HUGE_PAGE),
+                "mapping code does not support huge pages");
                 let frame = allocator.allocate_frame().expect("no frames available");
-                self.entries[index].set(frame, EntryFlags::PRESENT | EntryFlags::WRITABLE);
-                self.next_table_mut(index).expect("no next next table 1").zero()
+                self[index].set(frame, EntryFlags::PRESENT | EntryFlags::WRITABLE);
+                panic!("wtf");
+                self.next_table_mut(index).expect("real wtf now").zero()
             }
             self.next_table_mut(index).expect("no next table 2")
         }
