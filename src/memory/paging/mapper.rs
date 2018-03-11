@@ -1,6 +1,6 @@
 use super::{VirtualAddress, PhysicalAddress, Page, ENTRY_COUNT};
 use super::entry::*;
-use super::table::{self, Table, Level2, Level1};
+use super::table::{self, Table, Level2};
 use memory::{PAGE_SIZE, Frame, FrameAllocator};
 use core::ptr::Unique;
 

@@ -165,11 +165,10 @@ impl Writer {
 
     pub fn flush(&mut self) {
         let slice = unsafe { core::slice::from_raw_parts_mut(0xb8000 as *mut u8, 4000) };
-
-        let cr0 = x86::cr0() & !(1 << 31);
-        unsafe { x86::cr0_write(cr0); }
+        // let cr0 = x86::cr0() & !(1 << 31);
+        // unsafe { x86::cr0_write(cr0); }
         slice.as_mut().clone_from_slice(&self.buffer);
-        unsafe { x86::cr0_write(cr0 | (1 << 31)); }
+        // unsafe { x86::cr0_write(cr0 | (1 << 31)); }
         self.flush_cursor();
     }
 

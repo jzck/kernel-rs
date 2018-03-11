@@ -79,14 +79,20 @@ impl ActivePageTable {
                    f: F)
         where F: FnOnce(&mut Mapper)
         {
-            self.p2_mut()[ENTRY_COUNT -1].set(table.p2_frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
+            let backup = Frame::containing_address(x86::cr3());
 
+            // map temp page to current p2
+            let p2_table = temporary_page.map_table_frame(backup.clone(), self);
+
+            // overwrite recrusive map
+            self.p2_mut()[1023].set(table.p2_frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
             //TODO tlb flush all
 
-            // execute f in the nex context
+            // execute f in the new context
             f(self);
 
             // TODO restore recursive mapping to original p2 table
+            p2_table[1023].set(backup, EntryFlags::PRESENT | EntryFlags::WRITABLE);
         }
 
     pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
@@ -127,6 +133,7 @@ impl InactivePageTable {
 }
 
 pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
+    -> ActivePageTable
     where A: FrameAllocator
 {
     let mut temporary_page = TemporaryPage::new(Page { number: 0xcafe },
@@ -139,6 +146,11 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     };
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+
+        // identity map the VGA text buffer
+        let vga_buffer_frame = Frame::containing_address(0xb8000);
+        mapper.identity_map(vga_buffer_frame, EntryFlags::WRITABLE, allocator);
+
         let elf_sections_tag = boot_info.elf_sections_tag()
             .expect("Memory map tag required");
 
@@ -155,17 +167,13 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
             println!("mapping section at addr: {:#x}, size: {:#x}",
                      section.start_address(), section.size());
 
-            let flags = EntryFlags::WRITABLE; //TODO use real section flags
-
+            let flags = EntryFlags::from_elf_section_flags(&section);
             let start_frame = Frame::containing_address(section.start_address() as usize);
             let end_frame = Frame::containing_address(section.end_address() as usize - 1);
             for frame in Frame::range_inclusive(start_frame, end_frame) {
                 mapper.identity_map(frame, flags, allocator);
             }
         }
-
-        let vga_buffer_frame = Frame::containing_address(0xb8000);
-        mapper.identity_map(vga_buffer_frame, EntryFlags::WRITABLE, allocator);
 
         let multiboot_start = Frame::containing_address(boot_info.start_address());
         let multiboot_end = Frame::containing_address(boot_info.end_address() - 1);
@@ -175,7 +183,14 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     });
 
     let old_table = active_table.switch(new_table);
-    println!("new table!");
+
+    let old_p2_page  = Page::containing_address(
+        old_table.p2_frame.start_address()
+        );
+    active_table.unmap(old_p2_page, allocator);
+    println!("guard page at {:#x}", old_p2_page.start_address());
+
+    active_table
 }
 
 pub fn test_paging<A>(allocator: &mut A)

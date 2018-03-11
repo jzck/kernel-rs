@@ -12,8 +12,8 @@ start:
 	call check_multiboot
 
 	call set_up_page_tables
-	; call enable_pse
-	; call enable_paging
+	call enable_pse
+	call enable_paging
 
 	; load the new gdt
 	lgdt [GDTR.ptr]
@@ -39,9 +39,9 @@ set_up_page_tables:
 
 .map_p2_table:
     ; map ecx-th P2 entry to a huge page that starts at address 2MiB*ecx
-    mov eax, 0x200000  ; 2MiB
+    mov eax, 0x400000  ; 4MiB
     mul ecx            ; start address of ecx-th page
-    or eax, 0b10000011 ; present + writable + huge
+    or eax, 0b10000011 ; huge + present + writable
     mov [p2_table + ecx * 4], eax ; map ecx-th entry
 
     inc ecx            ; increase counter
@@ -54,7 +54,7 @@ set_up_page_tables:
 enable_pse:
     ; enable PSE in the cr4 register
     mov eax, cr4
-    or eax, 1 << 2
+    or eax, 1 << 4
     mov cr4, eax
 
     ret
@@ -148,4 +148,3 @@ GDTR:
 .ptr:
 	DW .gdt_bottom - .gdt_top - 1	; length of the structure minus 1
 	DD .gdt_top						; pointer to top of gdt
-

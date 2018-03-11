@@ -1,6 +1,7 @@
 use memory::Frame;
 
 pub struct Entry(u32);
+use multiboot2::ElfSection;
 
 impl Entry {
     pub fn is_unused(&self) -> bool {
@@ -43,5 +44,23 @@ bitflags! {
         const GLOBAL =          1 << 8;
         // LONG MODE
         // const NO_EXECUTE =      1 << 63;
+    }
+}
+
+impl EntryFlags {
+    pub fn from_elf_section_flags(section: &ElfSection) -> EntryFlags {
+        use multiboot2::ElfSectionFlags;
+
+        let mut flags = EntryFlags::empty();
+        if section.flags().contains(ElfSectionFlags::ALLOCATED) {
+            flags = flags | EntryFlags::PRESENT;
+        }
+        if section.flags().contains(ElfSectionFlags::WRITABLE) {
+            flags = flags | EntryFlags::WRITABLE;
+        }
+        // if !section.flags().contains(ElfSectionFlags::EXECUTABLE) {
+        //     flags = flags | EntryFlags::NO_EXECUTE;
+        // }
+        flags
     }
 }
