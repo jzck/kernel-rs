@@ -3,24 +3,28 @@ extern crate core;
 
 use acpi;
 use cpuio;
-use context;
-use memory;
 use x86;
 use core::char;
 use vga::*;
 
 fn dispatch(command: &str) -> Result <(), &'static str> {
     match command {
-        "acpi"                      => self::acpi_info(),
         "help" | "h"                => self::help(),
-        "memory"                    => self::mb2_memory(),
-        "multiboot"                 => self::mb2_info(),
+
+        // multiboot
+        // "memory"                    => self::mb2_memory(),
+        // "multiboot"                 => self::mb2_info(),
+        // "sections"                  => self::mb2_sections(),
+
+        // ACPI
+        "acpi"                      => self::acpi_info(),
         "reboot"                    => self::reboot(),
-        "sections"                  => self::mb2_sections(),
         "shutdown" | "halt" | "q"   => self::shutdown(),
+
+        // others
         "stack"                     => self::print_stack(),
-        "test"                      => self::test(),
         "regs"                      => self::regs(),
+
         _                           => Err("Command unknown. (h|help for help)"),
     }
 }
@@ -45,12 +49,6 @@ fn help() -> Result <(), &'static str> {
     "sections                     => print elf sections", // TODO
     "shutdown | halt | q          => Kill a kitten, then shutdown",
     "stack                        => Print kernel stack in a fancy way");
-    Ok(())
-}
-
-fn test() -> Result<(), &'static str>
-{
-    memory::test_paging(context::frame_allocator());
     Ok(())
 }
 
@@ -129,49 +127,49 @@ fn print_stack() -> Result <(), &'static str> {
     Ok(())
 }
 
-fn mb2_memory() -> Result <(), &'static str> {
-    let boot_info = context::boot_info();
+// fn mb2_memory() -> Result <(), &'static str> {
+//     let boot_info = context::boot_info();
 
-    let memory_map_tag = boot_info.memory_map_tag()
-        .expect("Memory map tag required");
+//     let memory_map_tag = boot_info.memory_map_tag()
+//         .expect("Memory map tag required");
 
-    println!("memory areas:");
-    for area in memory_map_tag.memory_areas() {
-        println!("    start: 0x{:x}, length: 0x{:x}",
-                 area.start_address(), area.size());
-    }
-    Ok(())
-}
+//     println!("memory areas:");
+//     for area in memory_map_tag.memory_areas() {
+//         println!("    start: 0x{:x}, length: 0x{:x}",
+//                  area.start_address(), area.size());
+//     }
+//     Ok(())
+// }
 
-fn mb2_sections() -> Result <(), &'static str> {
-    let boot_info = context::boot_info();
+// fn mb2_sections() -> Result <(), &'static str> {
+//     let boot_info = context::boot_info();
 
-    let elf_sections_tag = boot_info.elf_sections_tag()
-        .expect("Elf-sections tag required");
+//     let elf_sections_tag = boot_info.elf_sections_tag()
+//         .expect("Elf-sections tag required");
 
-    println!("kernel sections:");
-    for section in elf_sections_tag.sections() {
-        println!("    {: <10} {:#x}, size: {:#x}, flags: {:#X}",
-                 section.name(), section.start_address(), section.size(), section.flags());
-    }
-    Ok(())
-}
+//     println!("kernel sections:");
+//     for section in elf_sections_tag.sections() {
+//         println!("    {: <10} {:#x}, size: {:#x}, flags: {:#X}",
+//                  section.name(), section.start_address(), section.size(), section.flags());
+//     }
+//     Ok(())
+// }
 
-fn mb2_info() -> Result <(), &'static str> {
-    let boot_info = context::boot_info();
+// fn mb2_info() -> Result <(), &'static str> {
+//     let boot_info = context::boot_info();
 
-    let command_line_tag = boot_info.command_line_tag()
-        .expect("Elf-sections tag required");
+//     let command_line_tag = boot_info.command_line_tag()
+//         .expect("Elf-sections tag required");
 
-    let bootloader_tag = boot_info.boot_loader_name_tag()
-        .expect("Elf-sections tag required");
+//     let bootloader_tag = boot_info.boot_loader_name_tag()
+//         .expect("Elf-sections tag required");
 
-    println!("bootloader: {}", bootloader_tag.name());
-    if command_line_tag.command_line().len() != 0 {
-        println!("command line: {}", command_line_tag.command_line());
-    }
-    Ok(())
-}
+//     println!("bootloader: {}", bootloader_tag.name());
+//     if command_line_tag.command_line().len() != 0 {
+//         println!("command line: {}", command_line_tag.command_line());
+//     }
+//     Ok(())
+// }
 
 pub fn acpi_info() -> Result <(), &'static str> {
     acpi::info()?;

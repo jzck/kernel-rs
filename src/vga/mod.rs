@@ -2,9 +2,10 @@ pub mod color;
 
 pub use self::color::{Color, ColorCode};
 
-use context;
 use cpuio;
 use console;
+
+pub static mut VGA: Writer = self::Writer::new();
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
@@ -25,21 +26,21 @@ macro_rules! println {
 }
 
 macro_rules! flush {
-    () => ($crate::context::current_term().flush());
+    () => (unsafe { $crate::vga::VGA.flush() });
 }
 
 macro_rules! set_color {
-    () => ($crate::context::current_term().color_code =
-        $crate::vga::ColorCode::new($crate::vga::Color::White, $crate::vga::Color::Black));
-    ($fg:ident) => ($crate::context::current_term().color_code =
-        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::Black));
-    ($fg:ident, $bg:ident) => ($crate::context::current_term().color_code =
-        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::$bg));
+    () => (unsafe { $crate::vga::VGA.color_code =
+        $crate::vga::ColorCode::new($crate::vga::Color::White, $crate::vga::Color::Black)} );
+    ($fg:ident) => (unsafe { $crate::vga::VGA.color_code =
+        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::Black)} );
+    ($fg:ident, $bg:ident) => (unsafe { $crate::vga::VGA.color_code =
+        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::$bg)} );
 }
 
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
-    context::current_term().write_fmt(args).unwrap();
+    unsafe { self::VGA.write_fmt(args).unwrap(); }
 }
 
 extern crate core;
@@ -194,4 +195,26 @@ impl fmt::Write for Writer {
         }
         Ok(())
     }
+}
+
+pub fn init() {
+    set_color!(White, Cyan);
+    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
+           format_args!("{: ^80}", r#"        ,--,               "#),
+           format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
+           format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
+           format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
+           format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
+           format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
+           format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
+           format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
+           format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
+           format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
+           format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
+           format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
+           format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
+           format_args!("{: ^80}", r#"      '--'  `---'          "#));
+    set_color!();
+    unsafe { VGA.prompt(); }
+    unsafe { VGA.flush(); }
 }

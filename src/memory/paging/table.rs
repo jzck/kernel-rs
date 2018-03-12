@@ -51,7 +51,6 @@ impl<L> Table<L> where L: HierarchicalLevel
         where A: FrameAllocator
         {
             if self.next_table(index).is_none() {
-                println!("index={} flags={:#b}", index, self[index].flags());
                 assert!(!self[index].flags().contains(EntryFlags::HUGE_PAGE),
                 "mapping code does not support huge pages");
                 let frame = allocator.allocate_frame().expect("no frames available");

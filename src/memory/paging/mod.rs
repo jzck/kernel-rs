@@ -22,7 +22,7 @@ const ENTRY_COUNT: usize = 1024;
 pub type PhysicalAddress = usize;
 pub type VirtualAddress = usize;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Page {
     number: usize,
 }
@@ -45,6 +45,33 @@ impl Page {
 
     fn p1_index(&self) -> usize {
         (self.number >> 0) & 0x3ff
+    }
+
+    pub fn range_inclusive(start: Page, end: Page) -> PageIter {
+        PageIter {
+            start,
+            end,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct PageIter {
+    start: Page,
+    end: Page,
+}
+
+impl Iterator for PageIter {
+    type Item = Page;
+
+    fn next(&mut self) -> Option<Page> {
+        if self.start <= self.end {
+            let page = self.start;
+            self.start.number += 1;
+            Some(page)
+        } else {
+            None
+        }
     }
 }
 
@@ -99,14 +126,12 @@ impl ActivePageTable {
 
         let p2_frame = Frame::containing_address(x86::cr3() as usize);
 
-        println!("old p2_frame at {}", p2_frame.number);
         let old_table = InactivePageTable {
             p2_frame,
         };
 
         unsafe {
             let frame = Frame::containing_address(new_table.p2_frame.start_address());
-            println!("new p2_frame at {:#x}", new_table.p2_frame.start_address());
             x86::cr3_write(frame.start_address());
         }
 
@@ -166,9 +191,6 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
             assert!(section.start_address() % PAGE_SIZE as u64 == 0,
             "sections need to be page aligned");
 
-            println!("mapping section at addr: {:#x}, size: {:#x}",
-                     section.start_address(), section.size());
-
             let flags = EntryFlags::from_elf_section_flags(&section);
             let start_frame = Frame::containing_address(section.start_address() as usize);
             let end_frame = Frame::containing_address(section.end_address() as usize - 1);
@@ -192,31 +214,5 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
 
     active_table.unmap(old_p2_page, allocator);
 
-    println!("guard page at {:#x}", old_p2_page.start_address());
-    println!("cr3 = {:#x}", x86::cr3());
-
     active_table
-}
-
-pub fn test_paging<A>(allocator: &mut A)
-    where A: FrameAllocator
-{
-    let mut page_table = unsafe { ActivePageTable::new() };
-
-    let addr = 0xffff_f000;
-    let page = Page::containing_address(addr);
-    let frame = allocator.allocate_frame().expect("no more frames");
-    println!("None = {:?}, map to {:?}",
-             page_table.translate(addr),
-             frame);
-    println!("check 0");
-    flush!();
-    page_table.map_to(page, frame, EntryFlags::empty(), allocator);
-    println!("check 1");
-    flush!();
-    println!("Some = {:?}", page_table.translate(addr));
-    flush!();
-    println!("next free frame: {:?}", allocator.allocate_frame());
-    flush!();
-
 }
