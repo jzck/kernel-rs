@@ -3,8 +3,8 @@ OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS {
 	/* GDT for the win */
-	. = 0x800;
-	.gdt : {KEEP(*(.gdt))}
+	/* . = 0x800; */
+	/* .gdt : {KEEP(*(.gdt))} */
 
 	 /* VGA, cannot use section for this */
 	VGA_PTR = 0xb8000;
@@ -45,6 +45,25 @@ SECTIONS {
 
 	.bss :
 	{
-		*(.bss .bss.*)}
+		*(.bss .bss.*)
 		. = ALIGN(4K);
 	}
+
+	.gdt :
+	{
+		*(.gdt)
+		. = ALIGN(4K);
+	}
+
+	.got :
+	{
+		*(.got)
+		. = ALIGN(4K);
+	}
+
+	.got.plt :
+	{
+		*(.got.plt)
+		. = ALIGN(4K);
+	}
+}

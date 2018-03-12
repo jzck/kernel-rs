@@ -30,8 +30,8 @@ pub mod x86;
 #[no_mangle]
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     context::init(multiboot_info_addr);
-    loop {}
-    acpi::init().unwrap();
+    // println!("init done!");
+    // acpi::init().unwrap();
     loop { keyboard::kbd_callback(); }
 }
 

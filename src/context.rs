@@ -43,9 +43,6 @@ impl Context
             vga2,
         }
     }
-
-
-
 }
 
 pub fn init_screen() {
@@ -104,8 +101,8 @@ fn context() -> &'static mut Context {
 }
 
 pub fn init(multiboot_info_addr: usize) {
-    // unsafe { CONTEXT = Some(Context::new(multiboot_info_addr)) };
+    unsafe { CONTEXT = Some(Context::new(multiboot_info_addr)) };
 
     // memory::remap_the_kernel(frame_allocator(), boot_info());
-    // self::init_screen();
+    self::init_screen();
 }

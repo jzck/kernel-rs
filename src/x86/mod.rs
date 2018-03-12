@@ -1,5 +1,7 @@
 //! x86 (32 bit) only
 
+pub mod tlb;
+
 pub unsafe fn cr0_write(val: usize) {
      asm!("mov $0, %cr0" :: "r"(val) : "memory");
 }

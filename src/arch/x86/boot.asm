@@ -34,7 +34,7 @@ set_up_page_tables:
 	or eax, 0b11 ; present + writable
 	mov [p2_table + 1023 * 4], eax
 
-    ; map each P2 entry to a huge 2MiB page
+    ; map each P2 entry to a huge 4MiB page
     mov ecx, 0         ; counter variable
 
 .map_p2_table:
@@ -45,7 +45,7 @@ set_up_page_tables:
     mov [p2_table + ecx * 4], eax ; map ecx-th entry
 
     inc ecx            ; increase counter
-    cmp ecx, 1023      ; if counter == 1023, the whole P2 table is mapped
+    cmp ecx, 20        ; if counter == 1023, the whole P2 table is mapped
     jne .map_p2_table  ; else map the next entry
 
     ret
@@ -85,10 +85,8 @@ section .bss
 align 4096
 p2_table:
     resb 4096
-p1_table:
-	resb 4096
 stack_bottom:
-    resb 4096 * 4
+    resb 4096 * 8
 stack_top:
 
 section .gdt

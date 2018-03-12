@@ -3,6 +3,7 @@ use super::entry::*;
 use super::table::{self, Table, Level2};
 use memory::{PAGE_SIZE, Frame, FrameAllocator};
 use core::ptr::Unique;
+use x86;
 
 pub struct Mapper {
     p2: Unique<Table<Level2>>,
@@ -39,7 +40,7 @@ impl Mapper {
             let p2_entry = &self.p2()[page.p2_index()];
             if let Some(start_frame) = p2_entry.pointed_frame() {
                 if p2_entry.flags().contains(EntryFlags::HUGE_PAGE) {
-                    // 2MiB alignment check
+                    // 4KiB alignment check
                     assert!(start_frame.number % ENTRY_COUNT == 0);
                     return Some(Frame {
                         number: start_frame.number + page.p1_index()
@@ -89,7 +90,8 @@ impl Mapper {
                 .expect("mapping code does not support huge pages");
             let frame = p1[page.p1_index()].pointed_frame().unwrap();
             p1[page.p1_index()].set_unused();
-            // TODO flush the tlb
-            allocator.deallocate_frame(frame);
+            x86::tlb::flush(page.start_address());
+            // TODO
+            // allocator.deallocate_frame(frame);
         }
 }

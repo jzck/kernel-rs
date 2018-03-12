@@ -84,9 +84,9 @@ impl ActivePageTable {
             // map temp page to current p2
             let p2_table = temporary_page.map_table_frame(backup.clone(), self);
 
-            // overwrite recrusive map
+            // overwrite recursive map
             self.p2_mut()[1023].set(table.p2_frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
-            //TODO tlb flush all
+            x86::tlb::flush_all();
 
             // execute f in the new context
             f(self);
@@ -98,12 +98,15 @@ impl ActivePageTable {
     pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
 
         let p2_frame = Frame::containing_address(x86::cr3() as usize);
+
+        println!("old p2_frame at {}", p2_frame.number);
         let old_table = InactivePageTable {
             p2_frame,
         };
 
         unsafe {
             let frame = Frame::containing_address(new_table.p2_frame.start_address());
+            println!("new p2_frame at {:#x}", new_table.p2_frame.start_address());
             x86::cr3_write(frame.start_address());
         }
 
@@ -124,8 +127,9 @@ impl InactivePageTable {
             let table = temporary_page.map_table_frame(frame.clone(),
             active_table);
             table.zero();
+
             // set up recursive mapping for the table
-            table[ENTRY_COUNT - 1].set(frame.clone(), EntryFlags::PRESENT | EntryFlags:: WRITABLE)
+            table[1023].set(frame.clone(), EntryFlags::PRESENT | EntryFlags:: WRITABLE)
         }
         temporary_page.unmap(active_table);
         InactivePageTable { p2_frame: frame }
@@ -138,7 +142,6 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
 {
     let mut temporary_page = TemporaryPage::new(Page { number: 0xcafe },
                                                 allocator);
-
     let mut active_table = unsafe { ActivePageTable::new() };
     let mut new_table = {
         let frame = allocator.allocate_frame().expect("no more frames");
@@ -158,7 +161,6 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
             use self::entry::EntryFlags;
 
             if !section.is_allocated() {
-                //section is not loaded to memory
                 continue;
             }
             assert!(section.start_address() % PAGE_SIZE as u64 == 0,
@@ -187,8 +189,11 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     let old_p2_page  = Page::containing_address(
         old_table.p2_frame.start_address()
         );
+
     active_table.unmap(old_p2_page, allocator);
+
     println!("guard page at {:#x}", old_p2_page.start_address());
+    println!("cr3 = {:#x}", x86::cr3());
 
     active_table
 }
@@ -201,9 +206,9 @@ pub fn test_paging<A>(allocator: &mut A)
     let addr = 0xffff_f000;
     let page = Page::containing_address(addr);
     let frame = allocator.allocate_frame().expect("no more frames");
-    // println!("None = {:?}, map to {:?}",
-    //          page_table.translate(addr),
-    //          frame);
+    println!("None = {:?}, map to {:?}",
+             page_table.translate(addr),
+             frame);
     println!("check 0");
     flush!();
     page_table.map_to(page, frame, EntryFlags::empty(), allocator);
