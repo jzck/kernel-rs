@@ -180,6 +180,7 @@ impl Writer {
 
         for col in 0..BUFFER_COLS/2 {
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col * 2)] = b' ';
+            self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col * 2) + 1] = 0;
         }
 
         self.buffer_pos = (BUFFER_ROWS - 1) * BUFFER_COLS;
