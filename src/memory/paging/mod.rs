@@ -118,7 +118,7 @@ impl ActivePageTable {
             // execute f in the new context
             f(self);
 
-            // TODO restore recursive mapping to original p2 table
+            // restore recursive mapping to original p2 table
             p2_table[1023].set(backup, EntryFlags::PRESENT | EntryFlags::WRITABLE);
         }
 
@@ -207,12 +207,8 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     });
 
     let old_table = active_table.switch(new_table);
-
-    let old_p2_page  = Page::containing_address(
-        old_table.p2_frame.start_address()
-        );
+    let old_p2_page = Page::containing_address(old_table.p2_frame.start_address());
 
     active_table.unmap(old_p2_page, allocator);
-
     active_table
 }

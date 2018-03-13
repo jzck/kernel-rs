@@ -35,8 +35,8 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     let boot_info = unsafe { multiboot2::load(multiboot_info_addr) };
     enable_write_protect_bit();
 
-    vga::init();
     memory::init(&boot_info);
+    vga::init();
 
     use alloc::boxed::Box;
     let mut heap_test = Box::new(42);

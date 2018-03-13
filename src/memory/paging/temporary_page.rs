@@ -74,6 +74,6 @@ impl FrameAllocator for TinyAllocator {
                 return;
             }
         }
-        panic!("Tiny allcoator can only hold 1 frame.");
+        panic!("Tiny allocator can only hold 1 frame.");
     }
 }
