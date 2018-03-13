@@ -1,59 +1,16 @@
 #![allow(dead_code)]
 
-mod entry;
-mod table;
+// mod table;
 mod temporary_page;
 mod mapper;
 
-use memory::PAGE_SIZE;
 use memory::*;
 use self::mapper::Mapper;
 use self::temporary_page::TemporaryPage;
 use core::ops::{Deref, DerefMut};
 use multiboot2::BootInformation;
 use x86;
-
-pub use self::entry::*;
-pub use self::table::*;
-
-// x86 non PAE has 1024 entries per table
-const ENTRY_COUNT: usize = 1024;
-
-pub type PhysicalAddress = usize;
-pub type VirtualAddress = usize;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Page {
-    number: usize,
-}
-
-impl Page {
-    pub fn containing_address(address: VirtualAddress) -> Page {
-        // assert!(address < 0x0000_8000_0000_0000 ||
-        //         address >= 0xffff_8000_0000_0000,
-        //         "invalid addres: 0x{:x}", address);
-        Page { number: address / PAGE_SIZE }
-    }
-
-    fn start_address(&self) -> usize {
-        self.number * PAGE_SIZE
-    }
-
-    fn p2_index(&self) -> usize {
-        (self.number >> 10) & 0x3ff
-    }
-
-    fn p1_index(&self) -> usize {
-        (self.number >> 0) & 0x3ff
-    }
-
-    pub fn range_inclusive(start: Page, end: Page) -> PageIter {
-        PageIter {
-            start,
-            end,
-        }
-    }
-}
+use x86::registers::control::Cr3;
 
 #[derive(Clone)]
 pub struct PageIter {
@@ -106,33 +63,33 @@ impl ActivePageTable {
                    f: F)
         where F: FnOnce(&mut Mapper)
         {
-            let backup = Frame::containing_address(x86::cr3());
+            let (cr3_back, cr3flags_back) = Cr3::read();
 
             // map temp page to current p2
-            let p2_table = temporary_page.map_table_frame(backup.clone(), self);
+            let p2_table = temporary_page.map_table_frame(cr3_back.clone(), self);
 
             // overwrite recursive map
-            self.p2_mut()[1023].set(table.p2_frame.clone(), EntryFlags::PRESENT | EntryFlags::WRITABLE);
-            x86::tlb::flush_all();
+            self.p2_mut()[1023].set(table.p2_frame.clone(), PageTableFlags::PRESENT | PageTableFlags::WRITABLE);
+            x86::instructions::tlb::flush_all();
 
             // execute f in the new context
             f(self);
 
             // restore recursive mapping to original p2 table
-            p2_table[1023].set(backup, EntryFlags::PRESENT | EntryFlags::WRITABLE);
+            p2_table[1023].set(cr3_back, PageTableFlags::PRESENT | PageTableFlags::WRITABLE);
         }
 
     pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
 
-        let p2_frame = Frame::containing_address(x86::cr3() as usize);
+        let p2_frame = PhysFrame::containing_address(Cr3::read() as usize);
 
         let old_table = InactivePageTable {
             p2_frame,
         };
 
         unsafe {
-            let frame = Frame::containing_address(new_table.p2_frame.start_address());
-            x86::cr3_write(frame.start_address());
+            let frame = PhysFrame::containing_address(new_table.p2_frame.start_address());
+            Cr3::write(frame.start_address());
         }
 
         old_table
@@ -140,11 +97,11 @@ impl ActivePageTable {
 }
 
 pub struct InactivePageTable {
-    p2_frame: Frame,
+    p2_frame: PhysFrame,
 }
 
 impl InactivePageTable {
-    pub fn new(frame: Frame,
+    pub fn new(frame: PhysFrame,
                active_table: &mut ActivePageTable,
                temporary_page: &mut TemporaryPage,
                ) -> InactivePageTable {
@@ -154,7 +111,7 @@ impl InactivePageTable {
             table.zero();
 
             // set up recursive mapping for the table
-            table[1023].set(frame.clone(), EntryFlags::PRESENT | EntryFlags:: WRITABLE)
+            table[1023].set(frame.clone(), PageTableFlags::PRESENT | PageTableFlags::WRITABLE)
         }
         temporary_page.unmap(active_table);
         InactivePageTable { p2_frame: frame }
@@ -176,33 +133,31 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
 
         // identity map the VGA text buffer
-        let vga_buffer_frame = Frame::containing_address(0xb8000);
-        mapper.identity_map(vga_buffer_frame, EntryFlags::WRITABLE, allocator);
+        let vga_buffer_frame = PhysFrame::containing_address(0xb8000);
+        mapper.identity_map(vga_buffer_frame, PageTableFlags::WRITABLE, allocator);
 
         let elf_sections_tag = boot_info.elf_sections_tag()
             .expect("Memory map tag required");
 
         for section in elf_sections_tag.sections() {
-            use self::entry::EntryFlags;
-
             if !section.is_allocated() {
                 continue;
             }
             assert!(section.start_address() % PAGE_SIZE as u64 == 0,
             "sections need to be page aligned");
 
-            let flags = EntryFlags::from_elf_section_flags(&section);
-            let start_frame = Frame::containing_address(section.start_address() as usize);
-            let end_frame = Frame::containing_address(section.end_address() as usize - 1);
-            for frame in Frame::range_inclusive(start_frame, end_frame) {
+            let flags = PageTableFlags::from_elf_section_flags(&section);
+            let start_frame = PhysFrame::containing_address(section.start_address() as usize);
+            let end_frame = PhysFrame::containing_address(section.end_address() as usize - 1);
+            for frame in PhysFrame::range_inclusive(start_frame, end_frame) {
                 mapper.identity_map(frame, flags, allocator);
             }
         }
 
-        let multiboot_start = Frame::containing_address(boot_info.start_address());
-        let multiboot_end = Frame::containing_address(boot_info.end_address() - 1);
-        for frame in Frame::range_inclusive(multiboot_start, multiboot_end) {
-            mapper.identity_map(frame, EntryFlags::PRESENT, allocator);
+        let multiboot_start = PhysFrame::containing_address(boot_info.start_address());
+        let multiboot_end = PhysFrame::containing_address(boot_info.end_address() - 1);
+        for frame in PhysFrame::range_inclusive(multiboot_start, multiboot_end) {
+            mapper.identity_map(frame, PageTableFlags::PRESENT, allocator);
         }
     });
 

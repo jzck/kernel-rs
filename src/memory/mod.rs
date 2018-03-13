@@ -7,49 +7,24 @@ mod paging;
 pub use self::area_allocator::*;
 pub use self::heap_allocator::*;
 pub use self::paging::remap_the_kernel;
-use self::paging::PhysicalAddress;
 use multiboot2;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Frame {
-    number: usize,
-}
-
-impl Frame {
-    fn containing_address(address: usize) -> Frame {
-        Frame{ number: address / PAGE_SIZE }
-    }
-
-    fn start_address(&self) -> PhysicalAddress {
-        self.number * PAGE_SIZE
-    }
-
-    fn clone(&self) ->Frame {
-        Frame { number: self.number }
-    }
-
-    fn range_inclusive(start: Frame, end: Frame) -> FrameIter {
-        FrameIter {
-            start,
-            end,
-        }
-    }
-}
+use x86::structures::paging::*;
 
 pub trait FrameAllocator {
-    fn allocate_frame(&mut self) -> Option<Frame>;
-    fn deallocate_frame(&mut self, frame: Frame);
+    fn allocate_frame(&mut self) -> Option<PhysFrame>;
+    fn deallocate_frame(&mut self, frame: PhysFrame);
 }
 
 struct FrameIter {
-    start: Frame,
-    end: Frame,
+    start: PhysFrame,
+    end: PhysFrame,
 }
 
 impl Iterator for FrameIter {
-    type Item = Frame;
+    type Item = PhysFrame;
 
-    fn next(&mut self) -> Option<Frame> {
+    fn next(&mut self) -> Option<PhysFrame> {
         if self.start <= self.end {
             let frame = self.start.clone();
             self.start.number += 1;
@@ -82,13 +57,12 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
 
     let mut active_table = paging::remap_the_kernel(&mut frame_allocator,
                                                     boot_info);
-    use self::paging::Page;
     use {HEAP_START, HEAP_SIZE};
 
     let heap_start_page = Page::containing_address(HEAP_START);
     let heap_end_page = Page::containing_address(HEAP_START + HEAP_SIZE - 1);
 
     for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-        active_table.map(page, paging::EntryFlags::WRITABLE, &mut frame_allocator);
+        active_table.map(page, PageTableFlags::WRITABLE, &mut frame_allocator);
     }
 }

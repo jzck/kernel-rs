@@ -3,7 +3,6 @@ extern crate core;
 
 use acpi;
 use cpuio;
-use x86;
 use core::char;
 use vga::*;
 
@@ -177,9 +176,11 @@ pub fn acpi_info() -> Result <(), &'static str> {
 }
 
 pub fn regs() -> Result <(), &'static str> {
-    println!("cr0={:#b}", x86::cr0());
-    println!("cr3={:#x}", x86::cr3());
-    println!("cr4={:#b}", x86::cr4());
+    use x86::registers::control::*;
+    println!("cr0={:#b}", Cr0::read());
+    println!("cr3={:#x}", Cr3::read());
+    // TODO implement cr4 flags in `x86` module
+    // println!("cr4={:#b}", Cr4::read());
     Ok(())
 }
 

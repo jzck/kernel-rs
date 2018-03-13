@@ -11,8 +11,9 @@
 
 extern crate rlibc;
 extern crate multiboot2;
-#[macro_use] extern crate bitflags;
+// #[macro_use] extern crate bitflags;
 #[macro_use] extern crate alloc;
+extern crate x86;
 
 /// 80x25 screen and simplistic terminal driver
 #[macro_use] pub mod vga;
@@ -20,14 +21,14 @@ extern crate multiboot2;
 pub mod keyboard;
 /// simplisitc kernel commands
 pub mod console;
-/// wrappers around the x86-family I/O instructions.
+/// rust wrappers around cpu I/O instructions.
 pub mod cpuio;
 /// ACPI self-content module
 pub mod acpi;
-/// physical frame allocator + paging module
+/// physical frame allocator + paging module + heap allocator
 pub mod memory;
-/// a few x86 register and instruction wrappers
-pub mod x86;
+/// x86 interruptions
+// pub mod interrupts;
 
 #[no_mangle]
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
@@ -54,7 +55,8 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
 }
 
 fn enable_write_protect_bit() {
-    unsafe { x86::cr0_write(x86::cr0() | (1 << 16)) };
+    use x86::registers::control::{Cr0, Cr0Flags};
+    unsafe { Cr0::write(Cr0::read() | Cr0Flags::WRITE_PROTECT) };
 }
 
 #[lang = "eh_personality"] #[no_mangle]
