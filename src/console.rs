@@ -178,7 +178,7 @@ pub fn acpi_info() -> Result <(), &'static str> {
 pub fn regs() -> Result <(), &'static str> {
     use x86::registers::control::*;
     println!("cr0={:#b}", Cr0::read());
-    println!("cr3={:#x}", Cr3::read());
+    println!("cr3={:?}", Cr3::read());
     // TODO implement cr4 flags in `x86` module
     // println!("cr4={:#b}", Cr4::read());
     Ok(())

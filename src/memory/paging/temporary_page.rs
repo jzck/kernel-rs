@@ -4,7 +4,7 @@ use x86::*;
 use x86::structures::paging::*;
 
 pub struct TemporaryPage {
-    page: Page,
+    pub page: Page,
     allocator: TinyAllocator,
 }
 
@@ -26,6 +26,11 @@ impl TemporaryPage {
             assert!(active_table.translate_page(self.page).is_none(),
                 "temporary page is already mapped");
             active_table.map_to(self.page, frame, PageTableFlags::WRITABLE, &mut self.allocator);
+            // this kind of check should be done in a test routine
+            assert!(active_table.translate_page(self.page).is_some(),
+                "temporary page was not mapped");
+            println!("trans = {:?}", active_table.translate_page(self.page));
+            println!("page = {:?}", self.page.start_address());
             self.page.start_address()
         }
 
@@ -40,7 +45,7 @@ impl TemporaryPage {
                         frame: PhysFrame,
                         active_table: &mut ActivePageTable)
                         -> &mut PageTable {
-        unsafe { &mut *(self.map(frame, active_table) as *mut PageTable) }
+        unsafe { &mut *(self.map(frame, active_table).as_u32() as *mut PageTable) }
     }
 }
 
