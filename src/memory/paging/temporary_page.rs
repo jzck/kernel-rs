@@ -29,8 +29,6 @@ impl TemporaryPage {
             // this kind of check should be done in a test routine
             assert!(active_table.translate_page(self.page).is_some(),
                 "temporary page was not mapped");
-            println!("trans = {:?}", active_table.translate_page(self.page));
-            println!("page = {:?}", self.page.start_address());
             self.page.start_address()
         }
 

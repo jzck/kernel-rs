@@ -61,9 +61,23 @@ impl ActivePageTable {
         }
 
     pub fn switch(&mut self, new_table: InactivePageTable) -> InactivePageTable {
+
         let (p2_frame, cr3_flags) = Cr3::read();
         let old_table = InactivePageTable { p2_frame };
-        unsafe { Cr3::write(new_table.p2_frame, cr3_flags); }
+
+        // unsafe { Cr3::write(new_table.p2_frame, cr3_flags); }
+
+        ::console::regs();
+        flush!();
+        loop {}
+
+        unsafe { asm!("mov $0, %cr3" :: "r" (4096) : "memory"); }
+    
+        // let addr = new_table.p2_frame.start_address();
+        // let value = addr.as_u32() | cr3_flags.bits();
+        // println!("value = {}", 0);
+        // flush!();
+        // loop {}
 
         old_table
     }
@@ -81,16 +95,7 @@ impl InactivePageTable {
         {
             let table = temporary_page.map_table_frame(frame.clone(), active_table);
 
-            // table.zero();
-            let iter = table.entries.iter_mut();
-            for entry in iter {
-                println!("entry = {:?}", entry as *const _);
-                // println!("entry = {:?}", entry.flags());
-            }
-
-            println!("frame = {:?}", frame);
-            flush!();
-            loop {}
+            table.zero();
             // set up recursive mapping for the table
             table[1023].set(frame.clone(), PageTableFlags::PRESENT | PageTableFlags::WRITABLE)
         }
@@ -103,13 +108,13 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     -> ActivePageTable
     where A: FrameAllocator
 {
-    let mut temporary_page = TemporaryPage::new(Page { number: 0xcafe },
-                                                allocator);
+    let mut temporary_page = TemporaryPage::new(Page{number: 0xcafe}, allocator);
     let mut active_table = unsafe { ActivePageTable::new() };
     let mut new_table = {
         let frame = allocator.allocate_frame().expect("no more frames");
         InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
     };
+
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
 
@@ -146,12 +151,17 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
         }
     });
 
-
     let old_table = active_table.switch(new_table);
+
+    println!("check!");
+    flush!();
+    loop {}
+
     let old_p2_page = Page::containing_address(
         VirtAddr::new(old_table.p2_frame.start_address().as_u32()));
 
     active_table.unmap(old_p2_page, allocator);
+
     active_table
 }
 

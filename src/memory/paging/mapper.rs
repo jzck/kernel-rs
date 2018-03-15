@@ -2,6 +2,7 @@ use memory::{PAGE_SIZE, FrameAllocator};
 use core::ptr::Unique;
 use x86::structures::paging::*;
 use x86::instructions::tlb;
+use x86::usize_conversions::usize_from;
 use x86::*;
 use super::paging::table::RecTable;
 
@@ -41,7 +42,7 @@ impl Mapper {
 
     /// virtual page to physical frame translation
     pub fn translate_page(&self, page: Page) -> Option<PhysFrame> {
-        let p1 = self.p2().next_table(page.p2_index());
+        let p1 = self.p2().next_table(usize_from(u32::from(page.p2_index())));
 
         let huge_page = || {
             let p2_entry = &self.p2()[page.p2_index()];
@@ -55,7 +56,7 @@ impl Mapper {
         }; 
 
         p1.and_then(|p1| p1[page.p1_index()].pointed_frame())
-            .or_else(huge_page) 
+          .or_else(huge_page) 
     }
 
     /// map a virtual page to a physical frame in the page tables
@@ -64,8 +65,7 @@ impl Mapper {
         where A: FrameAllocator
         {
             let p2 = self.p2_mut();
-            let p1 = p2.next_table_create(page.p2_index(), allocator);
-
+            let p1 = p2.next_table_create(usize_from(u32::from(page.p2_index())), allocator);
             assert!(p1[page.p1_index()].is_unused());
             p1[page.p1_index()].set(frame, flags | PageTableFlags::PRESENT);
         }
@@ -91,7 +91,7 @@ impl Mapper {
             assert!(self.translate(page.start_address()).is_some());
 
             let p1 = self.p2_mut()
-                .next_table_mut(page.p2_index())
+                .next_table_mut(usize_from(u32::from(page.p2_index())))
                 .expect("mapping code does not support huge pages");
             let frame = p1[page.p1_index()].pointed_frame().unwrap();
             p1[page.p1_index()].set_unused();

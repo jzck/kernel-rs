@@ -4,39 +4,39 @@ use x86::ux::*;
 
 pub trait RecTable
 {
-    fn next_table_address(&self, index: u10) -> Option<u32>;
-    fn next_table(&self, index: u10) -> Option<&PageTable>;
-    fn next_table_mut(&mut self, index: u10) -> Option<&mut PageTable>;
+    fn next_table_address(&self, index: usize) -> Option<u32>;
+    fn next_table(&self, index: usize) -> Option<&PageTable>;
+    fn next_table_mut(&mut self, index: usize) -> Option<&mut PageTable>;
     fn next_table_create<A: FrameAllocator>(&mut self,
-                             index: u10,
+                             index: usize,
                              allocator: &mut A)
             -> &mut PageTable;
 }
 
 impl RecTable for PageTable
 {
-    fn next_table_address(&self, index: u10) -> Option<u32> {
+    fn next_table_address(&self, index: usize) -> Option<u32> {
         let entry_flags = self[index].flags();
         if entry_flags.contains(PageTableFlags::PRESENT) && !entry_flags.contains(PageTableFlags::HUGE_PAGE) {
-            let table_address = self as *const _ as u32;
-            Some(table_address << 10 | u32::from(index << 12))
+            let table_address = self as *const _ as usize;
+            Some((table_address << 10 | index << 12) as u32)
         } else {
             None
         }
     }
 
-    fn next_table(&self, index: u10) -> Option<&PageTable> {
+    fn next_table(&self, index: usize) -> Option<&PageTable> {
         self.next_table_address(index)
             .map(|address| unsafe { &*(address as *const _) })
     }
 
-    fn next_table_mut(&mut self, index: u10) -> Option<&mut PageTable> {
+    fn next_table_mut(&mut self, index: usize) -> Option<&mut PageTable> {
         self.next_table_address(index)
             .map(|address| unsafe { &mut *(address as *mut _) })
     }
 
     fn next_table_create<A>(&mut self,
-                         index: u10,
+                         index: usize,
                          allocator: &mut A) -> &mut PageTable
         where A: FrameAllocator
         {
