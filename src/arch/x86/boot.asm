@@ -13,7 +13,7 @@ start:
 
 	call set_up_page_tables
 	call enable_pse
-	call enable_paging
+	; call enable_paging
 
 	; load the new gdt
 	lgdt [GDTR.ptr]

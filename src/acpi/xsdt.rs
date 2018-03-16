@@ -1,5 +1,6 @@
 use super::{ACPISDTHeader,ACPISDTIter};
 
+//TODO this can work only if pagging is disabled
 static mut XSDT: Option<*const ACPISDTHeader> = None;
 
 /// ## Initialize Root System Description Table (XSDT)

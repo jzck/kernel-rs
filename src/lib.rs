@@ -31,7 +31,7 @@ pub mod x86;
 
 #[no_mangle]
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
-    // acpi::init().unwrap();
+    acpi::init().unwrap();
     let boot_info = unsafe { multiboot2::load(multiboot_info_addr) };
     enable_write_protect_bit();
 

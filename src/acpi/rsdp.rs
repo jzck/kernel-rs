@@ -19,7 +19,7 @@ pub struct RSDP20 {
     reserved: [u8; 3],
 }
 
-static mut RSDPTR: Option<*const RSDP20> = None;
+static mut RSDPTR: Option<&'static RSDP20> = None;
 
 /// RSDP load will check is RSDP is present at the addr sent.
 /// Return a bool
@@ -27,10 +27,11 @@ static mut RSDPTR: Option<*const RSDP20> = None;
 ///         false => RSDP is V1
 pub fn load(addr: u32) -> Result <bool, &'static str> {
     if check_signature(addr, "RSD PTR ") {
-        let ptr_tmp = addr as *const RSDP20;
-        let revision = unsafe {(*ptr_tmp).rsdp.revision};
+        let ref rsdp_tmp: &RSDP20 = unsafe{ &(*(addr as *const RSDP20)) };
+        let revision = rsdp_tmp.rsdp.revision;
         if (revision == 0 && check_checksum(addr, mem::size_of::<RSDP>())) || (revision == 2 && check_checksum(addr, mem::size_of::<RSDP20>())) {
-            unsafe {RSDPTR = Some(ptr_tmp)};
+            unsafe {RSDPTR = Some(rsdp_tmp)};
+            println!("Found rsdptr at {:#x}", addr);
             return Ok(revision == 2);
         }
     }
@@ -52,33 +53,29 @@ fn memory_finding(bound: u32) -> Result <bool, &'static str> {
     Err("Can not find Root System Description Pointer (RSDP).")
 }
 
-fn is_init() -> Result <*const RSDP20, &'static str> {
+fn is_init() -> Result <&'static RSDP20, &'static str> {
     match unsafe {RSDPTR} {
-        Some(ptr)   => Ok(ptr),
+        Some(rsdptr)   => Ok(rsdptr),
         None        => Err("Root System Description Pointer (RSDP) is not initialized")
-        // if ptr == 0 as *const RSDP20
-        //     => Err("Root System Description Pointer (RSDP) is not initialized"),
-        //     ptr
-        //         => Ok(ptr)
     }
 }
 
 /// Return a ptr on xsdt
 /// RSDP must have been initialized first
 pub fn xsdtaddr() -> Result <u64, &'static str> {
-    let ptr = is_init()?;
-    let revision = unsafe {(*ptr).rsdp.revision};
+    let rsdptr = is_init()?;
+    let revision = rsdptr.rsdp.revision;
     if revision != 2 {
         return Err("Wrong RSDP version asked");
     }
-    return Ok(unsafe {(*ptr).xsdtaddress});
+    return Ok(rsdptr.xsdtaddress);
 }
 
 /// Return a ptr on rsdt
 /// RSDP must have been initialized first
 pub fn rsdtaddr() -> Result <u32, &'static str> {
-    let ptr = is_init()?;
-    return Ok(unsafe {(*ptr).rsdp.rsdtaddr});
+    let rsdptr = is_init()?;
+    return Ok(rsdptr.rsdp.rsdtaddr);
 }
 
 /// RSDP init will iter on addr in [0x0 - 0x1000000] to find "RSDP PTR "

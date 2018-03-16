@@ -12,7 +12,7 @@ static mut DSDT: DSDT = DSDT {
 
 struct DSDT {
     valid: bool,
-    dsdt: Option<*const ACPISDTHeader>,
+    dsdt: Option<&'static ACPISDTHeader>,
     s5_ptr: u32,
     slp_typ_a: u16,
     slp_typ_b: u16
@@ -20,7 +20,7 @@ struct DSDT {
 
 impl DSDT {
     fn init(&mut self, addr: u32) -> Result <(), &'static str> {
-        self.dsdt = Some(addr as *const ACPISDTHeader);
+        self.dsdt = Some(unsafe{ &(*(addr as *const ACPISDTHeader)) });
         self.s5_ptr = self.find_s5(addr)?;
         self.parse_s5();
         self.valid = true;
@@ -29,7 +29,7 @@ impl DSDT {
 
     fn find_s5(&self, addr: u32) -> Result <u32, &'static str> {
         let dsdt_start = addr + mem::size_of::<ACPISDTHeader>() as u32;
-        let dsdt_end = dsdt_start + unsafe {(*self.dsdt.unwrap()).length};
+        let dsdt_end = dsdt_start + self.dsdt.unwrap().length;
         for addr in dsdt_start..dsdt_end {
             if check_signature(addr, "_S5_") {
                 if (check_signature(addr - 1, "\x08") || check_signature(addr - 2, "\x08\\")) && check_signature(addr + 4, "\x12") {

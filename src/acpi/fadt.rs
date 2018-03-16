@@ -83,18 +83,18 @@ struct FADT
 
 }
 
-static mut FADT: Option<*const FADT> = None;
+static mut FADT: Option<&'static FADT> = None;
 
 /// ## Initialize Fixed ACPI Description Table (FADT)
 /// input param addr is contain in other ptr of rsdt
 pub fn init(sdt_iter: ACPISDTIter) -> Result <(), &'static str> {
     for sdt_ptr in sdt_iter {
         if ACPISDTHeader::valid(sdt_ptr, "FACP") { // Where is "FADT"? Shut up is magic
-            let ptr = sdt_ptr as *const FADT;
-            unsafe {FADT = Some(ptr)};
+            let ref fadt_tmp: &FADT = unsafe{ &(*(sdt_ptr as *const FADT)) };
+            unsafe {FADT = Some(fadt_tmp)};
             if !is_enable()? { // TODO do i have to check if enabled before init ???
-                let smi_cmd = unsafe {(*ptr).smi_commandport} as u16; // TODO WHY DO I NEED THIS FUCKING CAST
-                let acpi_enable = unsafe {(*ptr).acpi_enable};
+                let smi_cmd = fadt_tmp.smi_commandport as u16; // TODO WHY DO I NEED THIS FUCKING CAST
+                let acpi_enable = fadt_tmp.acpi_enable;
                 cpuio::outb(smi_cmd, acpi_enable); // send acpi enable command
             }
             return Ok(());
@@ -103,9 +103,9 @@ pub fn init(sdt_iter: ACPISDTIter) -> Result <(), &'static str> {
     return Err("Can not find Fixed ACPI Description Table (FADT).");
 }
 
-fn is_init() -> Result <*const FADT, &'static str> {
+fn is_init() -> Result <&'static FADT, &'static str> {
     match unsafe {FADT} {
-        Some(ptr)   => Ok(ptr),
+        Some(fadt)   => Ok(fadt),
         None        => Err("Fixed ACPI Description Table (FADT) is not initialized")
     }
 }
@@ -113,18 +113,18 @@ fn is_init() -> Result <*const FADT, &'static str> {
 /// Return Dsdt address
 /// FADT must have been initialized first
 pub fn dsdtaddr() -> Result <u32, &'static str> {
-    let ptr = is_init()?;
-    return Ok(unsafe {(*ptr).dsdt});
+    let fadt = is_init()?;
+    return Ok(fadt.dsdt);
 }
 
-fn get_cnt(ptr: *const FADT) -> [u16; 2] {
-    [unsafe {(*ptr).pm1acontrolblock} as u16, unsafe {(*ptr).pm1bcontrolblock} as u16] // TODO WHY DO I NEED THIS FUCKING CAST
+fn get_cnt(fadt: &'static FADT) -> [u16; 2] {
+    [fadt.pm1acontrolblock as u16, fadt.pm1bcontrolblock as u16] // TODO WHY DO I NEED THIS FUCKING CAST
 }
 
 /// Return true/false depending of acpi is enable
 pub fn is_enable() -> Result <bool, &'static str> {
-    let ptr = is_init()?;
-    let pm1_cnt = get_cnt(ptr);
+    let fadt = is_init()?;
+    let pm1_cnt = get_cnt(fadt);
     if pm1_cnt[1] == 0 {
         Ok(cpuio::inw(pm1_cnt[0]) & 0x1 == 0x1)
     } else {

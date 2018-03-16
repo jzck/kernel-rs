@@ -6,6 +6,7 @@ mod dsdt;
 
 use core;
 use core::mem;
+// use cpuio;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
