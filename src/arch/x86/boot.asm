@@ -48,6 +48,8 @@ set_up_page_tables:
     cmp ecx, 20        ; if counter == 1023, the whole P2 table is mapped
     jne .map_p2_table  ; else map the next entry
 
+    mov eax, p2_table
+    mov cr3, eax
     ret
 
 ; PSE (Page Size Extension) allows huge pages to exist
@@ -61,8 +63,6 @@ enable_pse:
 
 enable_paging:
     ; load P2 to cr3 register (cpu uses this to access the P2 table)
-    mov eax, p2_table
-    mov cr3, eax
 
     ; enable paging in the cr0 register
     mov eax, cr0

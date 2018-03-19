@@ -32,7 +32,9 @@ pub mod x86;
 #[no_mangle]
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     acpi::init().unwrap();
+
     let boot_info = unsafe { multiboot2::load(multiboot_info_addr) };
+    enable_paging();
     enable_write_protect_bit();
 
     memory::init(&boot_info);
@@ -51,6 +53,10 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     }
 
     loop { keyboard::kbd_callback(); }
+}
+
+fn enable_paging() {
+    unsafe { x86::cr0_write(x86::cr0() | (1 << 31)) };
 }
 
 fn enable_write_protect_bit() {

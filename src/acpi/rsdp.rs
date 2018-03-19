@@ -2,6 +2,7 @@ use super::{check_signature,check_checksum};
 use core::mem;
 
 #[repr(C)]
+#[derive(Clone)]
 struct RSDP {
     signature: [u8; 8],
     checksum: u8,
@@ -11,6 +12,7 @@ struct RSDP {
 }
 
 #[repr(C)]
+#[derive(Clone)]
 pub struct RSDP20 {
     rsdp: RSDP,
     length: u32,
@@ -19,7 +21,7 @@ pub struct RSDP20 {
     reserved: [u8; 3],
 }
 
-static mut RSDPTR: Option<&'static RSDP20> = None;
+static mut RSDPTR: Option<RSDP20> = None;
 
 /// RSDP load will check is RSDP is present at the addr sent.
 /// Return a bool
@@ -27,7 +29,7 @@ static mut RSDPTR: Option<&'static RSDP20> = None;
 ///         false => RSDP is V1
 pub fn load(addr: u32) -> Result <bool, &'static str> {
     if check_signature(addr, "RSD PTR ") {
-        let ref rsdp_tmp: &RSDP20 = unsafe{ &(*(addr as *const RSDP20)) };
+        let rsdp_tmp: RSDP20 = unsafe{ (*(addr as *const RSDP20)).clone() };
         let revision = rsdp_tmp.rsdp.revision;
         if (revision == 0 && check_checksum(addr, mem::size_of::<RSDP>())) || (revision == 2 && check_checksum(addr, mem::size_of::<RSDP20>())) {
             unsafe {RSDPTR = Some(rsdp_tmp)};
@@ -53,8 +55,8 @@ fn memory_finding(bound: u32) -> Result <bool, &'static str> {
     Err("Can not find Root System Description Pointer (RSDP).")
 }
 
-fn is_init() -> Result <&'static RSDP20, &'static str> {
-    match unsafe {RSDPTR} {
+fn is_init() -> Result <RSDP20, &'static str> {
+    match unsafe {RSDPTR.clone()} {
         Some(rsdptr)   => Ok(rsdptr),
         None        => Err("Root System Description Pointer (RSDP) is not initialized")
     }

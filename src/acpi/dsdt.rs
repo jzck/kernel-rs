@@ -50,6 +50,7 @@ impl DSDT {
         self.slp_typ_b = (unsafe {*(ptr as *const u8)} as u16) << 10;
     }
 }
+
 fn is_init() -> Result <(), &'static str> {
     match unsafe {DSDT.valid} {
         true => Ok(()),

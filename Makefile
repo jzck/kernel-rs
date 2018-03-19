@@ -31,13 +31,13 @@ asm_object		:= $(patsubst src/arch/$(arch)/%.asm, build/arch/$(arch)/%.o, $(asm_
 KERNEL_RUN		:= $(QEMU) -curses -cdrom $(iso)
 MONITOR 		:= sleep 0.5;\
 	telnet 127.0.0.1 $(PORT);\
-	kill \`ps -x | grep \"[g]db\" | cut -d \  -f 1 \`;\
-	kill \`ps -x | grep \"[g]db\" | cut -d \  -f 2 \`
+	kill \`ps -x | grep \"[g]db -q\" | cut -d \  -f 1 \`;\
+	kill \`ps -x | grep \"[g]db -q\" | cut -d \  -f 2 \`
 GDB 			:= gdb -q\
 	-ex \"set arch i386:x86-64\"\
 	-ex \"file $(kernel)\"\
-	-ex \"target remote :$(PORTG)\"
-	# -ex \"continue\"
+	-ex \"target remote :$(PORTG)\"\
+	-ex \"continue\"
 
 all: $(kernel)
 

@@ -2,7 +2,7 @@ use super::{ACPISDTHeader,ACPISDTIter};
 use cpuio;
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct GenericAddressStructure {
     addressspace: u8,
     bitwidth: u8,
@@ -13,7 +13,7 @@ struct GenericAddressStructure {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct FADT
 {
     header: ACPISDTHeader,
@@ -83,15 +83,15 @@ struct FADT
 
 }
 
-static mut FADT: Option<&'static FADT> = None;
+static mut FADT: Option<FADT> = None;
 
 /// ## Initialize Fixed ACPI Description Table (FADT)
 /// input param addr is contain in other ptr of rsdt
 pub fn init(sdt_iter: ACPISDTIter) -> Result <(), &'static str> {
     for sdt_ptr in sdt_iter {
         if ACPISDTHeader::valid(sdt_ptr, "FACP") { // Where is "FADT"? Shut up is magic
-            let ref fadt_tmp: &FADT = unsafe{ &(*(sdt_ptr as *const FADT)) };
-            unsafe {FADT = Some(fadt_tmp)};
+            let fadt_tmp: FADT = unsafe{ (*(sdt_ptr as *const FADT)).clone() };
+            unsafe {FADT = Some(fadt_tmp.clone())};
             if !is_enable()? { // TODO do i have to check if enabled before init ???
                 let smi_cmd = fadt_tmp.smi_commandport as u16; // TODO WHY DO I NEED THIS FUCKING CAST
                 let acpi_enable = fadt_tmp.acpi_enable;
@@ -103,8 +103,8 @@ pub fn init(sdt_iter: ACPISDTIter) -> Result <(), &'static str> {
     return Err("Can not find Fixed ACPI Description Table (FADT).");
 }
 
-fn is_init() -> Result <&'static FADT, &'static str> {
-    match unsafe {FADT} {
+fn is_init() -> Result <FADT, &'static str> {
+    match unsafe {FADT.clone()} {
         Some(fadt)   => Ok(fadt),
         None        => Err("Fixed ACPI Description Table (FADT) is not initialized")
     }
@@ -117,7 +117,7 @@ pub fn dsdtaddr() -> Result <u32, &'static str> {
     return Ok(fadt.dsdt);
 }
 
-fn get_cnt(fadt: &'static FADT) -> [u16; 2] {
+fn get_cnt(fadt: FADT) -> [u16; 2] {
     [fadt.pm1acontrolblock as u16, fadt.pm1bcontrolblock as u16] // TODO WHY DO I NEED THIS FUCKING CAST
 }
 
@@ -138,6 +138,9 @@ pub fn get_controlblock() -> Result <[u16; 2], &'static str> {
     if !is_enable()? {
         Err("ACPI is not enabled")
     } else {
+    // println!("HALT");
+    // flush!();
+    // cpuio::halt();
         Ok(get_cnt(is_init()?)) // TODO redondant call to is_init
     }
 }
