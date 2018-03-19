@@ -10,3 +10,4 @@ crate-type = ["staticlib"]
 rlibc = "1.0"
 bitflags = "1.0.1"
 multiboot2 = { path = "multiboot2-elf64" }
+x86 = { path = "x86" }

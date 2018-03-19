@@ -11,8 +11,9 @@
 
 extern crate rlibc;
 extern crate multiboot2;
-#[macro_use] extern crate bitflags;
+// #[macro_use] extern crate bitflags;
 #[macro_use] extern crate alloc;
+extern crate x86;
 
 /// 80x25 screen and simplistic terminal driver
 #[macro_use] pub mod vga;
@@ -20,14 +21,14 @@ extern crate multiboot2;
 pub mod keyboard;
 /// simplisitc kernel commands
 pub mod console;
-/// wrappers around the x86-family I/O instructions.
+/// rust wrappers around cpu I/O instructions.
 pub mod cpuio;
 /// ACPI self-content module
 pub mod acpi;
-/// physical frame allocator + paging module
+/// physical frame allocator + paging module + heap allocator
 pub mod memory;
-/// a few x86 register and instruction wrappers
-pub mod x86;
+// x86 interruptions
+// pub mod interrupts;
 
 fn init_kernel(multiboot_info_addr: usize) -> Result <(), &'static str> {
     let boot_info = unsafe { multiboot2::load(multiboot_info_addr)};
@@ -40,6 +41,7 @@ fn init_kernel(multiboot_info_addr: usize) -> Result <(), &'static str> {
         acpi::init()?;
     }
     enable_paging();
+
     enable_write_protect_bit();
     memory::init(&boot_info);
     vga::init();
@@ -47,11 +49,13 @@ fn init_kernel(multiboot_info_addr: usize) -> Result <(), &'static str> {
 }
 
 fn enable_paging() {
-    unsafe { x86::cr0_write(x86::cr0() | (1 << 31)) };
+    use x86::registers::control::{Cr0, Cr0Flags};
+    unsafe { Cr0::write(Cr0::read() | Cr0Flags::PAGING) };
 }
 
 fn enable_write_protect_bit() {
-    unsafe { x86::cr0_write(x86::cr0() | (1 << 16)) };
+    use x86::registers::control::{Cr0, Cr0Flags};
+    unsafe { Cr0::write(Cr0::read() | Cr0Flags::WRITE_PROTECT) };
 }
 
 #[no_mangle]
@@ -59,18 +63,6 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     if let Err(msg) = init_kernel(multiboot_info_addr) {
         println!("Kernel initialization has failed: {}", msg);
         cpuio::halt();
-    }
-
-    use alloc::boxed::Box;
-    let mut heap_test = Box::new(42);
-    *heap_test -= 15;
-    let heap_test2 = Box::new("Hello");
-    println!("{:?} {:?}", heap_test, heap_test2);
-
-    let mut vec_test = vec![1,2,3,4,5,6,7];
-    vec_test[3] = 42;
-    for i in &vec_test {
-        print!("{} ", i);
     }
 
     loop { keyboard::kbd_callback(); }
@@ -89,7 +81,6 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32
     println!("LINE: {}", line);
     flush!();
     loop {}
-
 }
 
 use memory::BumpAllocator;

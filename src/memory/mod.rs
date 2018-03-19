@@ -7,57 +7,13 @@ mod paging;
 pub use self::area_allocator::*;
 pub use self::heap_allocator::*;
 pub use self::paging::remap_the_kernel;
-use self::paging::PhysicalAddress;
 use multiboot2;
-
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Frame {
-    number: usize,
-}
-
-impl Frame {
-    fn containing_address(address: usize) -> Frame {
-        Frame{ number: address / PAGE_SIZE }
-    }
-
-    fn start_address(&self) -> PhysicalAddress {
-        self.number * PAGE_SIZE
-    }
-
-    fn clone(&self) ->Frame {
-        Frame { number: self.number }
-    }
-
-    fn range_inclusive(start: Frame, end: Frame) -> FrameIter {
-        FrameIter {
-            start,
-            end,
-        }
-    }
-}
+use x86::*;
+use x86::structures::paging::*;
 
 pub trait FrameAllocator {
-    fn allocate_frame(&mut self) -> Option<Frame>;
-    fn deallocate_frame(&mut self, frame: Frame);
-}
-
-struct FrameIter {
-    start: Frame,
-    end: Frame,
-}
-
-impl Iterator for FrameIter {
-    type Item = Frame;
-
-    fn next(&mut self) -> Option<Frame> {
-        if self.start <= self.end {
-            let frame = self.start.clone();
-            self.start.number += 1;
-            Some(frame)
-        } else {
-            None
-        }
-    }
+    fn allocate_frame(&mut self) -> Option<PhysFrame>;
+    fn deallocate_frame(&mut self, frame: PhysFrame);
 }
 
 /// memory initialisation should only be called once
@@ -82,13 +38,14 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
 
     let mut active_table = paging::remap_the_kernel(&mut frame_allocator,
                                                     boot_info);
-    use self::paging::Page;
     use {HEAP_START, HEAP_SIZE};
 
-    let heap_start_page = Page::containing_address(HEAP_START);
-    let heap_end_page = Page::containing_address(HEAP_START + HEAP_SIZE - 1);
+    let heap_start_page = Page::containing_address(
+        VirtAddr::new(HEAP_START as u32));
+    let heap_end_page = Page::containing_address(
+        VirtAddr::new(HEAP_START as u32 + HEAP_SIZE as u32 - 1));
 
-    for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-        active_table.map(page, paging::EntryFlags::WRITABLE, &mut frame_allocator);
+    for page in heap_start_page..heap_end_page {
+        active_table.map(page, PageTableFlags::WRITABLE, &mut frame_allocator);
     }
 }
