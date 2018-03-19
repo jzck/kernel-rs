@@ -5,13 +5,16 @@
 #![feature(const_fn)]
 #![feature(ptr_internals)]
 #![feature(asm)]
+
 #![feature(alloc)]
 #![feature(allocator_api)]
 #![feature(global_allocator)]
 
+#![feature(abi_x86_interrupt)]
+
 extern crate rlibc;
 extern crate multiboot2;
-// #[macro_use] extern crate bitflags;
+#[macro_use] extern crate lazy_static;
 #[macro_use] extern crate alloc;
 extern crate x86;
 
@@ -27,22 +30,28 @@ pub mod cpuio;
 pub mod acpi;
 /// physical frame allocator + paging module + heap allocator
 pub mod memory;
-// x86 interruptions
-// pub mod interrupts;
+/// x86 interruptions
+pub mod interrupts;
 
 fn init_kernel(multiboot_info_addr: usize) -> Result <(), &'static str> {
+
     let boot_info = unsafe { multiboot2::load(multiboot_info_addr)};
+
     if let Some(rsdp) = boot_info.rsdp_v2_tag() {
         acpi::load(rsdp)?;
     } else if let Some(rsdp) = boot_info.rsdp_tag() {
         acpi::load(rsdp)?;
-    }
-    else {
+    } else {
         acpi::init()?;
     }
 
+    enable_paging();
+    enable_write_protect_bit();
+
     memory::init(&boot_info);
+    interrupts::init();
     vga::init();
+
     Ok(())
 }
 
@@ -52,6 +61,8 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
         println!("Kernel initialization has failed: {}", msg);
         cpuio::halt();
     }
+
+    x86::instructions::interrupts::int3();
 
     loop { keyboard::kbd_callback(); }
 }

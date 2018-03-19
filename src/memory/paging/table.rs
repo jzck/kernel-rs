@@ -1,6 +1,6 @@
 use memory::*;
 use x86::structures::paging::*;
-use x86::ux::*;
+// use x86::ux::*;
 
 pub trait RecTable
 {
