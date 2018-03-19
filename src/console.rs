@@ -179,8 +179,8 @@ pub fn regs() -> Result <(), &'static str> {
     use x86::registers::control::*;
     println!("cr0={:#b}", Cr0::read());
     println!("cr3={:?}", Cr3::read());
+    flush!();
     // TODO implement cr4 flags in `x86` module
     // println!("cr4={:#b}", Cr4::read());
     Ok(())
 }
-

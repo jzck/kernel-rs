@@ -34,22 +34,11 @@ pub mod memory;
 pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     // acpi::init().unwrap();
     let boot_info = unsafe { multiboot2::load(multiboot_info_addr) };
+
     enable_write_protect_bit();
 
     memory::init(&boot_info);
     vga::init();
-
-    use alloc::boxed::Box;
-    let mut heap_test = Box::new(42);
-    *heap_test -= 15;
-    let heap_test2 = Box::new("Hello");
-    println!("{:?} {:?}", heap_test, heap_test2);
-
-    let mut vec_test = vec![1,2,3,4,5,6,7];
-    vec_test[3] = 42;
-    for i in &vec_test {
-        print!("{} ", i);
-    }
 
     loop { keyboard::kbd_callback(); }
 }

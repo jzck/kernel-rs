@@ -65,19 +65,7 @@ impl ActivePageTable {
         let (p2_frame, cr3_flags) = Cr3::read();
         let old_table = InactivePageTable { p2_frame };
 
-        // unsafe { Cr3::write(new_table.p2_frame, cr3_flags); }
-
-        ::console::regs();
-        flush!();
-        loop {}
-
-        unsafe { asm!("mov $0, %cr3" :: "r" (4096) : "memory"); }
-    
-        // let addr = new_table.p2_frame.start_address();
-        // let value = addr.as_u32() | cr3_flags.bits();
-        // println!("value = {}", 0);
-        // flush!();
-        // loop {}
+        unsafe { Cr3::write(new_table.p2_frame, cr3_flags); }
 
         old_table
     }
@@ -92,15 +80,15 @@ impl InactivePageTable {
                active_table: &mut ActivePageTable,
                temporary_page: &mut TemporaryPage)
         -> InactivePageTable {
-        {
-            let table = temporary_page.map_table_frame(frame.clone(), active_table);
+            {
+                let table = temporary_page.map_table_frame(frame.clone(), active_table);
 
-            table.zero();
-            // set up recursive mapping for the table
-            table[1023].set(frame.clone(), PageTableFlags::PRESENT | PageTableFlags::WRITABLE)
-        }
-        temporary_page.unmap(active_table);
-        InactivePageTable { p2_frame: frame }
+                table.zero();
+                // set up recursive mapping for the table
+                table[1023].set(frame.clone(), PageTableFlags::PRESENT | PageTableFlags::WRITABLE)
+            }
+            temporary_page.unmap(active_table);
+            InactivePageTable { p2_frame: frame }
         }
 }
 
@@ -137,7 +125,7 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
                 PhysAddr::new(section.start_address() as u32));
             let end_frame = PhysFrame::containing_address(
                 PhysAddr::new(section.end_address() as u32 - 1));
-            for frame in start_frame..end_frame {
+            for frame in start_frame..end_frame + 1 {
                 mapper.identity_map(frame, flags, allocator);
             }
         }
@@ -146,16 +134,12 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
             PhysAddr::new(boot_info.start_address() as u32));
         let multiboot_end = PhysFrame::containing_address(
             PhysAddr::new(boot_info.end_address() as u32 - 1));
-        for frame in multiboot_start..multiboot_end {
+        for frame in multiboot_start..multiboot_end + 1 {
             mapper.identity_map(frame, PageTableFlags::PRESENT, allocator);
         }
     });
 
     let old_table = active_table.switch(new_table);
-
-    println!("check!");
-    flush!();
-    loop {}
 
     let old_p2_page = Page::containing_address(
         VirtAddr::new(old_table.p2_frame.start_address().as_u32()));
@@ -179,7 +163,6 @@ fn elf_to_pagetable_flags(elf_flags: &multiboot2::ElfSectionFlags)
     if elf_flags.contains(ElfSectionFlags::WRITABLE) {
         flags = flags | PageTableFlags::WRITABLE;
     }
-
     // LONG MODE STUFF
     // if !elf_flags.contains(ELF_SECTION_EXECUTABLE) {
     //     flags = flags | PageTableFlags::NO_EXECUTE;
