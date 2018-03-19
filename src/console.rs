@@ -40,15 +40,16 @@ pub fn exec(cli: &Writer) -> Result <(), &'static str> {
 }
 
 fn help() -> Result <(), &'static str> {
-    print!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n",
-    "acpi                         => Return acpi state (ENABLED|DISABLE)",
-    "help | h                     => Print this help",
-    "memory                       => print memory areas", // TODO
-    "multiboot                    => print multiboot information", // TODO
-    "reboot                       => reboot",
-    "sections                     => print elf sections", // TODO
-    "shutdown | halt | q          => Kill a kitten, then shutdown",
-    "stack                        => Print kernel stack in a fancy way");
+    println!("acpi                         => Return acpi state (ENABLED|DISABLE)");
+    println!("help | h                     => Print this help");
+    // println!("memory                       => Print memory areas");
+    // println!("multiboot                    => Print multiboot information");
+    println!("reboot                       => Reboot");
+    // println!("sections                     => Print elf sections");
+    println!("shutdown | halt | q          => Kill a kitten, then shutdown");
+    println!("stack                        => Print kernel stack in a fancy way");
+    println!("regs                         => Print controle register");
+    flush!();
     Ok(())
 }
 

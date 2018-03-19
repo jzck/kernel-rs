@@ -45,8 +45,7 @@ struct Acpi {
 }
 
 impl Acpi {
-    fn init(&mut self) -> Result <(), &'static str> {
-        self.v2 = rsdp::init()?;
+    fn common_init(&mut self) -> Result <(), &'static str> {
         if self.v2 {
             // Xsdt Address:
             // 64-bit physical address of the XSDT table. If you detect ACPI Version 2.0 you should use this table instead of RSDT even on x86, casting the address to uint32_t.
@@ -59,6 +58,15 @@ impl Acpi {
         dsdt::init(fadt::dsdtaddr()?)?;
         self.valid = true;
         Ok(())
+
+    }
+    fn init(&mut self) -> Result <(), &'static str> {
+        self.v2 = rsdp::init()?;
+        self.common_init()
+    }
+    fn load(&mut self, rsdp_addr: u32) -> Result <(), &'static str> {
+        self.v2 = rsdp::load(rsdp_addr)?;
+        self.common_init()
     }
 }
 
@@ -129,6 +137,14 @@ pub fn init() -> Result <(), &'static str> {
         return Ok(());
     }
     unsafe {ACPI.init()}
+}
+
+/// Load the ACPI module, addr given is a ptr to RSDP
+pub fn load(rsdp_addr: u32) -> Result <(), &'static str> {
+    if let Ok(()) = is_init() {
+        return Ok(());
+    }
+    unsafe {ACPI.load(rsdp_addr)}
 }
 
 /// Proceed to ACPI shutdown

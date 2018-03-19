@@ -123,7 +123,6 @@ impl Writer {
         self.buffer[i] = b' ';
         self.buffer[i + 1] = 0;
         self.flush();
-        // flush!();
     }
 
     pub fn write_byte(&mut self, byte: u8) {
