@@ -8,9 +8,9 @@ pub trait RecTable
     fn next_table(&self, index: usize) -> Option<&PageTable>;
     fn next_table_mut(&mut self, index: usize) -> Option<&mut PageTable>;
     fn next_table_create<A: FrameAllocator>(&mut self,
-                             index: usize,
-                             allocator: &mut A)
-            -> &mut PageTable;
+                                            index: usize,
+                                            allocator: &mut A)
+        -> &mut PageTable;
 }
 
 impl RecTable for PageTable
@@ -36,8 +36,8 @@ impl RecTable for PageTable
     }
 
     fn next_table_create<A>(&mut self,
-                         index: usize,
-                         allocator: &mut A) -> &mut PageTable
+                            index: usize,
+                            allocator: &mut A) -> &mut PageTable
         where A: FrameAllocator
         {
             if self.next_table(index).is_none() {

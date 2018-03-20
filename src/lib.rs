@@ -40,22 +40,10 @@ fn init_kernel(multiboot_info_addr: usize) -> Result <(), &'static str> {
     else {
         acpi::init()?;
     }
-    enable_paging();
 
-    enable_write_protect_bit();
     memory::init(&boot_info);
     vga::init();
     Ok(())
-}
-
-fn enable_paging() {
-    use x86::registers::control::{Cr0, Cr0Flags};
-    unsafe { Cr0::write(Cr0::read() | Cr0Flags::PAGING) };
-}
-
-fn enable_write_protect_bit() {
-    use x86::registers::control::{Cr0, Cr0Flags};
-    unsafe { Cr0::write(Cr0::read() | Cr0Flags::WRITE_PROTECT) };
 }
 
 #[no_mangle]

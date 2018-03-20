@@ -18,6 +18,10 @@ pub trait FrameAllocator {
 
 /// memory initialisation should only be called once
 pub fn init(boot_info: &multiboot2::BootInformation) {
+    use x86::registers::control::{Cr0, Cr4, Cr0Flags, Cr4Flags};
+    Cr4::add(Cr4Flags::PSE);
+    Cr0::add(Cr0Flags::PAGING | Cr0Flags::WRITE_PROTECT);
+
     let elf_sections_tag = boot_info.elf_sections_tag().unwrap();
     let memory_map_tag = boot_info.memory_map_tag().unwrap();
 
@@ -33,7 +37,7 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
 
     let mut frame_allocator = self::AreaFrameAllocator::new(
         kernel_start as usize, kernel_end as usize,
-        boot_info.start_address(), boot_info.start_address(),
+        boot_info.start_address(), boot_info.end_address(),
         memory_map_tag.memory_areas());
 
     let mut active_table = paging::remap_the_kernel(&mut frame_allocator,

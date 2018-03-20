@@ -214,7 +214,5 @@ pub fn init() {
            format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
            format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
            format_args!("{: ^80}", r#"      '--'  `---'          "#));
-    set_color!();
     unsafe { VGA.prompt(); }
-    unsafe { VGA.flush(); }
 }

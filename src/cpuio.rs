@@ -38,9 +38,10 @@ pub fn outl(port: u16, value: u32) {
     unsafe {asm!("outl %eax, %dx" :: "{dx}"(port), "{eax}"(value) :: "volatile")};
 }
 
+/// Halt system
 pub fn halt() -> ! {
-    unsafe {asm!("cli")};//TODO sure here ?
+    unsafe {asm!("cli" : : : : "volatile")};
     loop {
-        unsafe {asm!("hlt")}; //TODO volatile ?????
+        unsafe {asm!("hlt" : : : : "volatile")};
     }
 }

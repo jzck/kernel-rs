@@ -37,7 +37,6 @@ impl Mapper {
         let offset = virtual_address.as_u32() % PAGE_SIZE as u32;
         self.translate_page(Page::containing_address(virtual_address))
             .map(|frame| frame.start_address() + offset)
-
     }
 
     /// virtual page to physical frame translation
@@ -50,13 +49,13 @@ impl Mapper {
                 if p2_entry.flags().contains(PageTableFlags::HUGE_PAGE) {
                     // TODO 4MiB alignment check
                     return Some(start_frame + u32::from(page.p1_index()));
-                    }
+                }
             }
             None
-        }; 
+        };
 
         p1.and_then(|p1| p1[page.p1_index()].pointed_frame())
-          .or_else(huge_page) 
+            .or_else(huge_page) 
     }
 
     /// map a virtual page to a physical frame in the page tables

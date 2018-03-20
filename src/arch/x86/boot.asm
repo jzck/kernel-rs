@@ -12,12 +12,9 @@ start:
 	call check_multiboot
 
 	call set_up_page_tables
-	call enable_pse
-	; call enable_paging
 
 	; load the new gdt
 	lgdt [GDTR.ptr]
-
 	jmp GDTR.gdt_cs:x86_start
 
 check_multiboot:
@@ -34,42 +31,13 @@ set_up_page_tables:
 	or eax, 0b11 ; present + writable
 	mov [p2_table + 1023 * 4], eax
 
-    ; map each P2 entry to a huge 4MiB page
-    mov ecx, 0         ; counter variable
+	; map ecx-th P2 entry to a huge page that starts at address 2MiB*ecx
+	mov eax, 0b10000011 ; huge + present + writable
+	mov [p2_table], eax ; map ecx-th entry
 
-.map_p2_table:
-    ; map ecx-th P2 entry to a huge page that starts at address 2MiB*ecx
-    mov eax, 0x400000  ; 4MiB
-    mul ecx            ; start address of ecx-th page
-    or eax, 0b10000011 ; huge + present + writable
-    mov [p2_table + ecx * 4], eax ; map ecx-th entry
-
-    inc ecx            ; increase counter
-    cmp ecx, 20        ; if counter == 1023, the whole P2 table is mapped
-    jne .map_p2_table  ; else map the next entry
-
-    mov eax, p2_table
-    mov cr3, eax
-    ret
-
-; PSE (Page Size Extension) allows huge pages to exist
-enable_pse:
-    ; enable PSE in the cr4 register
-    mov eax, cr4
-    or eax, 1 << 4
-    mov cr4, eax
-
-    ret
-
-enable_paging:
-    ; load P2 to cr3 register (cpu uses this to access the P2 table)
-
-    ; enable paging in the cr0 register
-    mov eax, cr0
-    or eax, 1 << 31
-    mov cr0, eax
-
-    ret
+	mov eax, p2_table
+	mov cr3, eax
+	ret
 
 error:
 	mov dword [0xb8000], 0x4f524f45
@@ -84,9 +52,9 @@ HALT:
 section .bss
 align 4096
 p2_table:
-    resb 4096
+	resb 4096
 stack_bottom:
-    resb 4096 * 8
+	resb 4096 * 8
 stack_top:
 
 section .gdt
