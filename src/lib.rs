@@ -64,6 +64,8 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
 
     x86::instructions::interrupts::int3();
 
+    flush!();
+
     loop { keyboard::kbd_callback(); }
 }
 
