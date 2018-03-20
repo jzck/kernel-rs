@@ -37,6 +37,7 @@ fn init_kernel(multiboot_info_addr: usize) -> Result <(), &'static str> {
 
     let boot_info = unsafe { multiboot2::load(multiboot_info_addr)};
 
+    // ACPI must be intialized BEFORE paging (memory::init()) is active
     if let Some(rsdp) = boot_info.rsdp_v2_tag() {
         acpi::load(rsdp)?;
     } else if let Some(rsdp) = boot_info.rsdp_tag() {
@@ -45,11 +46,8 @@ fn init_kernel(multiboot_info_addr: usize) -> Result <(), &'static str> {
         acpi::init()?;
     }
 
-    enable_paging();
-    enable_write_protect_bit();
-
-    memory::init(&boot_info);
-    interrupts::init();
+    let mut memory_controller = memory::init(&boot_info);
+    interrupts::init(&mut memory_controller);
     vga::init();
 
     Ok(())
@@ -62,11 +60,16 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
         cpuio::halt();
     }
 
-    x86::instructions::interrupts::int3();
+    // x86::instructions::interrupts::int3();
 
-    flush!();
+    // fn stack_overflow() { stack_overflow(); }
+    // stack_overflow();
 
-    loop { keyboard::kbd_callback(); }
+    // unsafe {
+    //     *(0xdead as *mut u32) = 42;
+    // };
+
+    loop {}
 }
 
 #[lang = "eh_personality"] #[no_mangle]

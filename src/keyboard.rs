@@ -1,4 +1,5 @@
 extern crate core;
+use x86::structures::idt::*;
 
 use cpuio;
 use vga;
@@ -76,7 +77,10 @@ fn check_key_state(key: u8) -> (bool, usize) {
     }
 }
 
-pub fn kbd_callback() {
+pub extern "x86-interrupt" fn kbd_callback(
+    stack_frame: &mut ExceptionStackFrame) {
+    println!("kbd callback called");
+    flush!();
     static mut SHIFT: bool = false;
     static mut CTRL: bool = false;
     static mut ALT: bool = false;
