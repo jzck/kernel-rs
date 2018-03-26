@@ -1,6 +1,5 @@
-use x86::*;
 use x86::structures::paging::*;
-use memory::paging::{self, ActivePageTable};
+use memory::paging::{ActivePageTable};
 use memory::*;
 use core::ops::Range;
 
