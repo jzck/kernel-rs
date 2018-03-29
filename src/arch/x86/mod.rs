@@ -26,8 +26,6 @@ pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
     // set up physical allocator
      ::memory::init(&boot_info);
 
-    // pic
-    self::device::init();
 
     // set up interrupts
     self::interrupt::init();
@@ -37,6 +35,9 @@ pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
 
     // set up heap
     ::allocator::init(&mut active_table);
+
+    // pic
+    self::device::init();
 
     // after core has loaded
     ::memory::init_noncore();

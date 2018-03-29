@@ -29,7 +29,7 @@ extern crate x86;
 pub mod keyboard;
 /// simplisitc kernel commands
 pub mod console;
-/// rust wrappers around cpu I/O instructions.
+/// rust wrappers around cpu I/O instructions., cpuio.rs needs to go in favour of io module
 pub mod cpuio;
 pub mod io;
 /// ACPI self contained module
