@@ -23,12 +23,16 @@ cargo install xargo
 
 ### running
 
-`make run` runs the OS in a tmux window with `qemu` + `gdb`  
-`make iso` generate an iso to run wherever
+`make iso` generate the iso
+`make qemu` runs the OS in a tmux window with `qemu` + `gdb`  
 
-# References
+### todo
+
+  - remove assembly for a pure rust entry point
+  - replace grub with something lighter
+
+### inspiration
 
   - [wiki.osdev.org](https://wiki.osdev.org) is a fucking goldmine
-  - [wiki.osdev.org/Rust](https://wiki.osdev.org/Rust) everything rust related to OSes
-  - [Writing an OS in rust](https://os.phil-opp.com/) extremely helpful to get things going on x86 and nightly rust
-  - [Rust OS comparison](https://github.com/flosse/rust-os-comparison) roundup of current projects
+  - [Phil Opperman's "Writing an OS in rust"](https://os.phil-opp.com/)
+  - [Redox kernel](https://github.com/redox/kernel)
