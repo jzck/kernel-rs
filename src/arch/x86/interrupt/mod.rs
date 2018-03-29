@@ -29,9 +29,7 @@ lazy_static! {
         idt.virtualization.set_handler_fn(exception::virtualization);
 
         // set up IRQs
-        idt.interrupts[0].set_handler_fn(irq::keyboard);
-        idt.interrupts[1].set_handler_fn(irq::keyboard);
-        idt.interrupts[2].set_handler_fn(irq::keyboard);
+        idt[33].set_handler_fn(irq::keyboard);
         idt
     };
 }

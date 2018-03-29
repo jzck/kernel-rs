@@ -4,6 +4,7 @@ extern crate x86;
 pub mod macros;
 pub mod paging;
 pub mod interrupt;
+pub mod device;
 
 use multiboot2;
 use acpi;
@@ -25,6 +26,12 @@ pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
     // set up physical allocator
      ::memory::init(&boot_info);
 
+    // pic
+    self::device::init();
+
+    // set up interrupts
+    self::interrupt::init();
+
     // set up virtual mapping
     let mut active_table = self::paging::init(&boot_info);
 
@@ -34,8 +41,6 @@ pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
     // after core has loaded
     ::memory::init_noncore();
 
-    // set up interrupts
-    self::interrupt::init();
 
     // primary CPU entry point
     ::kmain();

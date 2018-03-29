@@ -5,7 +5,10 @@ use x86::structures::idt::*;
 interrupt!(divide_by_zero, {});
 interrupt!(debug, {});
 interrupt!(non_maskable, {});
-interrupt!(breakpoint, {});
+interrupt!(breakpoint, {
+    println!("testing here dont mind me");
+    flush!();
+});
 interrupt!(overflow, {});
 interrupt!(bound_range, {});
 interrupt!(invalid_opcode, {});

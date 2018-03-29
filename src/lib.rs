@@ -31,6 +31,7 @@ pub mod keyboard;
 pub mod console;
 /// rust wrappers around cpu I/O instructions.
 pub mod cpuio;
+pub mod io;
 /// ACPI self contained module
 pub mod acpi;
 /// Heap allocators
@@ -46,7 +47,9 @@ pub fn kmain() -> ! {
     // vga is specific to chipset not cpu
     vga::init();
 
+    // x86::instructions::interrupts::disable();
     // x86::instructions::interrupts::int3();
+    // x86::instructions::interrupts::enable();
 
     // fn stack_overflow() { stack_overflow(); }
     // stack_overflow();
@@ -54,8 +57,6 @@ pub fn kmain() -> ! {
     // unsafe {
     //     *(0xdead as *mut u32) = 42;
     // };
-
-    println!("at main now!");
 
     loop {}
 }
