@@ -1,5 +1,6 @@
 //! project hosted on [github](https://github.com/jzck/kernel)
-
+//! exclusively x86
+//!
 #![no_std]
 #![feature(lang_items)]
 #![feature(const_fn)]
@@ -13,12 +14,16 @@
 #![feature(abi_x86_interrupt)]
 
 extern crate rlibc;
-extern crate multiboot2;
-#[macro_use] extern crate lazy_static;
 #[macro_use] extern crate alloc;
+#[macro_use] extern crate lazy_static;
+extern crate spin;
+extern crate multiboot2;
+extern crate slab_allocator;
+
+// used by arch/x86, need conditional compilation here
 extern crate x86;
 
-/// 80x25 screen and simplistic terminal driver
+/// 80x25 terminal driver
 #[macro_use] pub mod vga;
 /// PS/2 detection and processing
 pub mod keyboard;
@@ -26,39 +31,20 @@ pub mod keyboard;
 pub mod console;
 /// rust wrappers around cpu I/O instructions.
 pub mod cpuio;
-/// ACPI self-content module
+/// ACPI self contained module
 pub mod acpi;
-/// physical frame allocator + paging module + heap allocator
+/// Heap allocators
+pub mod allocator;
+/// Memory management
 pub mod memory;
-/// x86 interruptions
-pub mod interrupts;
+/// arch specific entry points
+pub mod arch;
 
-fn init_kernel(multiboot_info_addr: usize) -> Result <(), &'static str> {
+/// kernel entry point. arch module is responsible for calling this
+pub fn kmain() -> ! {
 
-    let boot_info = unsafe { multiboot2::load(multiboot_info_addr)};
-
-    // ACPI must be intialized BEFORE paging (memory::init()) is active
-    if let Some(rsdp) = boot_info.rsdp_v2_tag() {
-        acpi::load(rsdp)?;
-    } else if let Some(rsdp) = boot_info.rsdp_tag() {
-        acpi::load(rsdp)?;
-    } else {
-        acpi::init()?;
-    }
-
-    let mut memory_controller = memory::init(&boot_info);
-    interrupts::init(&mut memory_controller);
+    // vga is specific to chipset not cpu
     vga::init();
-
-    Ok(())
-}
-
-#[no_mangle]
-pub extern fn kmain(multiboot_info_addr: usize) -> ! {
-    if let Err(msg) = init_kernel(multiboot_info_addr) {
-        println!("Kernel initialization has failed: {}", msg);
-        cpuio::halt();
-    }
 
     // x86::instructions::interrupts::int3();
 
@@ -69,13 +55,13 @@ pub extern fn kmain(multiboot_info_addr: usize) -> ! {
     //     *(0xdead as *mut u32) = 42;
     // };
 
+    println!("at main now!");
+
     loop {}
 }
 
 #[lang = "eh_personality"] #[no_mangle]
-pub extern fn eh_personality() {
-
-}
+pub extern fn eh_personality() {}
 
 #[lang = "panic_fmt"] #[no_mangle]
 pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32)
@@ -87,11 +73,8 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32
     loop {}
 }
 
-use memory::BumpAllocator;
-
 pub const HEAP_START: usize = (1 << 22); //first entry of p2
-pub const HEAP_SIZE: usize = 100 * 1024; //100 KiB
+pub const HEAP_SIZE: usize = 10 * 4096 * 8; //~ 100 KiB
 
 #[global_allocator]
-static HEAP_ALLOCATOR: BumpAllocator = BumpAllocator::new(HEAP_START,
-                                                          HEAP_START + HEAP_SIZE);
+static HEAP_ALLOCATOR: allocator::Allocator = allocator::Allocator;

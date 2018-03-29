@@ -1,10 +1,9 @@
-use memory::{PAGE_SIZE, FrameAllocator};
 use core::ptr::Unique;
 use x86::structures::paging::*;
 use x86::instructions::tlb;
 use x86::usize_conversions::usize_from;
 use x86::*;
-use super::paging::table::RecTable;
+use super::table::RecTable;
 
 // virtual address of recursively mapped P2
 // for protected mode non PAE
@@ -59,43 +58,38 @@ impl Mapper {
     }
 
     /// map a virtual page to a physical frame in the page tables
-    pub fn map_to<A>(&mut self, page: Page, frame: PhysFrame, flags: PageTableFlags,
-                     allocator: &mut A)
-        where A: FrameAllocator
-        {
-            let p2 = self.p2_mut();
-            let p1 = p2.next_table_create(usize_from(u32::from(page.p2_index())), allocator);
-            assert!(p1[page.p1_index()].is_unused());
-            p1[page.p1_index()].set(frame, flags | PageTableFlags::PRESENT);
-        }
+    pub fn map_to(&mut self, page: Page, frame: PhysFrame, flags: PageTableFlags)
+    {
+        let p2 = self.p2_mut();
+        let p1 = p2.next_table_create(usize_from(u32::from(page.p2_index())));
+        assert!(p1[page.p1_index()].is_unused());
+        p1[page.p1_index()].set(frame, flags | PageTableFlags::PRESENT);
+    }
 
-    pub fn map<A>(&mut self, page: Page, flags: PageTableFlags, allocator: &mut A)
-        where A: FrameAllocator
-        {
-            let frame = allocator.allocate_frame().expect("out of memory");
-            self.map_to(page, frame, flags, allocator)
-        }
+    pub fn map(&mut self, page: Page, flags: PageTableFlags)
+    {
+        let frame = ::memory::allocate_frames(1).expect("out of frames");
+        self.map_to(page, frame, flags)
+    }
 
-    pub fn identity_map<A>(&mut self, frame: PhysFrame, flags: PageTableFlags, allocator: &mut A)
-        where A: FrameAllocator
-        {
-            let virt_addr = VirtAddr::new(frame.start_address().as_u32());
-            let page = Page::containing_address(virt_addr);
-            self.map_to(page, frame, flags, allocator);
-        }
+    pub fn identity_map(&mut self, frame: PhysFrame, flags: PageTableFlags)
+    {
+        let virt_addr = VirtAddr::new(frame.start_address().as_u32());
+        let page = Page::containing_address(virt_addr);
+        self.map_to(page, frame, flags);
+    }
 
-    pub fn unmap<A>(&mut self, page: Page, allocator: &mut A)
-        where A: FrameAllocator
-        {
-            assert!(self.translate(page.start_address()).is_some());
+    pub fn unmap(&mut self, page: Page)
+    {
+        assert!(self.translate(page.start_address()).is_some());
 
-            let p1 = self.p2_mut()
-                .next_table_mut(usize_from(u32::from(page.p2_index())))
-                .expect("mapping code does not support huge pages");
-            let frame = p1[page.p1_index()].pointed_frame().unwrap();
-            p1[page.p1_index()].set_unused();
-            tlb::flush(page.start_address());
-            // TODO
-            // allocator.deallocate_frame(frame);
-        }
+        let p1 = self.p2_mut()
+            .next_table_mut(usize_from(u32::from(page.p2_index())))
+            .expect("mapping code does not support huge pages");
+        let frame = p1[page.p1_index()].pointed_frame().unwrap();
+        p1[page.p1_index()].set_unused();
+        tlb::flush(page.start_address());
+        // TODO
+        ::memory::deallocate_frames(frame, 1);
+    }
 }

@@ -4,7 +4,7 @@ mod table;
 mod temporary_page;
 mod mapper;
 
-use memory::*;
+// use memory::*;
 use self::mapper::Mapper;
 use self::temporary_page::TemporaryPage;
 use core::ops::{Deref, DerefMut};
@@ -12,6 +12,19 @@ use multiboot2::BootInformation;
 use x86::*;
 use x86::registers::control::Cr3;
 use x86::instructions::tlb;
+use x86::structures::paging::*;
+use multiboot2;
+
+/// should be called only once
+pub fn init(boot_info: &multiboot2::BootInformation) -> ActivePageTable {
+    use x86::registers::control::*;
+    Cr4::add(Cr4Flags::PSE);
+    Cr0::add(Cr0Flags::PAGING | Cr0Flags::WRITE_PROTECT);
+
+    let active_table = remap_the_kernel(boot_info);
+
+    active_table
+}
 
 pub struct ActivePageTable {
     mapper: Mapper,
@@ -92,27 +105,26 @@ impl InactivePageTable {
         }
 }
 
-pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
-    -> ActivePageTable
-    where A: FrameAllocator
+pub fn remap_the_kernel(boot_info: &BootInformation) -> ActivePageTable
 {
-    let mut temporary_page = TemporaryPage::new(Page{number: 0xcafe}, allocator);
+    let mut temporary_page = TemporaryPage::new(Page{number: 0xcafe});
     let mut active_table = unsafe { ActivePageTable::new() };
     let mut new_table = {
-        let frame = allocator.allocate_frame().expect("no more frames");
+        let frame = ::memory::allocate_frames(1).expect("no more frames");
         InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
     };
 
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
 
-        // identity map the VGA text buffer
+        // id map vga buffer
         let vga_buffer_frame = PhysFrame::containing_address(PhysAddr::new(0xb8000));
-        mapper.identity_map(vga_buffer_frame, PageTableFlags::WRITABLE, allocator);
+        mapper.identity_map(vga_buffer_frame, PageTableFlags::WRITABLE);
 
         let elf_sections_tag = boot_info.elf_sections_tag()
             .expect("Memory map tag required");
 
+        // id map kernel sections
         for section in elf_sections_tag.sections() {
             if !section.is_allocated() {
                 continue;
@@ -126,16 +138,17 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
             let end_frame = PhysFrame::containing_address(
                 PhysAddr::new(section.end_address() as u32 - 1));
             for frame in start_frame..end_frame + 1 {
-                mapper.identity_map(frame, flags, allocator);
+                mapper.identity_map(frame, flags);
             }
         }
 
+        // id map multiboot
         let multiboot_start = PhysFrame::containing_address(
             PhysAddr::new(boot_info.start_address() as u32));
         let multiboot_end = PhysFrame::containing_address(
             PhysAddr::new(boot_info.end_address() as u32 - 1));
         for frame in multiboot_start..multiboot_end + 1 {
-            mapper.identity_map(frame, PageTableFlags::PRESENT, allocator);
+            mapper.identity_map(frame, PageTableFlags::PRESENT);
         }
     });
 
@@ -144,7 +157,7 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation)
     let old_p2_page = Page::containing_address(
         VirtAddr::new(old_table.p2_frame.start_address().as_u32()));
 
-    active_table.unmap(old_p2_page, allocator);
+    active_table.unmap(old_p2_page);
 
     active_table
 }
@@ -163,10 +176,6 @@ fn elf_to_pagetable_flags(elf_flags: &multiboot2::ElfSectionFlags)
     if elf_flags.contains(ElfSectionFlags::WRITABLE) {
         flags = flags | PageTableFlags::WRITABLE;
     }
-    // LONG MODE STUFF
-    // if !elf_flags.contains(ELF_SECTION_EXECUTABLE) {
-    //     flags = flags | PageTableFlags::NO_EXECUTE;
-    // }
 
     flags
 }

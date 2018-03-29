@@ -123,6 +123,7 @@ impl Writer {
         self.buffer[i] = b' ';
         self.buffer[i + 1] = 0;
         self.flush();
+        // flush!();
     }
 
     pub fn write_byte(&mut self, byte: u8) {
@@ -179,7 +180,6 @@ impl Writer {
 
         for col in 0..BUFFER_COLS/2 {
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col * 2)] = b' ';
-            self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col * 2) + 1] = 0;
         }
 
         self.buffer_pos = (BUFFER_ROWS - 1) * BUFFER_COLS;
@@ -214,5 +214,7 @@ pub fn init() {
            format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
            format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
            format_args!("{: ^80}", r#"      '--'  `---'          "#));
+    set_color!();
     unsafe { VGA.prompt(); }
+    unsafe { VGA.flush(); }
 }

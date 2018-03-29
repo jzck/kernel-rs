@@ -1,5 +1,5 @@
 global x86_start
-extern kmain
+extern x86_rust_start
 
 section .text
 bits 32
@@ -11,7 +11,7 @@ x86_start:
 	mov fs, ax
 	mov gs, ax
 
-	call kmain
+	call x86_rust_start
 
 	cli ; clear interrupt
 HALT:
