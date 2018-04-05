@@ -14,7 +14,8 @@
 #![feature(abi_x86_interrupt)]
 
 extern crate rlibc;
-#[macro_use] extern crate alloc;
+// #[macro_use]
+extern crate alloc;
 #[macro_use] extern crate lazy_static;
 extern crate spin;
 extern crate multiboot2;
@@ -45,9 +46,7 @@ pub mod arch;
 /// kernel entry point. arch module is responsible for calling this
 pub fn kmain() -> ! {
 
-    // x86::instructions::interrupts::disable();
-    x86::instructions::interrupts::int3();
-    // x86::instructions::interrupts::enable();
+    // x86::instructions::interrupts::int3();
 
     // fn stack_overflow() { stack_overflow(); }
     // stack_overflow();

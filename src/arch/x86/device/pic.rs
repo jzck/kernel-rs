@@ -36,13 +36,14 @@ pub unsafe fn init() {
     MASTER.data.write(master_mask); wait();
     SLAVE.data.write(slave_mask); wait();
 
-    println!("master={:#b}", MASTER.data.read());
-    println!("slave ={:#b}", SLAVE.data.read());
+    println!("master={:#x}", MASTER.data.read());
+    println!("slave ={:#x}", SLAVE.data.read());
 
-    unsafe { ::arch::x86::interrupt::irq::trigger(1); }
+    MASTER.mask_set(0);
+    MASTER.mask_clear(1);
 
-    println!("master={:#b}", MASTER.data.read());
-    println!("slave ={:#b}", SLAVE.data.read());
+    // asm!("sti");
+    ::x86::instructions::interrupts::enable();
 }
 
 pub struct Pic {

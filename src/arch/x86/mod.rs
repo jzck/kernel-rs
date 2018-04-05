@@ -1,15 +1,14 @@
 extern crate x86;
 
 #[macro_use]
-pub mod macros;
 pub mod paging;
 pub mod interrupt;
 pub mod device;
+
 pub mod idt;
 
 use multiboot2;
 use acpi;
-use raw_cpuid::CpuId;
 
 #[no_mangle]
 pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {

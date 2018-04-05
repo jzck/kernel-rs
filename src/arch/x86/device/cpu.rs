@@ -28,7 +28,7 @@ pub fn cpu_info() -> Result {
     }
 
     if let Some(info) = cpuid.get_feature_info() {
-        print!("Features:");
+        print!("CPU Features:");
         if info.has_fpu() { print!(" fpu") };
         if info.has_vme() { print!(", vme") };
         if info.has_de() { print!(", de") };
