@@ -77,8 +77,6 @@ fn check_key_state(key: u8) -> (bool, usize) {
 }
 
 pub fn kbd_callback() {
-    println!("kbd callback called");
-    flush!();
     static mut SHIFT: bool = false;
     static mut CTRL: bool = false;
     static mut ALT: bool = false;

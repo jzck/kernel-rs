@@ -5,9 +5,11 @@ pub mod macros;
 pub mod paging;
 pub mod interrupt;
 pub mod device;
+pub mod idt;
 
 use multiboot2;
 use acpi;
+use raw_cpuid::CpuId;
 
 #[no_mangle]
 pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
@@ -23,21 +25,20 @@ pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
         acpi::init().expect("ACPI failed");
     }
 
+    // set up interrupts
+    idt::init();
+
     // set up physical allocator
      ::memory::init(&boot_info);
 
-
-    // set up interrupts
-    self::interrupt::init();
-
     // set up virtual mapping
-    let mut active_table = self::paging::init(&boot_info);
+    let mut active_table = paging::init(&boot_info);
 
     // set up heap
     ::allocator::init(&mut active_table);
 
-    // pic
-    self::device::init();
+    // set up pic & apic
+    device::init(&mut active_table);
 
     // after core has loaded
     ::memory::init_noncore();

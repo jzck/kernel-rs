@@ -1,5 +1,10 @@
+use ::arch::x86::paging::ActivePageTable;
 pub mod pic;
+pub mod local_apic;
+pub mod cpu;
 
-pub fn init() {
-    unsafe { pic::init(); }
+pub unsafe fn init(active_table: &mut ActivePageTable) {
+    pic::init();
+    local_apic::init(active_table);
+    cpu::cpu_info().expect("cpuid not available");
 }

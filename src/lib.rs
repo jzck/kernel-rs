@@ -19,6 +19,7 @@ extern crate rlibc;
 extern crate spin;
 extern crate multiboot2;
 extern crate slab_allocator;
+extern crate raw_cpuid;
 
 // used by arch/x86, need conditional compilation here
 extern crate x86;
@@ -44,11 +45,8 @@ pub mod arch;
 /// kernel entry point. arch module is responsible for calling this
 pub fn kmain() -> ! {
 
-    // vga is specific to chipset not cpu
-    vga::init();
-
     // x86::instructions::interrupts::disable();
-    // x86::instructions::interrupts::int3();
+    x86::instructions::interrupts::int3();
     // x86::instructions::interrupts::enable();
 
     // fn stack_overflow() { stack_overflow(); }
@@ -58,6 +56,10 @@ pub fn kmain() -> ! {
     //     *(0xdead as *mut u32) = 42;
     // };
 
+    // vga is specific to chipset not cpu
+    vga::init();
+
+    // loop { keyboard::kbd_callback(); }
     loop {}
 }
 

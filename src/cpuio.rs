@@ -45,3 +45,10 @@ pub fn halt() -> ! {
         unsafe {asm!("hlt" : : : : "volatile")};
     }
 }
+
+/// wait for an io operation to complete
+pub fn io_wait() {
+    unsafe { asm!("jmp 1f\n\t
+                  1:jmp 2f\n\t
+                  2:" : : : : "volatile")}
+}
