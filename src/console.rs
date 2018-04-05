@@ -20,7 +20,7 @@ fn dispatch(command: &str) -> Result <(), &'static str> {
         "reboot"                    => self::reboot(),
         "shutdown" | "halt" | "q"   => self::shutdown(),
 
-        // others
+        // x86 specific
         "stack"                     => self::print_stack(),
         "regs"                      => self::regs(),
         "cpu"                       => self::cpu(),
@@ -117,7 +117,6 @@ fn print_line(line: &[u8], address: usize) {
 }
 
 /// Print the kernel stack
-///
 fn print_stack() -> Result <(), &'static str> {
     let esp: usize;
     let ebp: usize;
@@ -130,7 +129,7 @@ fn print_stack() -> Result <(), &'static str> {
 }
 
 // fn mb2_memory() -> Result <(), &'static str> {
-//     let boot_info = context::boot_info();
+//     let boot_info = ::multiboot2::boot_info();
 
 //     let memory_map_tag = boot_info.memory_map_tag()
 //         .expect("Memory map tag required");
@@ -144,7 +143,7 @@ fn print_stack() -> Result <(), &'static str> {
 // }
 
 // fn mb2_sections() -> Result <(), &'static str> {
-//     let boot_info = context::boot_info();
+//     let boot_info = ::multiboot2::boot_info();
 
 //     let elf_sections_tag = boot_info.elf_sections_tag()
 //         .expect("Elf-sections tag required");
@@ -178,15 +177,17 @@ pub fn acpi_info() -> Result <(), &'static str> {
     Ok(())
 }
 
+/// Dump control registers
 pub fn regs() -> Result <(), &'static str> {
     use ::x86::registers::control::*;
-    println!("cr0={:#b}", Cr0::read());
-    println!("cr3={:?}", Cr3::read());
-    println!("cr4={:?}", Cr4::read());
+    println!("cr0 = {:?}", Cr0::read());
+    println!("cr3 = {:?}", Cr3::read());
+    println!("cr4 = {:?}", Cr4::read());
     flush!();
     Ok(())
 }
 
+/// Dump cpu info, should add power management info
 pub fn cpu() -> Result <(), &'static str> {
     use ::arch::x86::device::cpu;
     cpu::cpu_info().expect("cpu info not available");

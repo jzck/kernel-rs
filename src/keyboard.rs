@@ -91,11 +91,6 @@ pub fn kbd_callback() {
                         0x2A | 0x36 => {SHIFT = !is_release},
                         0x38 => {ALT = !is_release},
                         0x1D => {CTRL = !is_release},
-                        // terminal switching
-                        // 0x0F if !is_release => {
-                        //     context::switch_term();
-                        //     context::current_term().flush();
-                        // },
                         0x0E if !is_release => {
                             vga::VGA.backspace();
                         }

@@ -1,23 +1,25 @@
 //! project hosted on [github](https://github.com/jzck/kernel)
-//! exclusively x86
-//!
+
+// nightly stuff we need
 #![no_std]
 #![feature(lang_items)]
 #![feature(const_fn)]
 #![feature(ptr_internals)]
 #![feature(asm)]
+#![feature(thread_local)]
 
+// home made heap
 #![feature(alloc)]
 #![feature(allocator_api)]
 #![feature(global_allocator)]
 
+// x86 specific
 #![feature(abi_x86_interrupt)]
 
 extern crate rlibc;
-// #[macro_use]
 extern crate alloc;
-#[macro_use] extern crate lazy_static;
 extern crate spin;
+#[macro_use] extern crate lazy_static;
 extern crate multiboot2;
 extern crate slab_allocator;
 extern crate raw_cpuid;

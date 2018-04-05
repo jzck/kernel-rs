@@ -1,9 +1,13 @@
 // https://wiki.osdev.org/Exceptions
 
+use ::arch::x86::pti;
+
 macro_rules! exception {
     ($name:ident, $func:block) => {
         pub extern "x86-interrupt" fn $name(stack_frame: &mut ExceptionStackFrame)
         {
+            // unsafe { pti::map(); }
+
             println!("Exception: {}", stringify!($name));
             println!("{:#?}", stack_frame);
             flush!();
@@ -13,6 +17,8 @@ macro_rules! exception {
                 $func
             }
             inner(stack_frame);
+
+            // unsafe { pti::unmap(); }
         }
     }
 }
@@ -37,13 +43,13 @@ macro_rules! exception_err {
 
 use x86::structures::idt::*;
 
-exception!(divide_by_zero, {});
+exception!(divide_by_zero, {
+    panic!("CPU exception: division by zero");
+});
+
 exception!(debug, {});
 exception!(non_maskable, {});
-exception!(breakpoint, {
-    println!("testing here dont mind me");
-    flush!();
-});
+exception!(breakpoint, {});
 exception!(overflow, {});
 exception!(bound_range, {});
 exception!(invalid_opcode, {});

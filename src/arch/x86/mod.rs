@@ -4,6 +4,7 @@ extern crate x86;
 pub mod paging;
 pub mod interrupt;
 pub mod device;
+pub mod pti;
 
 pub mod idt;
 

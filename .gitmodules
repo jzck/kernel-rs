@@ -4,6 +4,3 @@
 [submodule "x86"]
 	path = x86
 	url = https://github.com/jzck/x86.git
-[submodule "rust-cpuid"]
-	path = rust-cpuid
-	url = https://github.com/jzck/rust-cpuid
