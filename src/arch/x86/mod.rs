@@ -42,7 +42,6 @@ pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
     // after core has loaded
     ::memory::init_noncore();
 
-
     // primary CPU entry point
     ::kmain();
 }

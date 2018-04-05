@@ -36,11 +36,12 @@ pub unsafe fn init() {
     MASTER.data.write(master_mask); wait();
     SLAVE.data.write(slave_mask); wait();
 
-    println!("master={:#x}", MASTER.data.read());
-    println!("slave ={:#x}", SLAVE.data.read());
-
-    MASTER.mask_set(0);
-    MASTER.mask_clear(1);
+    // disable all irqs
+    MASTER.data.write(!0); wait();
+    SLAVE.data.write(!0); wait();
+    
+    // keyboard active
+    MASTER.mask_clear(1); wait();
 
     // asm!("sti");
     ::x86::instructions::interrupts::enable();

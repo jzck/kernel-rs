@@ -23,6 +23,7 @@ fn dispatch(command: &str) -> Result <(), &'static str> {
         // others
         "stack"                     => self::print_stack(),
         "regs"                      => self::regs(),
+        "cpu"                       => self::cpu(),
 
         _                           => Err("Command unknown. (h|help for help)"),
     }
@@ -48,6 +49,7 @@ fn help() -> Result <(), &'static str> {
     println!("shutdown | halt | q          => Kill a kitten, then shutdown");
     println!("stack                        => Print kernel stack in a fancy way");
     println!("regs                         => Print controle register");
+    println!("cpu                          => Print cpu information");
     flush!();
     Ok(())
 }
@@ -177,11 +179,17 @@ pub fn acpi_info() -> Result <(), &'static str> {
 }
 
 pub fn regs() -> Result <(), &'static str> {
-    use x86::registers::control::*;
+    use ::x86::registers::control::*;
     println!("cr0={:#b}", Cr0::read());
     println!("cr3={:?}", Cr3::read());
+    println!("cr4={:?}", Cr4::read());
     flush!();
-    // TODO implement cr4 flags in `x86` module
-    // println!("cr4={:#b}", Cr4::read());
+    Ok(())
+}
+
+pub fn cpu() -> Result <(), &'static str> {
+    use ::arch::x86::device::cpu;
+    cpu::cpu_info().expect("cpu info not available");
+    flush!();
     Ok(())
 }

@@ -15,9 +15,7 @@ pub struct LocalApic {
 }
 
 impl LocalApic {
-    unsafe fn init(&mut self, active_table: &mut ActivePageTable) {
-        // let efer = Efer::read();
-        // println!("efer = {:?}", efer);
-        // flush!();
+    unsafe fn init(&mut self, _active_table: &mut ActivePageTable) {
+        // ???
     }
 }

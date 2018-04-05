@@ -6,5 +6,4 @@ pub mod cpu;
 pub unsafe fn init(active_table: &mut ActivePageTable) {
     pic::init();
     local_apic::init(active_table);
-    cpu::cpu_info().expect("cpuid not available");
 }

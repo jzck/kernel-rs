@@ -8,27 +8,27 @@ pub fn cpu_info() -> Result {
     let cpuid = CpuId::new();
 
     if let Some(info) = cpuid.get_vendor_info() {
-        println!("CPU Vendor: {}", info.as_string());
+        println!("Vendor: {}", info.as_string());
     }
 
     if let Some(info) = cpuid.get_extended_function_info() {
         if let Some(brand) = info.processor_brand_string() {
-            println!("CPU Model: {}", brand);
+            println!("Model: {}", brand);
         }
     }
 
     if let Some(info) = cpuid.get_processor_frequency_info() {
-        println!("CPU Base MHz: {}", info.processor_base_frequency());
-        println!("CPU Max MHz: {}", info.processor_max_frequency());
+        println!("Base MHz: {}", info.processor_base_frequency());
+        println!("Max MHz: {}", info.processor_max_frequency());
         println!("Bus MHz: {}", info.bus_frequency());
     } else {
         set_color!(Red);
-        println!("couldn't retrieve CPU frequency info");
+        println!("Couldn't retrieve cpu frequency info");
         set_color!();
     }
 
     if let Some(info) = cpuid.get_feature_info() {
-        print!("CPU Features:");
+        print!("Features:");
         if info.has_fpu() { print!(" fpu") };
         if info.has_vme() { print!(", vme") };
         if info.has_de() { print!(", de") };
@@ -97,7 +97,7 @@ pub fn cpu_info() -> Result {
     }
 
     if let Some(info) = cpuid.get_extended_function_info() {
-        print!("CPU extended function:");
+        print!("Extended function:");
         if info.has_64bit_mode() { print!(" lm") };
         if info.has_rdtscp() { print!(", rdtscp") };
         if info.has_1gib_pages() { print!(", pdpe1gb") };
@@ -111,7 +111,7 @@ pub fn cpu_info() -> Result {
     }
 
     if let Some(info) = cpuid.get_extended_feature_info() {
-        print!("CPU extended features:");
+        print!("Extended features:");
         if info.has_fsgsbase() { print!(" fsgsbase") };
         if info.has_tsc_adjust_msr() { print!(", tsc_adjust") };
         if info.has_bmi1() { print!(", bmi1") };
@@ -127,7 +127,6 @@ pub fn cpu_info() -> Result {
         if info.has_mpx() { print!(", mpx") };
         println!("");
     }
-
 
     Ok(())
 }

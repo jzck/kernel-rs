@@ -6,13 +6,15 @@ macro_rules! interrupt {
     ($i:expr, $name:ident, $func:block) => {
         pub extern "x86-interrupt" fn $name(stack_frame: &mut ExceptionStackFrame)
         {
-            unsafe { trigger(1); }
+            unsafe { trigger($i); }
+
             #[allow(unused_variables)]
             fn inner(stack: &mut ExceptionStackFrame) {
                 $func
             }
             inner(stack_frame);
-            unsafe { acknowledge(1); }
+
+            unsafe { acknowledge($i); }
         }
     }
 }
