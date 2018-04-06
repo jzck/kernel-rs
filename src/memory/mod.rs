@@ -72,7 +72,7 @@ pub fn deallocate_frames(frame: PhysFrame, count: usize) {
 
 /// Init memory module after core
 /// Must be called once, and only once,
-pub unsafe fn init_noncore() {
+pub fn init_noncore() {
     if let Some(ref mut controler) = *MEMORY_CONTROLER.lock() {
         controler.frame_allocator.set_core(true);
     } else {

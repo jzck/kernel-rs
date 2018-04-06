@@ -47,6 +47,8 @@ pub mod arch;
 
 /// kernel entry point. arch module is responsible for calling this
 pub fn kmain() -> ! {
+    // core is loaded now
+    memory::init_noncore();
 
     // x86::instructions::interrupts::int3();
 

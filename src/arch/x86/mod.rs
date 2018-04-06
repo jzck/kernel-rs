@@ -6,6 +6,7 @@ pub mod interrupt;
 pub mod device;
 pub mod pti;
 
+pub mod gdt;
 pub mod idt;
 
 use multiboot2;
@@ -25,9 +26,6 @@ pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
         acpi::init().expect("ACPI failed");
     }
 
-    // set up interrupts
-    idt::init();
-
     // set up physical allocator
      ::memory::init(&boot_info);
 
@@ -37,11 +35,14 @@ pub unsafe extern fn x86_rust_start(multiboot_info_addr: usize) {
     // set up heap
     ::allocator::init(&mut active_table);
 
+    // set up memory segmentation
+    // gdt::init();
+
+    // set up interrupts
+    idt::init();
+
     // set up pic & apic
     device::init(&mut active_table);
-
-    // after core has loaded
-    ::memory::init_noncore();
 
     // primary CPU entry point
     ::kmain();

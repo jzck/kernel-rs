@@ -12,6 +12,8 @@ pub static mut PTI_CONTEXT_STACK: usize = 0;
 #[inline(always)]
 unsafe fn switch_stack(old: usize, new: usize) {
     let old_esp: usize;
+
+    // save the old esp
     asm!("" : "={esp}"(old_esp) : : : "intel", "volatile");
 
     let offset_esp = old - old_esp;
@@ -24,6 +26,7 @@ unsafe fn switch_stack(old: usize, new: usize) {
         offset_esp
     );
 
+    // switch the esp with the new one
     asm!("" : : "{esp}"(new_esp) : : "intel", "volatile");
 }
 
