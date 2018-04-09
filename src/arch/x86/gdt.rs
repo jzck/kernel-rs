@@ -2,7 +2,7 @@ use x86::structures::gdt;
 use x86::structures::tss;
 use x86::instructions::segmentation::set_cs;
 use x86::instructions::tables::load_tss;
-use spin::Once;
+// use spin::Once;
 
 // static GDT: Once<gdt::Gdt> = Once::new();
 // static TSS: Once<tss::TaskStateSegment> = Once::new();

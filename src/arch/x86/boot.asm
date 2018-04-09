@@ -31,9 +31,9 @@ set_up_page_tables:
 	or eax, 0b11 ; present + writable
 	mov [p2_table + 1023 * 4], eax
 
-	; map ecx-th P2 entry to a huge page that starts at address 2MiB*ecx
+	; identity map first P2 entry to a huge page
 	mov eax, 0b10000011 ; huge + present + writable
-	mov [p2_table], eax ; map ecx-th entry
+	mov [p2_table], eax ; map first entry
 
 	mov eax, p2_table
 	mov cr3, eax
@@ -54,7 +54,7 @@ align 4096
 p2_table:
 	resb 4096
 stack_bottom:
-	resb 4096 * 8
+	resb 4096 * 16
 stack_top:
 
 section .gdt

@@ -122,6 +122,7 @@ pub fn remap_the_kernel(boot_info: &BootInformation) -> ActivePageTable {
         let frame = ::memory::allocate_frames(1).expect("no more frames");
         InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
     };
+
     unsafe {
         asm!("hlt");
     }
