@@ -6,6 +6,7 @@ bits 32
 start:
 	; our stack, located in bss, linker.ld puts bss at the end of the binary
 	mov esp, stack_top
+
 	; multiboot information pointer
 	push ebx
 
@@ -54,7 +55,7 @@ align 4096
 p2_table:
 	resb 4096
 stack_bottom:
-	resb 4096 * 4
+	resb 4096 * 3
 stack_top:
 
 section .gdt
