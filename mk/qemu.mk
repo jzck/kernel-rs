@@ -7,7 +7,7 @@ else
 endif
 
 QEMU		:= qemu-system-x86_64
-QEMUFLAGS	:= -gdb tcp::$(PORTG) -enable-kvm -monitor telnet:127.0.0.1:$(PORT),server,nowait -curses -cdrom build/$(kernel).iso
+QEMUFLAGS	:= -gdb tcp::$(PORTG) -enable-kvm -monitor telnet:127.0.0.1:$(PORT),server,nowait -curses -cdrom build/bluesnow.iso
 
 MONITOR 		:= sleep 0.5;\
 	telnet 127.0.0.1 $(PORT);\
