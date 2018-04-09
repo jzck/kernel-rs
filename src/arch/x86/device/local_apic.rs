@@ -1,8 +1,8 @@
-use ::arch::x86::paging::ActivePageTable;
+use arch::x86::paging::ActivePageTable;
 
 pub static mut LOCAL_APIC: LocalApic = LocalApic {
     address: 0,
-    x2: false
+    x2: false,
 };
 
 pub unsafe fn init(active_table: &mut ActivePageTable) {
@@ -11,7 +11,7 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
 
 pub struct LocalApic {
     pub address: usize,
-    pub x2: bool
+    pub x2: bool,
 }
 
 impl LocalApic {

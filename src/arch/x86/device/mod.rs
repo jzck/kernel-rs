@@ -1,4 +1,4 @@
-use ::arch::x86::paging::ActivePageTable;
+use arch::x86::paging::ActivePageTable;
 pub mod pic;
 pub mod local_apic;
 pub mod cpu;

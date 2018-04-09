@@ -4,7 +4,7 @@ use cpuio;
 use vga;
 
 const MAX_KEYS: usize = 59;
-const KEYMAP_US: [[u8;2]; MAX_KEYS] = [
+const KEYMAP_US: [[u8; 2]; MAX_KEYS] = [
     *b"\0\0",
     *b"\0\0",//escape
     *b"1!",
@@ -84,25 +84,24 @@ pub fn kbd_callback() {
     if (control & 1) == 1 {
         let scancode = cpuio::inb(0x60);
         let (is_release, scancode) = check_key_state(scancode);
-        unsafe {//TODO remove unsafe 
+        unsafe {
+            //TODO remove unsafe
             match self::KEYMAP_US.get(scancode as usize) {
-                Some(b"\0\0") => {
-                    match scancode {
-                        0x2A | 0x36 => {SHIFT = !is_release},
-                        0x38 => {ALT = !is_release},
-                        0x1D => {CTRL = !is_release},
-                        0x0E if !is_release => {
-                            vga::VGA.backspace();
-                        }
-                        _ => {}
+                Some(b"\0\0") => match scancode {
+                    0x2A | 0x36 => SHIFT = !is_release,
+                    0x38 => ALT = !is_release,
+                    0x1D => CTRL = !is_release,
+                    0x0E if !is_release => {
+                        vga::VGA.backspace();
                     }
+                    _ => {}
                 },
                 Some(ascii) if !is_release => {
                     let sym = if SHIFT { ascii[1] } else { ascii[0] };
                     vga::VGA.keypress(sym);
-                },
-                Some(_) => {},
-                None =>{},
+                }
+                Some(_) => {}
+                None => {}
             }
         }
     }

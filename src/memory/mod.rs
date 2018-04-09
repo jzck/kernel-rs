@@ -24,20 +24,27 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
     let elf_sections_tag = boot_info.elf_sections_tag().unwrap();
     let memory_map_tag = boot_info.memory_map_tag().unwrap();
 
-    let kernel_start = elf_sections_tag.sections()
+    let kernel_start = elf_sections_tag
+        .sections()
         .filter(|s| s.is_allocated())
         .map(|s| s.start_address())
-        .min().unwrap();
+        .min()
+        .unwrap();
 
-    let kernel_end = elf_sections_tag.sections()
+    let kernel_end = elf_sections_tag
+        .sections()
         .filter(|s| s.is_allocated())
         .map(|s| s.start_address() + s.size())
-        .max().unwrap();
+        .max()
+        .unwrap();
 
     let bump_allocator = BumpFrameAllocator::new(
-        kernel_start as usize, kernel_end as usize,
-        boot_info.start_address(), boot_info.end_address(),
-        memory_map_tag.memory_areas());
+        kernel_start as usize,
+        kernel_end as usize,
+        boot_info.start_address(),
+        boot_info.end_address(),
+        memory_map_tag.memory_areas(),
+    );
 
     let frame_allocator = RecycleAllocator::new(bump_allocator);
 

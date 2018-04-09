@@ -7,28 +7,28 @@
 #![feature(ptr_internals)]
 #![feature(asm)]
 #![feature(thread_local)]
-
 // home made heap
 #![feature(alloc)]
 #![feature(allocator_api)]
 #![feature(global_allocator)]
-
 // x86 specific
 #![feature(abi_x86_interrupt)]
 
-extern crate rlibc;
 extern crate alloc;
-extern crate spin;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 extern crate multiboot2;
-extern crate slab_allocator;
 extern crate raw_cpuid;
+extern crate rlibc;
+extern crate slab_allocator;
+extern crate spin;
 
 // used by arch/x86, need conditional compilation here
 extern crate x86;
 
 /// 80x25 terminal driver
-#[macro_use] pub mod vga;
+#[macro_use]
+pub mod vga;
 /// PS/2 detection and processing
 pub mod keyboard;
 /// simplisitc kernel commands
@@ -45,9 +45,10 @@ pub mod memory;
 /// arch specific entry points
 pub mod arch;
 
-/// kernel entry point. arch module is responsible for calling this
+/// kernel entry point. arch module is responsible for
+/// calling this once the core has loaded
 pub fn kmain() -> ! {
-    // core is loaded now
+    // heap avalaible for tracking free'd frames
     memory::init_noncore();
 
     // x86::instructions::interrupts::int3();
@@ -66,12 +67,13 @@ pub fn kmain() -> ! {
     loop {}
 }
 
-#[lang = "eh_personality"] #[no_mangle]
-pub extern fn eh_personality() {}
+#[lang = "eh_personality"]
+#[no_mangle]
+pub extern "C" fn eh_personality() {}
 
-#[lang = "panic_fmt"] #[no_mangle]
-pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32)
--> ! {
+#[lang = "panic_fmt"]
+#[no_mangle]
+pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
     println!("PANIC: {}", fmt);
     println!("FILE: {}", file);
     println!("LINE: {}", line);

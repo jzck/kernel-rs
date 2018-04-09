@@ -31,8 +31,7 @@ impl Mapper {
     }
 
     /// virtual addr to physical addr translation
-    pub fn translate(&self, virtual_address: VirtAddr) -> Option<PhysAddr>
-    {
+    pub fn translate(&self, virtual_address: VirtAddr) -> Option<PhysAddr> {
         let offset = virtual_address.as_u32() % PAGE_SIZE as u32;
         self.translate_page(Page::containing_address(virtual_address))
             .map(|frame| frame.start_address() + offset)
@@ -54,33 +53,29 @@ impl Mapper {
         };
 
         p1.and_then(|p1| p1[page.p1_index()].pointed_frame())
-            .or_else(huge_page) 
+            .or_else(huge_page)
     }
 
     /// map a virtual page to a physical frame in the page tables
-    pub fn map_to(&mut self, page: Page, frame: PhysFrame, flags: PageTableFlags)
-    {
+    pub fn map_to(&mut self, page: Page, frame: PhysFrame, flags: PageTableFlags) {
         let p2 = self.p2_mut();
         let p1 = p2.next_table_create(usize_from(u32::from(page.p2_index())));
         assert!(p1[page.p1_index()].is_unused());
         p1[page.p1_index()].set(frame, flags | PageTableFlags::PRESENT);
     }
 
-    pub fn map(&mut self, page: Page, flags: PageTableFlags)
-    {
+    pub fn map(&mut self, page: Page, flags: PageTableFlags) {
         let frame = ::memory::allocate_frames(1).expect("out of frames");
         self.map_to(page, frame, flags)
     }
 
-    pub fn identity_map(&mut self, frame: PhysFrame, flags: PageTableFlags)
-    {
+    pub fn identity_map(&mut self, frame: PhysFrame, flags: PageTableFlags) {
         let virt_addr = VirtAddr::new(frame.start_address().as_u32());
         let page = Page::containing_address(virt_addr);
         self.map_to(page, frame, flags);
     }
 
-    pub fn unmap(&mut self, page: Page)
-    {
+    pub fn unmap(&mut self, page: Page) {
         assert!(self.translate(page.start_address()).is_some());
 
         let p1 = self.p2_mut()

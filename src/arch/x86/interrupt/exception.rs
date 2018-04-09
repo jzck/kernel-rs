@@ -1,6 +1,6 @@
 // https://wiki.osdev.org/Exceptions
 
-use ::arch::x86::pti;
+use arch::x86::pti;
 
 macro_rules! exception {
     ($name:ident, $func:block) => {
@@ -62,8 +62,9 @@ exception_err!(stack_segment, {});
 exception_err!(general_protection, {});
 
 pub extern "x86-interrupt" fn page_fault(
-    stack_frame: &mut ExceptionStackFrame, code: PageFaultErrorCode)
-{
+    stack_frame: &mut ExceptionStackFrame,
+    code: PageFaultErrorCode,
+) {
     println!("Exception: page_fault");
     println!("Error code: {:#b}", code);
     println!("{:#?}", stack_frame);

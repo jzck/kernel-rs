@@ -20,11 +20,7 @@ unsafe fn switch_stack(old: usize, new: usize) {
 
     let new_esp = new - offset_esp;
 
-    ptr::copy_nonoverlapping(
-        old_esp as *const u8,
-        new_esp as *mut u8,
-        offset_esp
-    );
+    ptr::copy_nonoverlapping(old_esp as *const u8, new_esp as *mut u8, offset_esp);
 
     // switch the esp with the new one
     asm!("" : : "{esp}"(new_esp) : : "intel", "volatile");
@@ -47,13 +43,19 @@ pub unsafe fn map() {
     // }
 
     // Switch to per-context stack
-    switch_stack(PTI_CPU_STACK.as_ptr() as usize + PTI_CPU_STACK.len(), PTI_CONTEXT_STACK);
+    switch_stack(
+        PTI_CPU_STACK.as_ptr() as usize + PTI_CPU_STACK.len(),
+        PTI_CONTEXT_STACK,
+    );
 }
 
 #[inline(always)]
 pub unsafe fn unmap() {
     // Switch to per-CPU stack
-    switch_stack(PTI_CONTEXT_STACK, PTI_CPU_STACK.as_ptr() as usize + PTI_CPU_STACK.len());
+    switch_stack(
+        PTI_CONTEXT_STACK,
+        PTI_CPU_STACK.as_ptr() as usize + PTI_CPU_STACK.len(),
+    );
 
     // {
     //     let mut active_table = unsafe { ActivePageTable::new() };

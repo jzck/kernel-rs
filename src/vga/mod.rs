@@ -40,7 +40,9 @@ macro_rules! set_color {
 
 pub fn print(args: fmt::Arguments) {
     use core::fmt::Write;
-    unsafe { self::VGA.write_fmt(args).unwrap(); }
+    unsafe {
+        self::VGA.write_fmt(args).unwrap();
+    }
 }
 
 extern crate core;
@@ -51,7 +53,8 @@ const BUFFER_COLS: usize = 80 * 2;
 pub struct Writer {
     pub buffer_pos: usize,
     pub color_code: ColorCode,
-    buffer: [u8; BUFFER_ROWS * BUFFER_COLS], command: [u8; 10],
+    buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
+    command: [u8; 10],
     command_len: usize,
 }
 
@@ -80,13 +83,11 @@ impl Writer {
         }
     }
 
-    pub fn get_command(&self) -> Result <&str, &'static str> {
-
+    pub fn get_command(&self) -> Result<&str, &'static str> {
         match core::str::from_utf8(&self.command) {
             Ok(y) => Ok(&y[..self.command_len]),
-            Err(_) => Err("Command is not utf8 char")
+            Err(_) => Err("Command is not utf8 char"),
         }
-
     }
 
     pub fn keypress(&mut self, ascii: u8) {
@@ -106,9 +107,11 @@ impl Writer {
                 self.prompt();
             }
             _ if self.command_len >= 10 => (),
-            byte if self.command_len == 0  && byte == b' ' => (),
+            byte if self.command_len == 0 && byte == b' ' => (),
             byte => {
-                if self.command_len >= 10 { return };
+                if self.command_len >= 10 {
+                    return;
+                };
                 self.command[self.command_len] = byte;
                 self.write_byte(byte);
                 self.command_len += 1;
@@ -130,7 +133,6 @@ impl Writer {
         let i = self.buffer_pos;
 
         match byte {
-
             b'\n' => {
                 let current_line = self.buffer_pos / (BUFFER_COLS);
                 self.buffer_pos = (current_line + 1) * BUFFER_COLS;
@@ -178,7 +180,7 @@ impl Writer {
             }
         }
 
-        for col in 0..BUFFER_COLS/2 {
+        for col in 0..BUFFER_COLS / 2 {
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col * 2)] = b' ';
         }
 
@@ -199,22 +201,28 @@ impl fmt::Write for Writer {
 
 pub fn init() {
     set_color!(White, Cyan);
-    print!("{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
-           format_args!("{: ^80}", r#"        ,--,               "#),
-           format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
-           format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
-           format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
-           format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
-           format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
-           format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
-           format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
-           format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
-           format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
-           format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
-           format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
-           format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
-           format_args!("{: ^80}", r#"      '--'  `---'          "#));
+    print!(
+        "{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
+        format_args!("{: ^80}", r#"        ,--,               "#),
+        format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
+        format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
+        format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
+        format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
+        format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
+        format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
+        format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
+        format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
+        format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
+        format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
+        format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
+        format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
+        format_args!("{: ^80}", r#"      '--'  `---'          "#)
+    );
     set_color!();
-    unsafe { VGA.prompt(); }
-    unsafe { VGA.flush(); }
+    unsafe {
+        VGA.prompt();
+    }
+    unsafe {
+        VGA.flush();
+    }
 }

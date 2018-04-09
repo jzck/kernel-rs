@@ -6,9 +6,9 @@ use cpuio;
 use core::char;
 use vga::*;
 
-fn dispatch(command: &str) -> Result <(), &'static str> {
+fn dispatch(command: &str) -> Result<(), &'static str> {
     match command {
-        "help" | "h"                => self::help(),
+        "help" | "h" => self::help(),
 
         // multiboot
         // "memory"                    => self::mb2_memory(),
@@ -16,20 +16,20 @@ fn dispatch(command: &str) -> Result <(), &'static str> {
         // "sections"                  => self::mb2_sections(),
 
         // ACPI
-        "acpi"                      => self::acpi_info(),
-        "reboot"                    => self::reboot(),
-        "shutdown" | "halt" | "q"   => self::shutdown(),
+        "acpi" => self::acpi_info(),
+        "reboot" => self::reboot(),
+        "shutdown" | "halt" | "q" => self::shutdown(),
 
         // x86 specific
-        "stack"                     => self::print_stack(),
-        "regs"                      => self::regs(),
-        "cpu"                       => self::cpu(),
+        "stack" => self::print_stack(),
+        "regs" => self::regs(),
+        "cpu" => self::cpu(),
 
-        _                           => Err("Command unknown. (h|help for help)"),
+        _ => Err("Command unknown. (h|help for help)"),
     }
 }
 
-pub fn exec(cli: &Writer) -> Result <(), &'static str> {
+pub fn exec(cli: &Writer) -> Result<(), &'static str> {
     let command = cli.get_command()?;
     if let Err(msg) = self::dispatch(command) {
         set_color!(Red);
@@ -39,7 +39,7 @@ pub fn exec(cli: &Writer) -> Result <(), &'static str> {
     Ok(())
 }
 
-fn help() -> Result <(), &'static str> {
+fn help() -> Result<(), &'static str> {
     println!("acpi                         => Return acpi state (ENABLED|DISABLE)");
     println!("help | h                     => Print this help");
     // println!("memory                       => Print memory areas");
@@ -59,14 +59,14 @@ fn help() -> Result <(), &'static str> {
 /// If reboot failed, will loop on a halt cmd
 ///
 fn reboot() -> ! {
-    unsafe {asm!("cli")}; //TODO volatile ?????
-    // I will now clear the keyboard buffer
+    unsafe { asm!("cli") }; //TODO volatile ?????
+                            // I will now clear the keyboard buffer
     let mut buffer: u8 = 0x02;
     while buffer & 0x02 != 0 {
         cpuio::inb(0x60);
         buffer = cpuio::inb(0x64);
     }
-    cpuio::outb(0x64, 0xFE);//Send reset value to CPU //TODO doesn't work in QEMU ==> it seems that qemu cannot reboot
+    cpuio::outb(0x64, 0xFE); //Send reset value to CPU //TODO doesn't work in QEMU ==> it seems that qemu cannot reboot
     println!("Unable to perform reboot. Kernel will be halted");
     cpuio::halt();
 }
@@ -76,7 +76,7 @@ fn reboot() -> ! {
 /// If shutdown is performed but failed, will loop on a halt cmd
 /// If shutdown cannot be called, return a Err(&str)
 ///
-fn shutdown() -> Result <(), &'static str> {
+fn shutdown() -> Result<(), &'static str> {
     acpi::shutdown()?;
     println!("Unable to perform ACPI shutdown. Kernel will be halted");
     cpuio::halt();
@@ -102,14 +102,14 @@ fn print_line(line: &[u8], address: usize) {
     for byte in line {
         print!("{:02x} ", *byte);
     }
-    let length : usize = 16 - line.len();
+    let length: usize = 16 - line.len();
     for _ in 0..length {
         print!("   ");
     }
     print!("|");
     for byte in line {
         match is_control(*byte as char) {
-            true  => print!("."),
+            true => print!("."),
             false => print!("{}", *byte as char),
         };
     }
@@ -117,7 +117,7 @@ fn print_line(line: &[u8], address: usize) {
 }
 
 /// Print the kernel stack
-fn print_stack() -> Result <(), &'static str> {
+fn print_stack() -> Result<(), &'static str> {
     let esp: usize;
     let ebp: usize;
     unsafe { asm!("" : "={esp}"(esp), "={ebp}"(ebp):::) };
@@ -172,14 +172,14 @@ fn print_stack() -> Result <(), &'static str> {
 //     Ok(())
 // }
 
-pub fn acpi_info() -> Result <(), &'static str> {
+pub fn acpi_info() -> Result<(), &'static str> {
     acpi::info()?;
     Ok(())
 }
 
 /// Dump control registers
-pub fn regs() -> Result <(), &'static str> {
-    use ::x86::registers::control::*;
+pub fn regs() -> Result<(), &'static str> {
+    use x86::registers::control::*;
     println!("cr0 = {:?}", Cr0::read());
     println!("cr3 = {:?}", Cr3::read());
     println!("cr4 = {:?}", Cr4::read());
@@ -188,8 +188,8 @@ pub fn regs() -> Result <(), &'static str> {
 }
 
 /// Dump cpu info, should add power management info
-pub fn cpu() -> Result <(), &'static str> {
-    use ::arch::x86::device::cpu;
+pub fn cpu() -> Result<(), &'static str> {
+    use arch::x86::device::cpu;
     cpu::cpu_info().expect("cpu info not available");
     flush!();
     Ok(())

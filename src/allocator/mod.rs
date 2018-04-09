@@ -5,11 +5,9 @@ use x86::*;
 use x86::structures::paging::*;
 use arch::x86::paging::*;
 
-fn map_heap(active_table: &mut ActivePageTable, offset: usize, size: usize)
-{
+fn map_heap(active_table: &mut ActivePageTable, offset: usize, size: usize) {
     let heap_start_page = Page::containing_address(VirtAddr::new(offset as u32));
-    let heap_end_page = Page::containing_address(VirtAddr::new(
-            offset as u32 + size as u32 - 1));
+    let heap_end_page = Page::containing_address(VirtAddr::new(offset as u32 + size as u32 - 1));
 
     for page in heap_start_page..heap_end_page + 1 {
         active_table.map(page, PageTableFlags::WRITABLE);
