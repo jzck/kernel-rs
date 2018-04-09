@@ -35,8 +35,6 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     // set up virtual mapping
     let mut active_table = paging::init(&boot_info);
 
-    asm!("hlt");
-
     // set up heap
     ::allocator::init(&mut active_table);
 

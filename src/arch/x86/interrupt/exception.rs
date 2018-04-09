@@ -64,7 +64,7 @@ exception_err!(general_protection, {});
 pub extern "x86-interrupt" fn page_fault(
     stack_frame: &mut ExceptionStackFrame,
     code: PageFaultErrorCode,
-) {
+    ) {
     println!("Exception: page_fault");
     println!("Error code: {:#b}", code);
     println!("{:#?}", stack_frame);

@@ -123,10 +123,6 @@ pub fn remap_the_kernel(boot_info: &BootInformation) -> ActivePageTable {
         InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
     };
 
-    unsafe {
-        asm!("hlt");
-    }
-
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
         // id map vga buffer
         let vga_buffer_frame = PhysFrame::containing_address(PhysAddr::new(0xb8000));
