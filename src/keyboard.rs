@@ -76,33 +76,41 @@ fn check_key_state(key: u8) -> (bool, usize) {
     }
 }
 
+fn get_scancode() -> u8 {
+    let mut scancode = 0;
+    loop {
+        if cpuio::inb(0x60) != scancode {
+            scancode = cpuio::inb(0x60);
+            if scancode > 0 {
+                return scancode;
+            }
+        }
+    }
+}
+
 pub fn kbd_callback() {
     static mut SHIFT: bool = false;
     static mut CTRL: bool = false;
     static mut ALT: bool = false;
-    let control = cpuio::inb(0x64);
-    if (control & 1) == 1 {
-        let scancode = cpuio::inb(0x60);
-        let (is_release, scancode) = check_key_state(scancode);
-        unsafe {
-            //TODO remove unsafe
-            match self::KEYMAP_US.get(scancode as usize) {
-                Some(b"\0\0") => match scancode {
-                    0x2A | 0x36 => SHIFT = !is_release,
-                    0x38 => ALT = !is_release,
-                    0x1D => CTRL = !is_release,
-                    0x0E if !is_release => {
-                        vga::VGA.backspace();
-                    }
-                    _ => {}
-                },
-                Some(ascii) if !is_release => {
-                    let sym = if SHIFT { ascii[1] } else { ascii[0] };
-                    vga::VGA.keypress(sym);
+    let scancode = get_scancode();
+    let (is_release, scancode) = check_key_state(scancode);
+    unsafe {
+        //TODO remove unsafe
+        match self::KEYMAP_US.get(scancode as usize) {
+            Some(b"\0\0") => match scancode {
+                0x2A | 0x36 => SHIFT = !is_release,
+                0x38 => ALT = !is_release,
+                0x1D => CTRL = !is_release,
+                0x0E if !is_release => {
+                    vga::VGA.backspace();
                 }
-                Some(_) => {}
-                None => {}
+                _ => {}
+            },
+            Some(ascii) if !is_release => {
+                let sym = if SHIFT { ascii[1] } else { ascii[0] };
+                vga::VGA.keypress(sym);
             }
+            _ => {}
         }
     }
 }
