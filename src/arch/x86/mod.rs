@@ -6,7 +6,7 @@ pub mod interrupt;
 pub mod device;
 pub mod pti;
 
-// pub mod gdt;
+pub mod gdt;
 pub mod idt;
 
 use multiboot2;
@@ -39,14 +39,14 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     // load idt (exceptions + irqs)
     idt::init();
 
+    // fill and load gdt
+    gdt::init();
+
     // set up heap
     ::allocator::init(&mut active_table);
 
     // set up pic & apic
     device::init(&mut active_table);
-
-    // fill and load gdt
-    // gdt::init();
 
     // primary CPU entry point
     ::kmain();

@@ -48,10 +48,10 @@ pub mod arch;
 /// kernel entry point. arch module is responsible for
 /// calling this once the core has loaded
 pub fn kmain() -> ! {
-    // heap avalaible for tracking free'd frames
+    // heap avalaible for tracking freed frames
     memory::init_noncore();
 
-    x86::instructions::interrupts::int3();
+    // x86::instructions::interrupts::int3();
 
     // fn stack_overflow() { stack_overflow(); }
     // stack_overflow();
@@ -60,7 +60,7 @@ pub fn kmain() -> ! {
     //     *(0xdead as *mut u32) = 42;
     // };
 
-    // vga is *not* cpu specific, chipset specific?
+    // vga is *not* cpu specific
     vga::init();
 
     loop {}
