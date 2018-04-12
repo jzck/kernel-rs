@@ -12,8 +12,6 @@ x86_start:
 	mov gs, ax
 
 	call x86_rust_start
-
-	cli ; clear interrupt
 HALT:
 	hlt
 	jmp HALT

@@ -25,6 +25,8 @@ check_multiboot:
 	mov al, "0"
 	jmp error
 
+; minimal page tables (first 8MB identity mapped)
+; core page tables will be loaded in rust
 set_up_page_tables:
 	; map P2 table recursively
 	mov eax, p2_table
@@ -32,12 +34,13 @@ set_up_page_tables:
 	mov [p2_table + 1023 * 4], eax
 
 	; identity map first P2 entry to a huge page
-	mov eax, 0b10000011 ; huge + present + writable
-	mov [p2_table], eax ; map first entry
+	mov eax, 0x0		; 0MB -> 4MB (first page)
+	or eax, 0b10000011	; huge + present + writable
+	mov [p2_table], eax
 
-	mov eax, 0b10000011 ; huge + present + writable
-	or eax, 0x400000	; 4MB
-	mov [p2_table + 4], eax ; map second entry
+	mov eax, 0x400000	; 4MB -> 8Mb (second page)
+	or eax, 0b10000011	; huge + present + writable
+	mov [p2_table + 4], eax
 
 	mov eax, p2_table
 	mov cr3, eax
@@ -61,6 +64,8 @@ stack_bottom:
 	resb 4096 * 4
 stack_top:
 
+; minimal boot gdt (cs & ds)
+; core gdt will be loaded in rust
 section .gdt
 GDTR:
 ; http://tuttlem.github.io/2014/07/11/a-gdt-primer.html
