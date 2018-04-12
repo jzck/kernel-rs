@@ -180,8 +180,10 @@ impl Writer {
             }
         }
 
-        for col in 0..BUFFER_COLS / 2 {
-            self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col * 2)] = b' ';
+        for col in (0..BUFFER_COLS / 2).map(|x| x * 2) {
+            self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col)] = b' ';
+            self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col + 1)] =
+                ColorCode::new(Color::White, Color::Black).0;
         }
 
         self.buffer_pos = (BUFFER_ROWS - 1) * BUFFER_COLS;
@@ -200,7 +202,7 @@ impl fmt::Write for Writer {
 }
 
 pub fn init() {
-    set_color!(White, Cyan);
+    set_color!(Yellow, Red);
     print!(
         "{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
         format_args!("{: ^80}", r#"        ,--,               "#),
@@ -218,7 +220,6 @@ pub fn init() {
         format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
         format_args!("{: ^80}", r#"      '--'  `---'          "#)
     );
-    set_color!();
     unsafe {
         VGA.prompt();
     }

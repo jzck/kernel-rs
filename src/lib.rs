@@ -51,7 +51,7 @@ pub fn kmain() -> ! {
     // heap avalaible for tracking free'd frames
     memory::init_noncore();
 
-    // x86::instructions::interrupts::int3();
+    x86::instructions::interrupts::int3();
 
     // fn stack_overflow() { stack_overflow(); }
     // stack_overflow();
