@@ -1,8 +1,9 @@
 pub mod color;
+pub mod cursor;
 
 pub use self::color::{Color, ColorCode};
+use self::cursor::CURSOR;
 
-use cpuio;
 use console;
 
 pub static mut VGA: Writer = self::Writer::new();
@@ -156,13 +157,9 @@ impl Writer {
     }
 
     fn flush_cursor(&self) {
-        let cursor_position = self.buffer_pos / 2;
-        // 14 awaits the rightmost 8bits
-        cpuio::outb(0x3D4, 14);
-        cpuio::outb(0x3D5, (cursor_position >> 8) as u8);
-        // 15 awaits the leftmost 8bits
-        cpuio::outb(0x3D4, 15);
-        cpuio::outb(0x3D5, (cursor_position >> 0) as u8 & 0x00ff);
+        unsafe {
+            CURSOR.flush(self.buffer_pos / 2);
+        }
     }
 
     pub fn flush(&mut self) {
