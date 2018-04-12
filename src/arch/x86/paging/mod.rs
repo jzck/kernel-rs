@@ -101,12 +101,6 @@ impl InactivePageTable {
         temporary_page: &mut TemporaryPage,
     ) -> InactivePageTable {
         {
-            println!("mapping temp page:");
-            println!("frame: {:?}", frame);
-            flush!();
-            // unsafe {
-            //     asm!("hlt");
-            // }
             let table = temporary_page.map_table_frame(frame.clone(), active_table);
 
             table.zero();
