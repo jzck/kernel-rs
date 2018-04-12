@@ -58,7 +58,7 @@ align 4096
 p2_table:
 	resb 4096
 stack_bottom:
-	resb 4096 * 3
+	resb 4096 * 4
 stack_top:
 
 section .gdt

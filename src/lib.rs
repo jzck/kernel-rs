@@ -60,10 +60,9 @@ pub fn kmain() -> ! {
     //     *(0xdead as *mut u32) = 42;
     // };
 
-    // vga is specific to chipset not cpu
+    // vga is *not* cpu specific, chipset specific?
     vga::init();
 
-    // loop { keyboard::kbd_callback(); }
     loop {}
 }
 
@@ -81,7 +80,7 @@ pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line:
     loop {}
 }
 
-pub const HEAP_START: usize = (2 << 22); //third entry of p2
+pub const HEAP_START: usize = (1 << 22 + 2); //third entry of p2
 pub const HEAP_SIZE: usize = 10 * 4096 * 8; //~ 100 KiB
 
 #[global_allocator]
