@@ -38,9 +38,14 @@ pub fn outl(port: u16, value: u32) {
     unsafe { asm!("outl %eax, %dx" :: "{dx}"(port), "{eax}"(value) :: "volatile") };
 }
 
+/// Disable interruption
+pub fn cli() {
+    unsafe { asm!("cli" : : : : "volatile") };
+}
+
 /// Halt system
 pub fn halt() -> ! {
-    unsafe { asm!("cli" : : : : "volatile") };
+    cli();
     loop {
         unsafe { asm!("hlt" : : : : "volatile") };
     }
