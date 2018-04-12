@@ -11,7 +11,7 @@ use super::table::RecTable;
 pub const P2: *mut PageTable = 0xffff_f000 as *mut _;
 
 pub struct Mapper {
-    p2: Unique<PageTable>,
+    pub p2: Unique<PageTable>,
 }
 
 impl Mapper {

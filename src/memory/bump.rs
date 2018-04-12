@@ -58,6 +58,12 @@ impl FrameAllocator for BumpFrameAllocator {
         if count == 0 {
             return None;
         };
+        // println!("allocate {}", count);
+        // println!("kstart {:?}", self.kernel_start);
+        // println!("kend {:?}", self.kernel_end);
+        // println!("multiboot start {:?}", self.multiboot_start);
+        // println!("multiboot end {:?}", self.multiboot_end);
+        // flush!();
         if let Some(area) = self.current_area {
             let start_frame = PhysFrame {
                 number: self.next_free_frame.number,
@@ -68,6 +74,7 @@ impl FrameAllocator for BumpFrameAllocator {
 
             let current_area_last_frame =
                 PhysFrame::containing_address(PhysAddr::new(area.end_address() as u32));
+
             if end_frame > current_area_last_frame {
                 // all frames are taken in this area
                 self.choose_next_area();

@@ -46,6 +46,20 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
         memory_map_tag.memory_areas(),
     );
 
+    println!("memory areas from the f allocator:");
+    for area in memory_map_tag.memory_areas() {
+        println!(
+            "    start: {:#x}, end: {:#x} length: {:#x}",
+            area.start_address(),
+            area.end_address(),
+            area.size()
+        );
+    }
+    flush!();
+    // unsafe {
+    //     asm!("hlt");
+    // }
+
     let frame_allocator = RecycleAllocator::new(bump_allocator);
 
     // let stack_allocator = {

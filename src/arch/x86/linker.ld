@@ -43,12 +43,6 @@ SECTIONS {
 		. = ALIGN(4K);
 	}
 
-	.bss :
-	{
-		*(.bss .bss.*)
-		. = ALIGN(4K);
-	}
-
 	.gdt :
 	{
 		*(.gdt)
@@ -64,6 +58,12 @@ SECTIONS {
 	.got.plt :
 	{
 		*(.got.plt)
+		. = ALIGN(4K);
+	}
+
+	.bss :
+	{
+		*(.bss .bss.*)
 		. = ALIGN(4K);
 	}
 }

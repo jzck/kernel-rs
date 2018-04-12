@@ -11,7 +11,6 @@ start:
 	push ebx
 
 	call check_multiboot
-
 	call set_up_page_tables
 
 	; load the new gdt
@@ -36,6 +35,10 @@ set_up_page_tables:
 	mov eax, 0b10000011 ; huge + present + writable
 	mov [p2_table], eax ; map first entry
 
+	mov eax, 0b10000011 ; huge + present + writable
+	or eax, 0x400000	; 4MB
+	mov [p2_table + 4], eax ; map second entry
+
 	mov eax, p2_table
 	mov cr3, eax
 	ret
@@ -55,7 +58,7 @@ align 4096
 p2_table:
 	resb 4096
 stack_bottom:
-	resb 4096 * 4
+	resb 4096 * 3
 stack_top:
 
 section .gdt

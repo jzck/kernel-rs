@@ -69,6 +69,9 @@ pub extern "x86-interrupt" fn page_fault(
     println!("Error code: {:?}", code);
     println!("{:#?}", stack_frame);
     flush!();
+    unsafe {
+        asm!("hlt");
+    }
 }
 
 exception!(x87_fpu, {});

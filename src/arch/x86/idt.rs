@@ -53,5 +53,6 @@ pub fn init() {
     //     .expect("could not allocate double fault stack");
     // println!("DF stack: {:#?}", double_fault_stack);
     // flush!();
+
     IDT.load();
 }

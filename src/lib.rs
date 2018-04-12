@@ -81,7 +81,7 @@ pub extern "C" fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line:
     loop {}
 }
 
-pub const HEAP_START: usize = (1 << 22); //first entry of p2
+pub const HEAP_START: usize = (2 << 22); //third entry of p2
 pub const HEAP_SIZE: usize = 10 * 4096 * 8; //~ 100 KiB
 
 #[global_allocator]

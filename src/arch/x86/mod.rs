@@ -17,6 +17,10 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     // parse multiboot2 info
     let boot_info = multiboot2::load(multiboot_info_addr);
 
+    // println!("{:?}", boot_info);
+    // flush!();
+    // asm!("hlt");
+
     // ACPI must be intialized BEFORE paging is active
     if let Some(rsdp) = boot_info.rsdp_v2_tag() {
         acpi::load(rsdp).expect("ACPI failed");
@@ -26,14 +30,27 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
         acpi::init().expect("ACPI failed");
     }
 
-    // fill and load idt (exceptions + irqs)
-    idt::init();
-
     // set up physical allocator
     ::memory::init(&boot_info);
 
-    // set up virtual mapping
+    // let memory_map_tag = boot_info.memory_map_tag().expect("Memory map tag required");
+    // println!("memory areas:");
+    // for area in memory_map_tag.memory_areas() {
+    //     println!(
+    //         "    start: {:#x}, end: {:#x} length: {:#x}",
+    //         area.start_address(),
+    //         area.end_address(),
+    //         area.size()
+    //     );
+    // }
+    // flush!();
+    // asm!("hlt");
+
+    // set up virtual addressing (paging)
     let mut active_table = paging::init(&boot_info);
+
+    // fill and load idt (exceptions + irqs)
+    idt::init();
 
     // set up heap
     ::allocator::init(&mut active_table);

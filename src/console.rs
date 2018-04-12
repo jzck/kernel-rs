@@ -117,7 +117,7 @@ fn print_line(line: &[u8], address: usize) {
 }
 
 /// Print the kernel stack
-fn print_stack() -> Result<(), &'static str> {
+pub fn print_stack() -> Result<(), &'static str> {
     let esp: usize;
     let ebp: usize;
     unsafe { asm!("" : "={esp}"(esp), "={ebp}"(ebp):::) };
