@@ -1,5 +1,5 @@
 use x86::structures::paging::*;
-use memory::paging::{ActivePageTable};
+use memory::paging::ActivePageTable;
 use memory::*;
 use core::ops::Range;
 
@@ -10,12 +10,9 @@ pub struct Stack {
 }
 
 impl Stack {
-    fn new (top: usize, bottom: usize) -> Stack {
+    fn new(top: usize, bottom: usize) -> Stack {
         assert!(top > bottom);
-        Stack {
-            top,
-            bottom,
-        }
+        Stack { top, bottom }
     }
 
     pub fn top(&self) -> usize {
@@ -29,7 +26,7 @@ impl Stack {
 
 #[derive(Debug)]
 pub struct StackAllocator {
-    range: Range<Page>
+    range: Range<Page>,
 }
 
 impl StackAllocator {
@@ -37,10 +34,12 @@ impl StackAllocator {
         StackAllocator { range }
     }
 
-    pub fn alloc_stack<FA: FrameAllocator>(&mut self,
-                                           active_table: &mut ActivePageTable,
-                                           frame_allocator: &mut FA,
-                                           size_in_pages: usize) -> Option<Stack> {
+    pub fn alloc_stack<FA: FrameAllocator>(
+        &mut self,
+        active_table: &mut ActivePageTable,
+        frame_allocator: &mut FA,
+        size_in_pages: usize,
+    ) -> Option<Stack> {
         if size_in_pages == 0 {
             return None; /* a zero sized stack makes no sense */
         }
@@ -71,8 +70,10 @@ impl StackAllocator {
 
                 // create a new stack
                 let top_of_stack = end.start_address().as_u32() + PAGE_SIZE as u32;
-                Some(Stack::new(top_of_stack as usize,
-                                start.start_address().as_u32() as usize))
+                Some(Stack::new(
+                    top_of_stack as usize,
+                    start.start_address().as_u32() as usize,
+                ))
             }
             _ => None, /* not enough pages */
         }

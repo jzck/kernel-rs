@@ -8,7 +8,6 @@ static GDT: Once<gdt::Gdt> = Once::new();
 static TSS: Once<tss::TaskStateSegment> = Once::new();
 
 pub fn init() {
-    let tss = tss::TaskStateSegment::new();
     let tss = TSS.call_once(|| {
         let tss = tss::TaskStateSegment::new();
         tss
@@ -39,6 +38,7 @@ pub fn init() {
         // reload code segment register
         set_cs(code_selector);
         // load TSS
+        println!("loading tss {:?}", tss_selector);
         load_tss(tss_selector);
     }
 }

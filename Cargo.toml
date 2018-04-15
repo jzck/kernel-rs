@@ -11,14 +11,16 @@ rlibc = "1.0"
 bitflags = "1.0.1"
 spin = "0.4"
 slab_allocator = "0.3.1"
-multiboot2 = { path = "multiboot2-elf64" }		# added rsdp tag
-x86 = { path = "x86" }							# forked for IA32
-# raw-cpuid = { path = "rust-cpuid" }
+multiboot2 = { path = "multiboot2-elf64" } # added rsdp tag
 
 [dependencies.raw-cpuid]
 # need to use github/master because of features not yet on crates.io
 git = "https://github.com/gz/rust-cpuid"
 features = ["nightly"]
+
+[dependencies.x86]
+# forked for IA32 compat
+path = "x86"
 
 [dependencies.lazy_static]
 version = "1.0.0"

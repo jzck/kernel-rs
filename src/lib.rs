@@ -53,12 +53,16 @@ pub fn kmain() -> ! {
 
     // x86::instructions::interrupts::int3();
 
-    // fn stack_overflow() { stack_overflow(); }
+    // fn stack_overflow() {
+    //     stack_overflow();
+    // }
     // stack_overflow();
 
     // unsafe {
     //     *(0xdead as *mut u32) = 42;
     // };
+
+    println!("tss: {:?}");
 
     // vga is *not* cpu specific
     vga::init();

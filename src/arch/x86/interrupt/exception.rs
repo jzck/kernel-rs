@@ -54,7 +54,7 @@ exception!(overflow, {});
 exception!(bound_range, {});
 exception!(invalid_opcode, {});
 exception!(device_not_available, {});
-exception_err!(double_fault, {});
+exception_err!(double_fault, { panic!("double fault non recoverable") });
 exception!(coprocessor_segment_overrun, {});
 exception_err!(invalid_tss, {});
 exception_err!(segment_not_present, {});
