@@ -6,7 +6,6 @@ mod dsdt;
 
 use core;
 use core::mem;
-// use cpuio;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
@@ -156,6 +155,17 @@ pub fn load(rsdp_addr: u32) -> Result<(), &'static str> {
 pub fn shutdown() -> Result<(), &'static str> {
     is_init()?;
     dsdt::shutdown(fadt::get_controlblock()?)
+}
+
+/// Proceed to ACPI reboot
+/// This function need ACPI in v2
+pub fn reboot() -> Result<(), &'static str> {
+    is_init()?;
+    if unsafe {ACPI.v2} {
+        fadt::reboot()
+    } else {
+        Err("ACPI reboot only available in ACPI v2+")
+    }
 }
 
 /// Display state of ACPI

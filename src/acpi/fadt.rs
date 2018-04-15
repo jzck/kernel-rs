@@ -1,5 +1,5 @@
 use super::{ACPISDTHeader, ACPISDTIter};
-use cpuio;
+use io::{Io,Pio};
 
 #[repr(C)]
 #[derive(Debug, Clone)]
@@ -95,7 +95,10 @@ pub fn init(sdt_iter: ACPISDTIter) -> Result<(), &'static str> {
                 // TODO do i have to check if enabled before init ???
                 let smi_cmd = fadt_tmp.smi_commandport as u16; // TODO WHY DO I NEED THIS FUCKING CAST
                 let acpi_enable = fadt_tmp.acpi_enable;
-                cpuio::outb(smi_cmd, acpi_enable); // send acpi enable command
+                //TODO not sexy it !
+                let mut pin: Pio<u8> = Pio::new(smi_cmd);
+                pin.write(acpi_enable);
+                // cpuio::outb(smi_cmd, acpi_enable); // send acpi enable command
             }
             return Ok(());
         }
@@ -125,10 +128,14 @@ fn get_cnt(fadt: FADT) -> [u16; 2] {
 pub fn is_enable() -> Result<bool, &'static str> {
     let fadt = is_init()?;
     let pm1_cnt = get_cnt(fadt);
+    let pin: Pio<u16> = Pio::new(pm1_cnt[0]);
     if pm1_cnt[1] == 0 {
-        Ok(cpuio::inw(pm1_cnt[0]) & 0x1 == 0x1)
+        Ok(pin.read() & 0x1 == 0x1)
+        // Ok(cpuio::inw(pm1_cnt[0]) & 0x1 == 0x1)
     } else {
-        Ok(cpuio::inw(pm1_cnt[0]) & 0x1 == 0x1 || cpuio::inw(pm1_cnt[1]) & 0x1 == 0x1)
+        let pin2: Pio<u8> = Pio::new(pm1_cnt[1]);
+        Ok(pin.read() & 0x1 == 0x1 || pin2.read() & 0x1 == 0x1)
+        // Ok(cpuio::inw(pm1_cnt[0]) & 0x1 == 0x1 || cpuio::inw(pm1_cnt[1]) & 0x1 == 0x1)
     }
 }
 
@@ -138,9 +145,18 @@ pub fn get_controlblock() -> Result<[u16; 2], &'static str> {
     if !is_enable()? {
         Err("ACPI is not enabled")
     } else {
-        // println!("HALT");
-        // flush!();
-        // cpuio::halt();
         Ok(get_cnt(is_init()?)) // TODO redondant call to is_init
+    }
+}
+pub fn reboot() -> Result<(), &'static str> {
+    if !is_enable()? {
+        Err("ACPI is not enabled")
+    } else {
+        let fadt = is_init()?;
+        println!("fadt on {} ({}), value is {}", fadt.resetreg.address as u32, fadt.resetreg.address as u16, fadt.resetvalue);
+        let mut pin: Pio<u8> = Pio::new(fadt.resetreg.address as u16);
+        pin.write(fadt.resetvalue);
+        // cpuio::outb(fadt.resetreg.address as u16, fadt.resetvalue); //TODO do it work
+        Ok(())
     }
 }

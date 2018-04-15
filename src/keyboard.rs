@@ -1,7 +1,7 @@
 extern crate core;
 
-use cpuio;
 use vga;
+use io::{self,Pio,Io};
 
 const MAX_KEYS: usize = 59;
 const KEYMAP_US: [[u8; 2]; MAX_KEYS] = [
@@ -66,6 +66,49 @@ const KEYMAP_US: [[u8; 2]; MAX_KEYS] = [
     *b"\0\0",//capslock
     ];
 
+
+pub static mut PS2: Ps2 = Ps2::new();
+
+pub struct Ps2 {
+    status: Pio<u8>,
+    data: Pio<u8>,
+}
+
+impl Ps2 {
+    pub const fn new() -> Ps2 {
+        Ps2 {
+            status: Pio::new(0x64),
+            data: Pio::new(0x60),
+        }
+    }
+
+    pub fn clear_buffer(&self) {
+        let mut buffer: u8 = 0x02;
+        while buffer & 0x02 != 0 {
+            self.data.read();
+            buffer = self.status.read();
+        }
+    }
+
+    pub fn ps2_8042_reset(&mut self) {
+        io::cli();
+        self.clear_buffer();
+        self.status.write(0xFE);
+    }
+
+    pub fn get_scancode(&self) -> u8 {
+        let mut scancode = 0;
+        loop {
+            if self.data.read() != scancode {
+                scancode = self.data.read();
+                if scancode > 0 {
+                    return scancode;
+                }
+            }
+        }
+    }
+}
+
 const TOUCH_RELEASE: u8 = 1 << 7;
 
 fn check_key_state(key: u8) -> (bool, usize) {
@@ -76,23 +119,11 @@ fn check_key_state(key: u8) -> (bool, usize) {
     }
 }
 
-fn get_scancode() -> u8 {
-    let mut scancode = 0;
-    loop {
-        if cpuio::inb(0x60) != scancode {
-            scancode = cpuio::inb(0x60);
-            if scancode > 0 {
-                return scancode;
-            }
-        }
-    }
-}
-
 pub fn kbd_callback() {
     static mut SHIFT: bool = false;
     static mut CTRL: bool = false;
     static mut ALT: bool = false;
-    let scancode = get_scancode();
+    let scancode = unsafe { PS2.get_scancode() };
     let (is_release, scancode) = check_key_state(scancode);
     unsafe {
         //TODO remove unsafe

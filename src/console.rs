@@ -2,7 +2,8 @@ extern crate core;
 // extern crate multiboot2;
 
 use acpi;
-use cpuio;
+use keyboard::PS2;
+use io;
 use core::char;
 use vga::*;
 
@@ -59,16 +60,15 @@ fn help() -> Result<(), &'static str> {
 /// If reboot failed, will loop on a halt cmd
 ///
 fn reboot() -> ! {
-    unsafe { asm!("cli") }; //TODO volatile ?????
-                            // I will now clear the keyboard buffer
-    let mut buffer: u8 = 0x02;
-    while buffer & 0x02 != 0 {
-        cpuio::inb(0x60);
-        buffer = cpuio::inb(0x64);
+    match acpi::reboot() {
+        Err(msg)    => println!("{}", msg),
+        _           => println!("Unable to perform ACPI reboot."),
     }
-    cpuio::outb(0x64, 0xFE); //Send reset value to CPU //TODO doesn't work in QEMU ==> it seems that qemu cannot reboot
-    println!("Unable to perform reboot. Kernel will be halted");
-    cpuio::halt();
+    flush!();
+    unsafe {PS2.ps2_8042_reset()};// TODO unsafe
+    println!("Unable to perform 8042 reboot. Kernel will be halted");
+    flush!();
+    io::halt();
 }
 
 /// Shutdown the kernel
@@ -76,10 +76,13 @@ fn reboot() -> ! {
 /// If shutdown is performed but failed, will loop on a halt cmd
 /// If shutdown cannot be called, return a Err(&str)
 ///
-fn shutdown() -> Result<(), &'static str> {
-    acpi::shutdown()?;
-    println!("Unable to perform ACPI shutdown. Kernel will be halted");
-    cpuio::halt();
+fn shutdown() -> ! {
+    match acpi::shutdown() {
+        Err(msg)    => println!("{}", msg),
+        _           => println!("Unable to perform ACPI shutdown. Kernel will be halted"),
+    }
+    flush!();
+    io::halt();
 }
 
 fn hexdump(start: usize, end: usize) {
@@ -125,6 +128,7 @@ pub fn print_stack() -> Result<(), &'static str> {
     println!("ebp = {:#x}", ebp);
     println!("size = {:#X} bytes", ebp - esp);
     hexdump(esp, ebp);
+    flush!();
     Ok(())
 }
 
