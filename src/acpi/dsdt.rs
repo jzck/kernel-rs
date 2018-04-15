@@ -1,6 +1,6 @@
 use super::{check_signature, ACPISDTHeader};
 use core::mem;
-use cpuio;
+use io::{Pio,Io};
 
 static mut DSDT: DSDT = DSDT {
     valid: false,
@@ -86,10 +86,13 @@ pub fn init(addr: u32) -> Result<(), &'static str> {
 pub fn shutdown(pm1_cnt: [u16; 2]) -> Result<(), &'static str> {
     is_init()?;
     let slp_typ = unsafe { DSDT.slp_typ_a } | (1 << 13);
-    cpuio::outw(pm1_cnt[0], slp_typ);
+    let mut pin: Pio<u16> = Pio::new(pm1_cnt[0]);
+    pin.write(slp_typ);
     if pm1_cnt[1] != 0 {
         let slp_typ = unsafe { DSDT.slp_typ_b } | (1 << 13);
-        cpuio::outw(pm1_cnt[1], slp_typ);
+        let mut pin: Pio<u16> = Pio::new(pm1_cnt[1]);
+        pin.write(slp_typ);
+        // cpuio::outw(pm1_cnt[1], slp_typ);
     }
     Ok(())
 }

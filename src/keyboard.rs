@@ -1,9 +1,7 @@
 extern crate core;
 
-use cpuio;
 use vga;
-use io::Pio;
-use io::Io;
+use io::{self,Pio,Io};
 
 const MAX_KEYS: usize = 59;
 const KEYMAP_US: [[u8; 2]; MAX_KEYS] = [
@@ -93,7 +91,7 @@ impl Ps2 {
     }
 
     pub fn ps2_8042_reset(&mut self) {
-        cpuio::cli();
+        io::cli();
         self.clear_buffer();
         self.status.write(0xFE);
     }

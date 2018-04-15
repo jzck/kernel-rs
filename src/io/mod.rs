@@ -28,3 +28,14 @@ pub trait Io {
         self.write(tmp);
     }
 }
+
+pub fn cli() {
+    unsafe { asm!("cli" : : : : "volatile") };
+}
+
+pub fn halt() -> ! {
+    cli();
+    loop {
+        unsafe { asm!("hlt" : : : : "volatile") };
+    }
+}

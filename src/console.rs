@@ -3,7 +3,7 @@ extern crate core;
 
 use acpi;
 use keyboard::PS2;
-use cpuio;
+use io;
 use core::char;
 use vga::*;
 
@@ -60,11 +60,15 @@ fn help() -> Result<(), &'static str> {
 /// If reboot failed, will loop on a halt cmd
 ///
 fn reboot() -> ! {
-    // acpi::reboot()?;
-    // println!("Unable to perform ACPI reboot.");
+    match acpi::reboot() {
+        Err(msg)    => println!("{}", msg),
+        _           => println!("Unable to perform ACPI reboot."),
+    }
+    flush!();
     unsafe {PS2.ps2_8042_reset()};// TODO unsafe
     println!("Unable to perform 8042 reboot. Kernel will be halted");
-    cpuio::halt();
+    flush!();
+    io::halt();
 }
 
 /// Shutdown the kernel
@@ -72,10 +76,13 @@ fn reboot() -> ! {
 /// If shutdown is performed but failed, will loop on a halt cmd
 /// If shutdown cannot be called, return a Err(&str)
 ///
-fn shutdown() -> Result<(), &'static str> {
-    acpi::shutdown()?;
-    println!("Unable to perform ACPI shutdown. Kernel will be halted");
-    cpuio::halt();
+fn shutdown() -> ! {
+    match acpi::shutdown() {
+        Err(msg)    => println!("{}", msg),
+        _           => println!("Unable to perform ACPI shutdown. Kernel will be halted"),
+    }
+    flush!();
+    io::halt();
 }
 
 fn hexdump(start: usize, end: usize) {
@@ -121,6 +128,7 @@ pub fn print_stack() -> Result<(), &'static str> {
     println!("ebp = {:#x}", ebp);
     println!("size = {:#X} bytes", ebp - esp);
     hexdump(esp, ebp);
+    flush!();
     Ok(())
 }
 
