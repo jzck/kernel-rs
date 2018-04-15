@@ -1,7 +1,7 @@
 extern crate core;
 
 use vga;
-use io::{self,Pio,Io};
+use io::{self, Io, Pio};
 
 const MAX_KEYS: usize = 59;
 const KEYMAP_US: [[u8; 2]; MAX_KEYS] = [
@@ -65,7 +65,6 @@ const KEYMAP_US: [[u8; 2]; MAX_KEYS] = [
     *b"  ",
     *b"\0\0",//capslock
     ];
-
 
 pub static mut PS2: Ps2 = Ps2::new();
 

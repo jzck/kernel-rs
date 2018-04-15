@@ -1,5 +1,5 @@
 use super::{ACPISDTHeader, ACPISDTIter};
-use io::{Io,Pio};
+use io::{Io, Pio};
 
 #[repr(C)]
 #[derive(Debug, Clone)]
@@ -131,7 +131,7 @@ pub fn is_enable() -> Result<bool, &'static str> {
     let pin: Pio<u16> = Pio::new(pm1_cnt[0]);
     if pm1_cnt[1] == 0 {
         Ok(pin.read() & 0x1 == 0x1)
-        // Ok(cpuio::inw(pm1_cnt[0]) & 0x1 == 0x1)
+    // Ok(cpuio::inw(pm1_cnt[0]) & 0x1 == 0x1)
     } else {
         let pin2: Pio<u8> = Pio::new(pm1_cnt[1]);
         Ok(pin.read() & 0x1 == 0x1 || pin2.read() & 0x1 == 0x1)
@@ -153,7 +153,10 @@ pub fn reboot() -> Result<(), &'static str> {
         Err("ACPI is not enabled")
     } else {
         let fadt = is_init()?;
-        println!("fadt on {} ({}), value is {}", fadt.resetreg.address as u32, fadt.resetreg.address as u16, fadt.resetvalue);
+        println!(
+            "fadt on {} ({}), value is {}",
+            fadt.resetreg.address as u32, fadt.resetreg.address as u16, fadt.resetvalue
+        );
         let mut pin: Pio<u8> = Pio::new(fadt.resetreg.address as u16);
         pin.write(fadt.resetvalue);
         // cpuio::outb(fadt.resetreg.address as u16, fadt.resetvalue); //TODO do it work

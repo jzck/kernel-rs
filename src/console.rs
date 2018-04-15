@@ -61,11 +61,11 @@ fn help() -> Result<(), &'static str> {
 ///
 fn reboot() -> ! {
     match acpi::reboot() {
-        Err(msg)    => println!("{}", msg),
-        _           => println!("Unable to perform ACPI reboot."),
+        Err(msg) => println!("{}", msg),
+        _ => println!("Unable to perform ACPI reboot."),
     }
     flush!();
-    unsafe {PS2.ps2_8042_reset()};// TODO unsafe
+    unsafe { PS2.ps2_8042_reset() }; // TODO unsafe
     println!("Unable to perform 8042 reboot. Kernel will be halted");
     flush!();
     io::halt();
@@ -78,8 +78,8 @@ fn reboot() -> ! {
 ///
 fn shutdown() -> ! {
     match acpi::shutdown() {
-        Err(msg)    => println!("{}", msg),
-        _           => println!("Unable to perform ACPI shutdown. Kernel will be halted"),
+        Err(msg) => println!("{}", msg),
+        _ => println!("Unable to perform ACPI shutdown. Kernel will be halted"),
     }
     flush!();
     io::halt();

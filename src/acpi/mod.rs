@@ -161,7 +161,7 @@ pub fn shutdown() -> Result<(), &'static str> {
 /// This function need ACPI in v2
 pub fn reboot() -> Result<(), &'static str> {
     is_init()?;
-    if unsafe {ACPI.v2} {
+    if unsafe { ACPI.v2 } {
         fadt::reboot()
     } else {
         Err("ACPI reboot only available in ACPI v2+")

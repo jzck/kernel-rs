@@ -61,8 +61,6 @@ pub fn kmain() -> ! {
     //     *(0xdead as *mut u32) = 42;
     // };
 
-    println!("tss: {:?}");
-
     // vga is *not* cpu specific
     vga::init();
 

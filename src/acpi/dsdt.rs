@@ -1,6 +1,6 @@
 use super::{check_signature, ACPISDTHeader};
 use core::mem;
-use io::{Pio,Io};
+use io::{Io, Pio};
 
 static mut DSDT: DSDT = DSDT {
     valid: false,
