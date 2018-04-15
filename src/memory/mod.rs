@@ -1,14 +1,15 @@
 mod bump;
 mod recycle;
-// mod stack_allocator;
+mod stack_allocator;
 
 use multiboot2;
 use x86::structures::paging::*;
+use x86::*;
 use spin::Mutex;
 
 use self::bump::BumpFrameAllocator;
 use self::recycle::RecycleAllocator;
-// use self::stack_allocator::StackAllocator;
+use self::stack_allocator::StackAllocator;
 
 pub trait FrameAllocator {
     fn allocate_frames(&mut self, size: usize) -> Option<PhysFrame>;
@@ -17,7 +18,7 @@ pub trait FrameAllocator {
 
 pub struct MemoryControler {
     frame_allocator: RecycleAllocator<BumpFrameAllocator>,
-    // stack_allocator: StackAllocator,
+    stack_allocator: StackAllocator,
 }
 
 static MEMORY_CONTROLER: Mutex<Option<MemoryControler>> = Mutex::new(None);
@@ -50,16 +51,19 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
 
     let frame_allocator = RecycleAllocator::new(bump_allocator);
 
-    // let stack_allocator = {
-    //     let stack_alloc_start = heap_end_page + 1;
-    //     let stack_alloc_end = stack_alloc_start + 100;
-    //     let stack_alloc_range = stack_alloc_start..stack_alloc_end + 1;
-    //     StackAllocator::new(stack_alloc_range)
-    // };
+    let heap_end_page =
+        Page::containing_address(VirtAddr::new(::HEAP_START as u32 + ::HEAP_SIZE as u32 - 1));
+
+    let stack_allocator = {
+        let stack_alloc_start = heap_end_page + 1;
+        let stack_alloc_end = stack_alloc_start + 100;
+        let stack_alloc_range = stack_alloc_start..stack_alloc_end + 1;
+        StackAllocator::new(stack_alloc_range)
+    };
 
     *MEMORY_CONTROLER.lock() = Some(MemoryControler {
         frame_allocator,
-        // stack_allocator,
+        stack_allocator,
     });
 }
 
@@ -74,6 +78,14 @@ pub fn allocate_frames(count: usize) -> Option<PhysFrame> {
 pub fn deallocate_frames(frame: PhysFrame, count: usize) {
     if let Some(ref mut controler) = *MEMORY_CONTROLER.lock() {
         controler.frame_allocator.deallocate_frames(frame, count)
+    } else {
+        panic!("frame allocator not initialized!");
+    }
+}
+
+pub fn allocate_stack() {
+    if let Some(ref mut controler) = *MEMORY_CONTROLER.lock() {
+        controler.stack_allocator.allocate_stack()
     } else {
         panic!("frame allocator not initialized!");
     }

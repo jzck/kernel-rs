@@ -34,7 +34,7 @@ impl StackAllocator {
         StackAllocator { range }
     }
 
-    pub fn alloc_stack<FA: FrameAllocator>(
+    pub fn allocate_stack<FA: FrameAllocator>(
         &mut self,
         active_table: &mut ActivePageTable,
         frame_allocator: &mut FA,
