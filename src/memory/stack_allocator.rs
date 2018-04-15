@@ -1,25 +1,25 @@
 use x86::structures::paging::*;
-use memory::paging::ActivePageTable;
+use arch::x86::paging::ActivePageTable;
 use memory::*;
 use core::ops::Range;
 
 #[derive(Debug)]
 pub struct Stack {
-    top: usize,
-    bottom: usize,
+    pub top: u32,
+    pub bottom: u32,
 }
 
 impl Stack {
-    fn new(top: usize, bottom: usize) -> Stack {
+    fn new(top: u32, bottom: u32) -> Stack {
         assert!(top > bottom);
         Stack { top, bottom }
     }
 
-    pub fn top(&self) -> usize {
+    pub fn top(&self) -> u32 {
         self.top
     }
 
-    pub fn bottom(&self) -> usize {
+    pub fn bottom(&self) -> u32 {
         self.bottom
     }
 }
@@ -65,14 +65,14 @@ impl StackAllocator {
 
                 // map stack pages to physical frames
                 for page in range {
-                    active_table.map(page, PageTableFlags::WRITABLE, frame_allocator);
+                    active_table.map(page, PageTableFlags::WRITABLE);
                 }
 
                 // create a new stack
                 let top_of_stack = end.start_address().as_u32() + PAGE_SIZE as u32;
                 Some(Stack::new(
-                    top_of_stack as usize,
-                    start.start_address().as_u32() as usize,
+                    top_of_stack,
+                    start.start_address().as_u32(),
                 ))
             }
             _ => None, /* not enough pages */

@@ -29,10 +29,12 @@ pub trait Io {
     }
 }
 
+#[inline(always)]
 pub fn cli() {
     unsafe { asm!("cli" : : : : "volatile") };
 }
 
+#[inline(always)]
 pub fn halt() -> ! {
     cli();
     loop {

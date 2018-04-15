@@ -44,6 +44,8 @@ pub mod memory;
 /// arch specific entry points
 pub mod arch;
 
+// use core::mem;
+// use x86::structures::idt::*;
 /// kernel entry point. arch module is responsible for
 /// calling this once the core has loaded
 pub fn kmain() -> ! {
@@ -51,15 +53,22 @@ pub fn kmain() -> ! {
     memory::init_noncore();
 
     // x86::instructions::interrupts::int3();
+        // println!("size of idt entry: {}", mem::size_of::<IdtEntry<HandlerFunc>>());
+        // println!("size of i32 {}", mem::size_of::<i32>());
+        // flush!();
+        // unsafe {asm!("hlt");}
+    // let x = 0;
+    // let y = 5 /x;
+    // println!("x {} y {}", x, y);
 
     // fn stack_overflow() {
     //     stack_overflow();
     // }
     // stack_overflow();
 
-    // unsafe {
-    //     *(0xdead as *mut u32) = 42;
-    // };
+    unsafe {
+        *(0xdead as *mut u32) = 42;
+    };
 
     // vga is *not* cpu specific
     vga::init();

@@ -15,7 +15,7 @@ build/arch/$(ARCH)/%.o: src/arch/$(ARCH)/%.asm Makefile
 ## COMPILE RUST (xargo)
 rust_os	:= target/$(TARGET)/debug/lib$(OS).a
 $(rust_os): $(TARGET).json Makefile
-	@RUST_TARGET_PATH="$(shell pwd)" xargo build --target $(TARGET)
+	@TERM=xterm RUST_TARGET_PATH="$(shell pwd)" xargo build --target $(TARGET)
 
 ## LINKAGE
 kernel			:= build/$(OS)

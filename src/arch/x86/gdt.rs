@@ -2,14 +2,25 @@ use x86::structures::gdt;
 use x86::structures::tss;
 use x86::instructions::segmentation::set_cs;
 use x86::instructions::tables::load_tss;
+use arch::x86::paging::ActivePageTable;
 use spin::Once;
+// use io;
 
 static GDT: Once<gdt::Gdt> = Once::new();
 static TSS: Once<tss::TaskStateSegment> = Once::new();
 
-pub fn init() {
+pub fn init(mut active_table: &mut ActivePageTable) {
+    // let tss = tss::TaskStateSegment::new();
     let tss = TSS.call_once(|| {
-        let tss = tss::TaskStateSegment::new();
+        let mut tss = tss::TaskStateSegment::new();
+match ::memory::allocate_stack(&mut active_table) {
+            Some(stack)     => {tss.esp0 = stack.top; tss.ss = 0x18},
+            // Some(stack)     => {tss.esp = stack.top; tss.ebp = stack.bottom },
+            _               => panic!("There is no stack available for tss"),
+        };
+        // tss.esp = tss.esp0;
+        // tss.ebp = tss.esp;
+        // println!("tss on {:#x}", tss.esp0);flush!();
         tss
     });
 
@@ -33,6 +44,7 @@ pub fn init() {
     println!("gdt 3 lower: {:#x}", gdt.table[3] >> 32 as u32);
     flush!();
 
+    // io::halt();
     gdt.load();
     unsafe {
         // reload code segment register

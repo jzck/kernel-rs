@@ -40,7 +40,7 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     idt::init();
 
     // fill and load gdt
-    gdt::init();
+    gdt::init(&mut active_table);
 
     // set up heap
     ::allocator::init(&mut active_table);

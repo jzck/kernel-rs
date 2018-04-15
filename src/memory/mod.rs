@@ -4,12 +4,14 @@ mod stack_allocator;
 
 use multiboot2;
 use x86::structures::paging::*;
+use arch::x86::paging::ActivePageTable;
 use x86::*;
-use spin::Mutex;
+// use spin::Mutex;
 
 use self::bump::BumpFrameAllocator;
 use self::recycle::RecycleAllocator;
-use self::stack_allocator::StackAllocator;
+use self::stack_allocator::{Stack,StackAllocator};
+
 
 pub trait FrameAllocator {
     fn allocate_frames(&mut self, size: usize) -> Option<PhysFrame>;
@@ -21,7 +23,7 @@ pub struct MemoryControler {
     stack_allocator: StackAllocator,
 }
 
-static MEMORY_CONTROLER: Mutex<Option<MemoryControler>> = Mutex::new(None);
+static mut MEMORY_CONTROLER: Option<MemoryControler> = None;
 
 pub fn init(boot_info: &multiboot2::BootInformation) {
     let elf_sections_tag = boot_info.elf_sections_tag().unwrap();
@@ -47,7 +49,7 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
         boot_info.start_address(),
         boot_info.end_address(),
         memory_map_tag.memory_areas(),
-    );
+        );
 
     let frame_allocator = RecycleAllocator::new(bump_allocator);
 
@@ -61,42 +63,52 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
         StackAllocator::new(stack_alloc_range)
     };
 
-    *MEMORY_CONTROLER.lock() = Some(MemoryControler {
-        frame_allocator,
-        stack_allocator,
-    });
+    unsafe {
+        MEMORY_CONTROLER = Some(MemoryControler {
+            frame_allocator,
+            stack_allocator,
+        });
+    }
 }
 
 pub fn allocate_frames(count: usize) -> Option<PhysFrame> {
-    if let Some(ref mut controler) = *MEMORY_CONTROLER.lock() {
-        controler.frame_allocator.allocate_frames(count)
-    } else {
-        panic!("frame allocator not initialized!");
+    unsafe {
+        if let Some(ref mut controler) = MEMORY_CONTROLER {
+            controler.frame_allocator.allocate_frames(count)
+        } else {
+            panic!("frame allocator not initialized!");
+        }
     }
 }
 
 pub fn deallocate_frames(frame: PhysFrame, count: usize) {
-    if let Some(ref mut controler) = *MEMORY_CONTROLER.lock() {
-        controler.frame_allocator.deallocate_frames(frame, count)
-    } else {
-        panic!("frame allocator not initialized!");
+    unsafe {
+        if let Some(ref mut controler) = MEMORY_CONTROLER {
+            controler.frame_allocator.deallocate_frames(frame, count)
+        } else {
+            panic!("frame allocator not initialized!");
+        }
     }
 }
 
-pub fn allocate_stack() {
-    if let Some(ref mut controler) = *MEMORY_CONTROLER.lock() {
-        controler.stack_allocator.allocate_stack()
-    } else {
-        panic!("frame allocator not initialized!");
+pub fn allocate_stack(mut active_table: &mut ActivePageTable) -> Option<Stack> {
+    unsafe {
+        if let Some(ref mut controler) = MEMORY_CONTROLER {
+            controler.stack_allocator.allocate_stack(&mut active_table, &mut controler.frame_allocator, 5)
+        } else {
+            panic!("frame allocator not initialized!");
+        }
     }
 }
 
 /// Init memory module after core
 /// Must be called once, and only once,
 pub fn init_noncore() {
-    if let Some(ref mut controler) = *MEMORY_CONTROLER.lock() {
-        controler.frame_allocator.set_core(true);
-    } else {
-        panic!("frame allocator not initialized");
+    unsafe {
+        if let Some(ref mut controler) = MEMORY_CONTROLER {
+            controler.frame_allocator.set_core(true);
+        } else {
+            panic!("frame allocator not initialized");
+        }
     }
 }

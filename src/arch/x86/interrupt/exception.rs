@@ -1,6 +1,7 @@
 // https://wiki.osdev.org/Exceptions
 
 use arch::x86::pti;
+use io;
 
 macro_rules! exception {
     ($name:ident, $func:block) => {
