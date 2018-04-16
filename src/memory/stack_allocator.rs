@@ -34,10 +34,9 @@ impl StackAllocator {
         StackAllocator { range }
     }
 
-    pub fn allocate_stack<FA: FrameAllocator>(
+    pub fn allocate_stack(
         &mut self,
         active_table: &mut ActivePageTable,
-        frame_allocator: &mut FA,
         size_in_pages: usize,
     ) -> Option<Stack> {
         if size_in_pages == 0 {
@@ -70,10 +69,7 @@ impl StackAllocator {
 
                 // create a new stack
                 let top_of_stack = end.start_address().as_u32() + PAGE_SIZE as u32;
-                Some(Stack::new(
-                    top_of_stack,
-                    start.start_address().as_u32(),
-                ))
+                Some(Stack::new(top_of_stack, start.start_address().as_u32()))
             }
             _ => None, /* not enough pages */
         }

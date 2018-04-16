@@ -1,14 +1,9 @@
 // https://wiki.osdev.org/Exceptions
 
-use arch::x86::pti;
-use io;
-
 macro_rules! exception {
     ($name:ident, $func:block) => {
         pub extern "x86-interrupt" fn $name(stack_frame: &mut ExceptionStackFrame)
         {
-            // unsafe { pti::map(); }
-
             println!("Exception: {}", stringify!($name));
             println!("{:#?}", stack_frame);
             flush!();
@@ -18,8 +13,6 @@ macro_rules! exception {
                 $func
             }
             inner(stack_frame);
-
-            // unsafe { pti::unmap(); }
         }
     }
 }
@@ -50,7 +43,11 @@ exception!(divide_by_zero, {
 
 exception!(debug, {});
 exception!(non_maskable, {});
-exception!(breakpoint, {});
+exception!(breakpoint, {
+    // unsafe {
+    //     asm!("hlt");
+    // }
+});
 exception!(overflow, {});
 exception!(bound_range, {});
 exception!(invalid_opcode, {});
@@ -60,7 +57,9 @@ exception!(coprocessor_segment_overrun, {});
 exception_err!(invalid_tss, {});
 exception_err!(segment_not_present, {});
 exception_err!(stack_segment, {});
-exception_err!(general_protection, {});
+exception_err!(general_protection, {
+    panic!("general protection fault (#GP) can not recover");
+});
 
 pub extern "x86-interrupt" fn page_fault(
     stack_frame: &mut ExceptionStackFrame,
@@ -70,6 +69,9 @@ pub extern "x86-interrupt" fn page_fault(
     println!("Error code: {:?}", code);
     println!("{:#?}", stack_frame);
     flush!();
+    unsafe {
+        asm!("hlt");
+    }
 }
 
 exception!(x87_fpu, {});

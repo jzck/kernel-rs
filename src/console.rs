@@ -25,6 +25,8 @@ fn dispatch(command: &str) -> Result<(), &'static str> {
         "stack" => self::print_stack(),
         "regs" => self::regs(),
         "cpu" => self::cpu(),
+        "int3" => self::int3(),
+        "overflow" => self::overflow(),
 
         _ => Err("Command unknown. (h|help for help)"),
     }
@@ -196,5 +198,19 @@ pub fn cpu() -> Result<(), &'static str> {
     use arch::x86::device::cpu;
     cpu::cpu_info().expect("cpu info not available");
     flush!();
+    Ok(())
+}
+
+pub fn int3() -> Result<(), &'static str> {
+    use x86;
+    x86::instructions::interrupts::int3();
+    Ok(())
+}
+
+pub fn overflow() -> Result<(), &'static str> {
+    fn stack_overflow() {
+        stack_overflow();
+    }
+    stack_overflow();
     Ok(())
 }

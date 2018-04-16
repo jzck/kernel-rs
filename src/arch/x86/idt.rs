@@ -10,17 +10,24 @@ lazy_static! {
         idt.debug.set_handler_fn(exception::debug);
         idt.non_maskable_interrupt.set_handler_fn(exception::non_maskable);
         idt.breakpoint.set_handler_fn(exception::breakpoint);
+        idt.breakpoint.set_gate_type(GateType::TaskGate32);
+        idt.breakpoint.set_selector(0x18);
+
         idt.overflow.set_handler_fn(exception::overflow);
         idt.bound_range_exceeded.set_handler_fn(exception::bound_range);
         idt.invalid_opcode.set_handler_fn(exception::invalid_opcode);
         idt.device_not_available.set_handler_fn(exception::device_not_available);
         idt.double_fault.set_handler_fn(exception::double_fault);
-        idt.double_fault.set_gate_type(GateType::TaskGate32);
+        // idt.double_fault.set_gate_type(GateType::TaskGate32);
+        // idt.double_fault.set_selector(0x18);
+
         idt.segment_not_present.set_handler_fn(exception::segment_not_present);
         idt.stack_segment_fault.set_handler_fn(exception::stack_segment);
         idt.general_protection_fault.set_handler_fn(exception::general_protection);
         idt.page_fault.set_handler_fn(exception::page_fault);
         idt.page_fault.set_gate_type(GateType::TaskGate32);
+        idt.page_fault.set_selector(0x18);
+
         idt.x87_floating_point.set_handler_fn(exception::x87_fpu);
         idt.alignment_check.set_handler_fn(exception::alignment_check);
         idt.machine_check.set_handler_fn(exception::machine_check);

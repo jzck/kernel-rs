@@ -10,8 +10,7 @@ use x86::*;
 
 use self::bump::BumpFrameAllocator;
 use self::recycle::RecycleAllocator;
-use self::stack_allocator::{Stack,StackAllocator};
-
+use self::stack_allocator::{Stack, StackAllocator};
 
 pub trait FrameAllocator {
     fn allocate_frames(&mut self, size: usize) -> Option<PhysFrame>;
@@ -49,7 +48,7 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
         boot_info.start_address(),
         boot_info.end_address(),
         memory_map_tag.memory_areas(),
-        );
+    );
 
     let frame_allocator = RecycleAllocator::new(bump_allocator);
 
@@ -94,7 +93,9 @@ pub fn deallocate_frames(frame: PhysFrame, count: usize) {
 pub fn allocate_stack(mut active_table: &mut ActivePageTable) -> Option<Stack> {
     unsafe {
         if let Some(ref mut controler) = MEMORY_CONTROLER {
-            controler.stack_allocator.allocate_stack(&mut active_table, &mut controler.frame_allocator, 5)
+            controler
+                .stack_allocator
+                .allocate_stack(&mut active_table, 4)
         } else {
             panic!("frame allocator not initialized!");
         }

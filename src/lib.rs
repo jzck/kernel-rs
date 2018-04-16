@@ -52,14 +52,8 @@ pub fn kmain() -> ! {
     // heap avalaible for tracking freed frames
     memory::init_noncore();
 
-    // x86::instructions::interrupts::int3();
-        // println!("size of idt entry: {}", mem::size_of::<IdtEntry<HandlerFunc>>());
-        // println!("size of i32 {}", mem::size_of::<i32>());
-        // flush!();
-        // unsafe {asm!("hlt");}
-    // let x = 0;
-    // let y = 5 /x;
-    // println!("x {} y {}", x, y);
+    // vga is *not* cpu specific
+    vga::init();
 
     // fn stack_overflow() {
     //     stack_overflow();
@@ -70,8 +64,7 @@ pub fn kmain() -> ! {
         *(0xdead as *mut u32) = 42;
     };
 
-    // vga is *not* cpu specific
-    vga::init();
+    // x86::instructions::interrupts::int3();
 
     loop {}
 }
