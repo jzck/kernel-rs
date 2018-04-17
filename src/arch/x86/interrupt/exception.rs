@@ -38,15 +38,12 @@ macro_rules! exception_err {
 use x86::structures::idt::*;
 
 exception!(divide_by_zero, {
-    panic!("CPU exception: division by zero");
+    panic!("CPU exception: division by zero")
 });
 
 exception!(debug, {});
 exception!(non_maskable, {});
-exception!(breakpoint, {
-    println!("breakpoint inner function");
-    flush!();
-});
+exception!(breakpoint, {});
 exception!(overflow, {});
 exception!(bound_range, {});
 exception!(invalid_opcode, {});
