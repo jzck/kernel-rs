@@ -44,15 +44,16 @@ exception!(divide_by_zero, {
 exception!(debug, {});
 exception!(non_maskable, {});
 exception!(breakpoint, {
-    // unsafe {
-    //     asm!("hlt");
-    // }
+    println!("breakpoint inner function");
+    flush!();
 });
 exception!(overflow, {});
 exception!(bound_range, {});
 exception!(invalid_opcode, {});
 exception!(device_not_available, {});
-exception_err!(double_fault, { panic!("double fault non recoverable") });
+exception_err!(double_fault, {
+    panic!("double fault non recoverable");
+});
 exception!(coprocessor_segment_overrun, {});
 exception_err!(invalid_tss, {});
 exception_err!(segment_not_present, {});
@@ -69,9 +70,6 @@ pub extern "x86-interrupt" fn page_fault(
     println!("Error code: {:?}", code);
     println!("{:#?}", stack_frame);
     flush!();
-    unsafe {
-        asm!("hlt");
-    }
 }
 
 exception!(x87_fpu, {});

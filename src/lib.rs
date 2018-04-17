@@ -60,9 +60,9 @@ pub fn kmain() -> ! {
     // }
     // stack_overflow();
 
-    unsafe {
-        *(0xdead as *mut u32) = 42;
-    };
+    // unsafe {
+    //     *(0xdead as *mut u32) = 42;
+    // };
 
     // x86::instructions::interrupts::int3();
 
