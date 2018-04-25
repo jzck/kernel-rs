@@ -30,19 +30,12 @@ pub fn init(mut active_table: &mut ActivePageTable) {
         gdt
     });
 
-    // println!("gdt 0 upper: {:#x}", gdt.table[0] as u32);
-    // println!("gdt 0 lower: {:#x}", gdt.table[0] >> 32 as u32);
-    // println!("gdt 1 upper: {:#x}", gdt.table[1] as u32);
-    // println!("gdt 1 lower: {:#x}", gdt.table[1] >> 32 as u32);
-    // println!("gdt 2 upper: {:#x}", gdt.table[2] as u32);
-    // println!("gdt 2 lower: {:#x}", gdt.table[2] >> 32 as u32);
-    // println!("gdt 3 upper: {:#x}", gdt.table[3] as u32);
-    // println!("gdt 3 lower: {:#x}", gdt.table[3] >> 32 as u32);
-    // println!("gdt 3 limit: {}", (gdt.table[3] & 0x00ff) as u32);
-    // println!("gdt 3 base : {}", (gdt.table[3] & 0xff00) as u32);
-    // println!("gdt 4 upper: {:#x}", gdt.table[4] as u32);
-    // println!("gdt 4 lower: {:#x}", gdt.table[4] >> 32 as u32);
-    // flush!();
+    println!("gdt[0]={:#?}", gdt::Descriptor(gdt.table[0]));
+    println!("gdt[1]={:#?}", gdt::Descriptor(gdt.table[1]));
+    println!("gdt[2]={:#?}", gdt::Descriptor(gdt.table[2]));
+    println!("gdt[3]={:#?}", gdt::Descriptor(gdt.table[3]));
+    println!("gdt[4]={:#?}", gdt::Descriptor(gdt.table[4]));
+    flush!();
 
     gdt.load();
     unsafe {
