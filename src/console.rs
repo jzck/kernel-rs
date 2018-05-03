@@ -186,9 +186,25 @@ pub fn acpi_info() -> Result<(), &'static str> {
 /// Dump control registers
 pub fn regs() -> Result<(), &'static str> {
     use x86::registers::control::*;
+    use x86::instructions::tables::tr;
+    use x86::instructions::segmentation::*;
+    use x86::structures::gdt;
     println!("cr0 = {:?}", Cr0::read());
     println!("cr3 = {:?}", Cr3::read());
     println!("cr4 = {:?}", Cr4::read());
+    println!("tr  = {:?}", tr());
+    println!("ss  = {:?}", ss());
+    println!("cs  = {:?}", cs());
+    println!("ds  = {:?}", ds());
+    println!("es  = {:?}", es());
+    println!("fs  = {:?}", fs());
+    println!("gs  = {:?}", gs());
+    unsafe {
+        println!(
+            "tss = {:#?}",
+            gdt::Descriptor(::arch::x86::gdt::GDT.table[tr().index() as usize])
+        );
+    }
     flush!();
     Ok(())
 }

@@ -53,7 +53,7 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
     let frame_allocator = RecycleAllocator::new(bump_allocator);
 
     let heap_end_page =
-        Page::containing_address(VirtAddr::new(::HEAP_START as u32 + ::HEAP_SIZE as u32 - 1));
+        Page::containing_address(VirtAddr::new(::KERNEL_HEAP_OFFSET + ::KERNEL_HEAP_SIZE - 1));
 
     let stack_allocator = {
         let stack_alloc_start = heap_end_page + 1;

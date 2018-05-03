@@ -4,7 +4,7 @@ macro_rules! exception {
     ($name:ident, $func:block) => {
         pub extern "x86-interrupt" fn $name(stack_frame: &mut ExceptionStackFrame)
         {
-            println!("Exception: {}", stringify!($name));
+            println!("#{}", stringify!($name));
             println!("{:#?}", stack_frame);
             flush!();
 
@@ -20,9 +20,9 @@ macro_rules! exception {
 macro_rules! exception_err {
     ($name:ident, $func:block) => {
         pub extern "x86-interrupt" fn $name(
-            stack_frame: &mut ExceptionStackFrame, _error_code: u32)
+            stack_frame: &mut ExceptionStackFrame, error_code: u32)
         {
-            println!("Exception: {}", stringify!($name));
+            println!("#{}({})", stringify!($name), error_code);
             println!("{:#?}", stack_frame);
             flush!();
 

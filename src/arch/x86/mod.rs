@@ -4,7 +4,7 @@ extern crate x86;
 pub mod paging;
 pub mod interrupt;
 pub mod device;
-pub mod pti;
+pub mod consts;
 
 pub mod gdt;
 pub mod idt;
@@ -40,7 +40,7 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     idt::init();
 
     // fill and load gdt
-    gdt::init(&mut active_table);
+    gdt::init();
 
     // set up heap
     ::allocator::init(&mut active_table);
@@ -50,4 +50,38 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
 
     // primary CPU entry point
     ::kmain();
+}
+
+pub unsafe fn usermode(ip: u32, sp: u32, arg: u32) -> ! {
+    asm!("push r10
+         push r11
+         push r12
+         push r13
+         push r14
+         push r15
+         "
+         : //no output
+         : "{r10}"(gdt::GDT_USER_DATA << 3 | 3),
+         "{r11}"(sp),
+         "{r12}"(1 << 9) // interrupt enable flag
+         "{r13}"(gdt::GDT_USER_CODE << 3 | 3),
+         "{r14}"(ip),
+         "{r15}"(arg)
+         : //no clobbers
+         : "intel", "volatile"
+         );
+
+    asm!("mov ds, r14d
+         mov es, r14d
+         mov fs, r15d
+         mov gs, r14d
+         fninit
+         iret"
+         : //no output (never returns)
+         : "{r14}"(gdt::GDT_USER_DATA << 3 | 3),
+         "{r15}"(gdt::GDT_USER_CODE << 3 | 3)
+         : //no clobbers (never returns)
+         : "intel", "volatile"
+         );
+    unreachable!();
 }

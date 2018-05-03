@@ -1,49 +1,38 @@
 use x86::structures::gdt;
 use x86::structures::tss;
-use x86::instructions::segmentation::set_cs;
+use x86::instructions::segmentation::*;
 use x86::instructions::tables::load_tss;
-use x86::registers::control;
-use arch::x86::paging::ActivePageTable;
+use x86::*;
 use spin::Once;
 
-static GDT: Once<gdt::Gdt> = Once::new();
-static TSS_MAIN: Once<tss::TaskStateSegment> = Once::new();
-static TSS_INT: Once<tss::TaskStateSegment> = Once::new();
+pub static mut GDT: gdt::Gdt = gdt::Gdt::new();
+pub static mut TSS: tss::TaskStateSegment = tss::TaskStateSegment::new();
 
-pub fn init(mut active_table: &mut ActivePageTable) {
-    let tss_main = TSS_MAIN.call_once(|| {
-        let mut tss = tss::TaskStateSegment::new();
-        // tss.esp0 = stack.top;
-        // tss.ss = 0x8;
-        tss.cr3 = control::Cr3::read_u32();
-        tss.reserved_iopb = 1; //T debug bit
-        tss
-    });
+pub static GDT_KERNEL_CODE: u16 = 1;
+pub static GDT_KERNEL_DATA: u16 = 1;
+pub static GDT_USER_CODE: u16 = 2;
+pub static GDT_USER_DATA: u16 = 3;
 
-    let mut code_selector = gdt::SegmentSelector(0);
-    let mut tss_main_selector = gdt::SegmentSelector(0);
+pub unsafe fn init() {
+    TSS.ss0 = gdt::SegmentSelector::new(GDT_KERNEL_CODE, PrivilegeLevel::Ring0).0;
+    asm!("mov %ebp, $0" : "=r" (TSS.esp0));
 
-    let gdt = GDT.call_once(|| {
-        let mut gdt = gdt::Gdt::new();
-        code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
-        tss_main_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss_main));
-        gdt
-    });
+    // the following order is important
+    let kcode_selector = GDT.add_entry(gdt::Descriptor::kernel_code_segment());
+    let kdata_selector = GDT.add_entry(gdt::Descriptor::kernel_data_segment());
+    let tss_selector = GDT.add_entry(gdt::Descriptor::tss_segment(&TSS));
+    //I read that the tss should be twice as long
+    //fuck knows why...
+    //also this doesnt work if the tss is after 3rd spot
+    //once again: fuck knows why...
+    GDT.add_entry(gdt::Descriptor(0));
+    let ucode_selector = GDT.add_entry(gdt::Descriptor::user_code_segment());
+    let udata_selector = GDT.add_entry(gdt::Descriptor::user_data_segment());
 
-    println!("gdt[0]={:#?}", gdt::Descriptor(gdt.table[0]));
-    println!("gdt[1]={:#?}", gdt::Descriptor(gdt.table[1]));
-    println!("gdt[2]={:#?}", gdt::Descriptor(gdt.table[2]));
-    println!("gdt[3]={:#?}", gdt::Descriptor(gdt.table[3]));
-    println!("gdt[4]={:#?}", gdt::Descriptor(gdt.table[4]));
-    flush!();
-
-    gdt.load();
-    unsafe {
-        // reload code segment register
-        // println!("set_cs({:#x})", code_selector.0);
-        set_cs(code_selector);
-        // load TSS
-        // println!("loading tss {:?}", tss_main_selector);
-        load_tss(tss_main_selector);
-    }
+    GDT.load();
+    set_cs(kcode_selector);
+    load_ds(kdata_selector);
+    load_es(kdata_selector);
+    load_ss(kdata_selector);
+    load_tss(tss_selector);
 }
