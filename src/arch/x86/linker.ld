@@ -34,6 +34,14 @@ SECTIONS {
 		. = ALIGN(4K);
 	}
 
+	/* NOT A GOOD IDEA TO GROUP debug_* SYMBOLS ! */
+	/* .debug : */
+	/* { */
+	/* 	/1* KEEP(*(.debug_*)) *1/ */
+	/* 	*(.debug_*) */
+	/* 	. = ALIGN(4K); */
+	/* } */
+
 	.gdt :
 	{
 		*(.gdt)
