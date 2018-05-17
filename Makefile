@@ -1,6 +1,6 @@
 SHELL	:= /bin/bash
 
-ARCH	:= x86
+ARCH	:= i386
 OS		:= bluesnow
 TARGET	?= $(ARCH)-$(OS)
 
