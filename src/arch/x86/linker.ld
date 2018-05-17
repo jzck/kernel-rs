@@ -66,4 +66,16 @@ SECTIONS {
 		*(.bss .bss.*)
 		. = ALIGN(4K);
 	}
+
+	.stab :
+	{
+		*(.stab)
+		. = ALIGN(4K);
+	}
+
+	.stabstr :
+	{
+		*(.stabstr)
+		. = ALIGN(4K);
+	}
 }

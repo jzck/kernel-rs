@@ -1,4 +1,4 @@
-grub-iso	:= $(kernel).iso
+grub-iso	:= $(kernel:.bin=.iso)
 grub-cfg	:= src/arch/$(ARCH)/grub.cfg
 isodir		:= build/isofiles
 

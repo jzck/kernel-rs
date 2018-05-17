@@ -3,6 +3,7 @@
 // nightly stuff we need
 #![no_std]
 #![feature(lang_items)]
+#![feature(naked_functions)]
 #![feature(const_fn)]
 #![feature(ptr_internals)]
 #![feature(asm)]
@@ -67,6 +68,26 @@ pub fn kmain() -> ! {
 
     // x86::instructions::interrupts::int3();
 
+    // println!("flags: {:?}", x86::registers::flags::flags());
+    // flush!();
+
+    let sp = (::USER_STACK_OFFSET + ::USER_STACK_SIZE).as_u32();
+    // let sp: u32;
+    // unsafe {
+    //     asm!("mov %ebp, $0" : "=r" (sp));
+    // }
+    let ip = self::init as *const () as u32;
+
+    unsafe {
+        arch::x86::usermode(ip, sp, 0);
+    }
+    unreachable!()
+    // loop {}
+}
+
+pub fn init() {
+    println!("inside init function!!!!!");
+    flush!();
     loop {}
 }
 

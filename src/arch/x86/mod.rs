@@ -53,35 +53,39 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
 }
 
 pub unsafe fn usermode(ip: u32, sp: u32, arg: u32) -> ! {
-    asm!("push r10
-         push r11
-         push r12
-         push r13
-         push r14
-         push r15
-         "
+    use x86::structures::gdt::{Descriptor, SegmentSelector};
+    use x86::instructions::segmentation::*;
+    use x86::PrivilegeLevel::{Ring0, Ring3};
+
+    x86::instructions::interrupts::disable();
+
+    // println!("sp: {:#x}", sp);
+    // println!("ip: {:#x}", ip);
+
+    let udata_selector = SegmentSelector::new(gdt::GDT_USER_DATA, Ring0);
+    let ucode_selector = SegmentSelector::new(gdt::GDT_USER_CODE, Ring3);
+    load_ds(udata_selector);
+    load_es(udata_selector);
+    load_fs(udata_selector);
+    load_gs(udata_selector);
+
+    asm!("
+         push $0; \
+         push $1; \
+         push $2; \
+         push $3; \
+         push $4"
          : //no output
-         : "{r10}"(gdt::GDT_USER_DATA << 3 | 3),
-         "{r11}"(sp),
-         "{r12}"(1 << 9) // interrupt enable flag
-         "{r13}"(gdt::GDT_USER_CODE << 3 | 3),
-         "{r14}"(ip),
-         "{r15}"(arg)
+         : "r"(udata_selector),
+         "r"(sp),
+         "r"(1 << 9) // interrupt enable flag
+         "r"(ucode_selector),
+         "r"(ip)
          : //no clobbers
          : "intel", "volatile"
          );
 
-    asm!("mov ds, r14d
-         mov es, r14d
-         mov fs, r15d
-         mov gs, r14d
-         fninit
-         iret"
-         : //no output (never returns)
-         : "{r14}"(gdt::GDT_USER_DATA << 3 | 3),
-         "{r15}"(gdt::GDT_USER_CODE << 3 | 3)
-         : //no clobbers (never returns)
-         : "intel", "volatile"
-         );
+    asm!("iret");
+
     unreachable!();
 }

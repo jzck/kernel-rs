@@ -1,31 +1,52 @@
-//layout looks like this:
+// p2 layout looks like this:
 // [kernel 0->4MiB]
 // [kernel 4->8MiB]
+// [start of no man's land]
+// .
+// .
+// .
+// [end of no man's land]
 // [user stack]
-// [start of userheap]
-// .
-// .
-// .
-// [end of userheap]
 // [kernel heap]
 // [recursive map] points to first entry
 //
-// which makes userheap = 4GiB - 4*4MiB (~= 4GiB)
-macro_rules! p2 { ($i:expr) => {($i & P2_MASK) / P1_SIZE}}
-pub const P2_MASK: u32 = 0xFFC0_0000; //top 10 bits
-pub const P1_SIZE: u32 = 0x0040_0000; //4MiB (2**22)
+// no man's land should be used in the future for mmap() I guess
+// the kernel right now takes up 2 pages with debug symbols,
+// if it gets to 3 pages everything will crash and i'll have
+// to hardcode the third page here and in `boot.asm` also!
+//
+// TODO
+// kernel is mapped identically (start of memory) but in
+// the future it should be higher-half mapped so that
+// user memory starts at 0
 
-pub const RECURSIVE_PAGE_OFFSET: u32 = (-(P1_SIZE as isize)) as u32;
-///1023
-pub const RECURSIVE_PAGE_P2: u32 = p2!(RECURSIVE_PAGE_OFFSET);
+use x86::structures::paging::*;
+use x86::*;
+use core::ops::Range;
 
-pub const KERNEL_HEAP_OFFSET: u32 = RECURSIVE_PAGE_OFFSET - P1_SIZE;
-///1022
-pub const KERNEL_HEAP_P2: u32 = p2!(KERNEL_HEAP_OFFSET);
-pub const KERNEL_HEAP_SIZE: u32 = 4 * 1024 * 1024; //4MiB (1 huge page)
+// macro_rules! prange { ($i:expr, $s:expr) => {$i..$i+$s+1}}
 
-pub const USER_OFFSET: u32 = 0x00a0_0000; //3rd page (kernel takes 2 first pages)
-pub const USER_P2: u32 = p2!(USER_OFFSET);
+// all of this is fucking contrived
+// the rust compiler should be able to evaluate const expressions
+// by using the impl for my structs, what i'm doing here is obvious
+// to me but not to the compiler
 
-pub const USER_STACK_OFFSET: u32 = USER_OFFSET + P1_SIZE;
-pub const USER_STACK_2: u32 = p2!(USER_STACK_OFFSET);
+pub const RECURSIVE_PAGE_OFFSET: VirtAddr = VirtAddr(0xffc0_000); // first 10 bits
+pub const RECURSIVE_PAGE: Page = Page::containing_address(RECURSIVE_PAGE_OFFSET);
+pub const RECURSIVE_PAGE_SIZE: u32 = 0x0040_0000; // the whole p2 entry
+
+pub const KERNEL_HEAP_OFFSET: VirtAddr = VirtAddr(RECURSIVE_PAGE_OFFSET.0 - RECURSIVE_PAGE_SIZE);
+// should be
+// pub const KERNEL_HEAP_OFFSET: VirtAddr = RECURSIVE_PAGE_OFFSET - RECURSIVE_PAGE_SIZE);
+pub const KERNEL_HEAP_SIZE: u32 = 0x0040_0000; //4MiB (1 huge page)
+pub const KERNEL_HEAP_START: Page = Page::containing_address(KERNEL_HEAP_OFFSET);
+pub const KERNEL_HEAP_END: Page =
+    Page::containing_address(VirtAddr(KERNEL_HEAP_OFFSET.0 + KERNEL_HEAP_SIZE));
+pub const KERNEL_HEAP_RANGE: Range<Page> = KERNEL_HEAP_START..KERNEL_HEAP_END;
+
+pub const USER_STACK_OFFSET: VirtAddr = VirtAddr(KERNEL_HEAP_OFFSET.0 - KERNEL_HEAP_SIZE);
+pub const USER_STACK_START: Page = Page::containing_address(USER_STACK_OFFSET);
+pub const USER_STACK_SIZE: u32 = 0x0040_0000; //4MiB (1 huge page)
+pub const USER_STACK_END: Page =
+    Page::containing_address(VirtAddr(USER_STACK_OFFSET.0 + USER_STACK_SIZE));
+pub const USER_STACK_RANGE: Range<Page> = USER_STACK_START..USER_STACK_END;

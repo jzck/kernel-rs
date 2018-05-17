@@ -84,7 +84,6 @@ impl Mapper {
         let frame = p1[page.p1_index()].pointed_frame().unwrap();
         p1[page.p1_index()].set_unused();
         tlb::flush(page.start_address());
-        // TODO
         ::memory::deallocate_frames(frame, 1);
     }
 }

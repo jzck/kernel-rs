@@ -6,7 +6,6 @@ use multiboot2;
 use x86::structures::paging::*;
 use arch::x86::paging::ActivePageTable;
 use x86::*;
-// use spin::Mutex;
 
 use self::bump::BumpFrameAllocator;
 use self::recycle::RecycleAllocator;
@@ -19,7 +18,7 @@ pub trait FrameAllocator {
 
 pub struct MemoryControler {
     frame_allocator: RecycleAllocator<BumpFrameAllocator>,
-    stack_allocator: StackAllocator,
+    // stack_allocator: StackAllocator,
 }
 
 static mut MEMORY_CONTROLER: Option<MemoryControler> = None;
@@ -51,21 +50,12 @@ pub fn init(boot_info: &multiboot2::BootInformation) {
     );
 
     let frame_allocator = RecycleAllocator::new(bump_allocator);
-
-    let heap_end_page =
-        Page::containing_address(VirtAddr::new(::KERNEL_HEAP_OFFSET + ::KERNEL_HEAP_SIZE - 1));
-
-    let stack_allocator = {
-        let stack_alloc_start = heap_end_page + 1;
-        let stack_alloc_end = stack_alloc_start + 100;
-        let stack_alloc_range = stack_alloc_start..stack_alloc_end + 1;
-        StackAllocator::new(stack_alloc_range)
-    };
+    // let stack_allocator = StackAllocator::new(::USER_STACK_RANGE);
 
     unsafe {
         MEMORY_CONTROLER = Some(MemoryControler {
             frame_allocator,
-            stack_allocator,
+            // stack_allocator,
         });
     }
 }
@@ -90,17 +80,17 @@ pub fn deallocate_frames(frame: PhysFrame, count: usize) {
     }
 }
 
-pub fn allocate_stack(mut active_table: &mut ActivePageTable) -> Option<Stack> {
-    unsafe {
-        if let Some(ref mut controler) = MEMORY_CONTROLER {
-            controler
-                .stack_allocator
-                .allocate_stack(&mut active_table, 4)
-        } else {
-            panic!("frame allocator not initialized!");
-        }
-    }
-}
+// pub fn allocate_stack(mut active_table: &mut ActivePageTable) -> Option<Stack> {
+//     unsafe {
+//         if let Some(ref mut controler) = MEMORY_CONTROLER {
+//             controler
+//                 .stack_allocator
+//                 .allocate_stack(&mut active_table, 4)
+//         } else {
+//             panic!("frame allocator not initialized!");
+//         }
+//     }
+// }
 
 /// Init memory module after core
 /// Must be called once, and only once,
