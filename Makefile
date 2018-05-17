@@ -12,7 +12,7 @@ all:
 ## COMPILE ASM (nasm)
 asm_source		:= $(wildcard src/arch/$(ARCH)/*.asm)
 asm_object		:= $(patsubst src/arch/$(ARCH)/%.asm, build/arch/$(ARCH)/%.o, $(asm_source))
-NASM			:= /usr/bin/nasm -f elf -g
+NASM			:= /usr/bin/nasm -f elf -gdwarf
 build/arch/$(ARCH)/%.o: src/arch/$(ARCH)/%.asm Makefile
 	@mkdir -p $(shell dirname $@)
 	$(NASM) $< -o $@

@@ -42,7 +42,7 @@ set_up_page_tables:
 	or eax, 0b10000011	; huge + present + writable
 	mov [p2_table + 4], eax
 
-	mov eax, 0x800000	; 8MB -> 12Mb (second page)
+	mov eax, 0x800000	; 8MB -> 12Mb (third page)
 	or eax, 0b10000011	; huge + present + writable
 	mov [p2_table + 8], eax
 

@@ -4,14 +4,14 @@
 	"_comment": "http://llvm.org/docs/LangRef.html#data-layout",
 	"data-layout": "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128",
 
-	"llvm-target": "i686-unknown-none",
+	"llvm-target": "i386-unknown-none",
 	"linker-flavor": "gcc",
-	"no-compiler-rt": true,
-	"os": "bluesnow",
+	"os": "none",
 	"target-endian": "little",
 	"target-pointer-width": "32",
 	"target-c-int-width": "32",
 	"features": "-mmx,-fxsr,-sse,-sse2,+soft-float",
 	"eliminate-frame-pointer": false,
+	"disable-redzone": true,
 	"panic-strategy": "abort"
 }

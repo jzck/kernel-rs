@@ -2,10 +2,6 @@ ENTRY(start)
 OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS {
-	/* GDT for the win */
-	/* . = 0x800; */
-	/* .gdt : {KEEP(*(.gdt))} */
-
 	 /* VGA, cannot use section for this */
 	VGA_PTR = 0xb8000;
 	. = 0xb8000;
@@ -15,6 +11,7 @@ SECTIONS {
 	/* ensure that the multiboot header is at the beginning */
 	.multiboot :
 	{
+		/* KEEP otherwise it gets garbage collected by linker */
 		KEEP(*(.multiboot))
 		. = ALIGN(4K);
 	}
@@ -34,12 +31,6 @@ SECTIONS {
 	.data :
 	{
 		*(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*) *(.data.*)
-		. = ALIGN(4K);
-	}
-
-	.debug :
-	{
-		*(.debug_*)
 		. = ALIGN(4K);
 	}
 
@@ -67,15 +58,15 @@ SECTIONS {
 		. = ALIGN(4K);
 	}
 
-	.stab :
-	{
-		*(.stab)
-		. = ALIGN(4K);
-	}
+	/* .stab : */
+	/* { */
+	/* 	KEEP(*(.stab)) */
+	/* 	. = ALIGN(4K); */
+	/* } */
 
-	.stabstr :
-	{
-		*(.stabstr)
-		. = ALIGN(4K);
-	}
+	/* .stabstr : */
+	/* { */
+	/* 	KEEP(*(.stabstr)) */
+	/* 	. = ALIGN(4K); */
+	/* } */
 }

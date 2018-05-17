@@ -46,8 +46,6 @@ pub mod memory;
 pub mod arch;
 pub use arch::x86::consts::*;
 
-// use core::mem;
-// use x86::structures::idt::*;
 /// kernel entry point. arch module is responsible for
 /// calling this once the core has loaded
 pub fn kmain() -> ! {
@@ -78,11 +76,11 @@ pub fn kmain() -> ! {
     // }
     let ip = self::init as *const () as u32;
 
-    unsafe {
-        arch::x86::usermode(ip, sp, 0);
-    }
-    unreachable!()
-    // loop {}
+    // unsafe {
+    //     arch::x86::usermode(ip, sp, 0);
+    // }
+    // unreachable!()
+    loop {}
 }
 
 pub fn init() {

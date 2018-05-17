@@ -25,3 +25,7 @@ path = "x86"
 [dependencies.lazy_static]
 version = "1.0.0"
 features = ["spin_no_std"]
+
+[dependencies.compiler_builtins]
+#I'm waiting for somebody to port i386/udivdi3.S ... :(((
+git = "https://github.com/rust-lang-nursery/compiler-builtins"

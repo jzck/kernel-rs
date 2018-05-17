@@ -6,7 +6,7 @@ else
 	PORTG := 4344
 endif
 
-QEMU		:= qemu-system-x86_64\
+QEMU		:= qemu-system-i386\
 	-gdb tcp::$(PORTG)\
 	-S\
 	-enable-kvm\
