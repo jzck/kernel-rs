@@ -5,5 +5,5 @@ pub mod cpu;
 
 pub unsafe fn init(active_table: &mut ActivePageTable) {
     pic::init();
-    local_apic::init(active_table);
+    // local_apic::init(active_table);
 }

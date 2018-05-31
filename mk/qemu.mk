@@ -1,27 +1,35 @@
 ifeq ($(shell whoami), jack)
-	PORT := 4242
-	PORTG := 4244
+	PORT_MONIT := 4242
+	PORT_GDB := 4244
 else
-	PORT := 4342
-	PORTG := 4344
+	PORT_MONIT := 4342
+	PORT_GDB := 4344
 endif
 
 QEMU		:= qemu-system-i386\
-	-gdb tcp::$(PORTG)\
+	-cdrom build/bluesnow-x86.iso\
 	-S\
 	-enable-kvm\
-	-monitor telnet:127.0.0.1:$(PORT),server,nowait\
 	-curses\
-	-cdrom build/bluesnow-x86.iso
+	-gdb tcp::$(PORT_GDB)\
+	-monitor telnet:127.0.0.1:$(PORT_MONIT),server,nowait
+qemu:
+	$(QEMU)
 
-MONITOR 		:= sleep 0.5;\
-	telnet 127.0.0.1 $(PORT);\
+GDB			:= gdb -q\
+	-symbols "$(kernel)" \
+	-ex "target remote :$(PORT_GDB)"\
+	-ex "set arch i386"
+gdb:
+	$(GDB)
+
+MONITOR 	:= telnet 127.0.0.1 $(PORT_MONIT);\
 	kill \`ps -x | grep \"[g]db -q\" | cut -d \  -f 1 \`;\
 	kill \`ps -x | grep \"[g]db -q\" | cut -d \  -f 2 \`
-GDB 			:= gdb -q\
-	-ex \"target remote :$(PORTG)\"
+monitor:
+	telnet 127.0.0.1 $(PORT_MONIT)
 
-qemu:
+#not using this anymore
+william:
 	@tmux info >&- || { echo -e "\033[38;5;16mPlease run inside a tmux session\033[0m" ; exit 1; }
 	@tmux new-window 'tmux split-window -h "$(MONITOR)"; tmux split-window -fv "$(GDB)"; tmux select-pane -t 1; tmux resize-pane -x 80 -y 25; $(QEMU)'
-

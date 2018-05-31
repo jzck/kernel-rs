@@ -56,17 +56,20 @@ exception_err!(invalid_tss, {});
 exception_err!(segment_not_present, {});
 exception_err!(stack_segment, {});
 exception_err!(general_protection, {
-    panic!("general protection fault (#GP) can not recover");
+    panic!("cannot recover from #GP");
 });
 
 pub extern "x86-interrupt" fn page_fault(
     stack_frame: &mut ExceptionStackFrame,
     code: PageFaultErrorCode,
 ) {
+    use x86::registers::control::Cr2;
     println!("Exception: page_fault");
     println!("Error code: {:?}", code);
+    println!("PFLA: {:?}", Cr2::read());
     println!("{:#?}", stack_frame);
     flush!();
+    panic!("cannot recover from #PF")
 }
 
 exception!(x87_fpu, {});

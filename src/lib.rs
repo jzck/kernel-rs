@@ -45,6 +45,8 @@ pub mod memory;
 /// arch specific entry points
 pub mod arch;
 pub use arch::x86::consts::*;
+/// process scheduling
+pub mod process;
 
 /// kernel entry point. arch module is responsible for
 /// calling this once the core has loaded
@@ -69,24 +71,20 @@ pub fn kmain() -> ! {
     // println!("flags: {:?}", x86::registers::flags::flags());
     // flush!();
 
-    let sp = (::USER_STACK_OFFSET + ::USER_STACK_SIZE).as_u32();
+    // let sp = (::USER_STACK_OFFSET + ::USER_STACK_SIZE).as_u32();
     // let sp: u32;
     // unsafe {
     //     asm!("mov %ebp, $0" : "=r" (sp));
     // }
-    let ip = self::init as *const () as u32;
 
     // unsafe {
     //     arch::x86::usermode(ip, sp, 0);
     // }
     // unreachable!()
-    loop {}
-}
 
-pub fn init() {
-    println!("inside init function!!!!!");
-    flush!();
-    loop {}
+    process::ploop();
+
+    unreachable!();
 }
 
 #[lang = "eh_personality"]

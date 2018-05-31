@@ -32,9 +32,9 @@ macro_rules! flush {
 
 macro_rules! set_color {
     () => (unsafe { $crate::vga::VGA.color_code =
-        $crate::vga::ColorCode::new($crate::vga::Color::White, $crate::vga::Color::Black)} );
+        $crate::vga::ColorCode::new($crate::vga::Color::Black, $crate::vga::Color::Yellow)} );
     ($fg:ident) => (unsafe { $crate::vga::VGA.color_code =
-        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::Black)} );
+        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::Yellow)} );
     ($fg:ident, $bg:ident) => (unsafe { $crate::vga::VGA.color_code =
         $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::$bg)} );
 }
@@ -63,7 +63,7 @@ impl Writer {
     pub const fn new() -> Writer {
         Writer {
             buffer_pos: 0,
-            color_code: ColorCode::new(Color::White, Color::Black),
+            color_code: ColorCode::new(Color::Black, Color::Yellow),
             buffer: [0; BUFFER_ROWS * BUFFER_COLS],
             command: [b'\0'; 10],
             command_len: 0,
@@ -100,7 +100,7 @@ impl Writer {
             b'\n' => {
                 self.write_byte(b'\n');
                 if let Err(msg) = console::exec(&self) {
-                    set_color!(Red, Black);
+                    set_color!(Red, Yellow);
                     println!("Something wrong: {}", msg);
                     set_color!();
                 }
@@ -180,7 +180,7 @@ impl Writer {
         for col in (0..BUFFER_COLS / 2).map(|x| x * 2) {
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col)] = b' ';
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col + 1)] =
-                ColorCode::new(Color::White, Color::Black).0;
+                ColorCode::new(Color::Black, Color::Yellow).0;
         }
 
         self.buffer_pos = (BUFFER_ROWS - 1) * BUFFER_COLS;

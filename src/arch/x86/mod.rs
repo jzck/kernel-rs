@@ -45,6 +45,12 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     // set up heap
     ::allocator::init(&mut active_table);
 
+    // set up user stack
+    use x86::structures::paging::*;
+    // for page in ::USER_STACK_RANGE {
+    //     active_table.map(page, PageTableFlags::WRITABLE);
+    // }
+
     // set up pic & apic
     device::init(&mut active_table);
 
@@ -52,7 +58,12 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     ::kmain();
 }
 
-pub unsafe fn usermode(ip: u32, sp: u32, arg: u32) -> ! {
+pub unsafe fn switch(ip: u32) -> ! {
+    asm!("push $0; ret" :: "r"(ip) :: "volatile", "intel");
+    unreachable!();
+}
+
+pub unsafe fn usermode(ip: u32, mut sp: u32, arg: u32) -> ! {
     use x86::structures::gdt::{Descriptor, SegmentSelector};
     use x86::instructions::segmentation::*;
     use x86::PrivilegeLevel::{Ring0, Ring3};
@@ -62,12 +73,26 @@ pub unsafe fn usermode(ip: u32, sp: u32, arg: u32) -> ! {
     // println!("sp: {:#x}", sp);
     // println!("ip: {:#x}", ip);
 
-    let udata_selector = SegmentSelector::new(gdt::GDT_USER_DATA, Ring0);
-    let ucode_selector = SegmentSelector::new(gdt::GDT_USER_CODE, Ring3);
-    load_ds(udata_selector);
-    load_es(udata_selector);
-    load_fs(udata_selector);
-    load_gs(udata_selector);
+    // load_ds(udata_selector);
+    // asm!("mov $0, %ds" :: "r"(gdt::GDT_USER_DATA << 3 | 3));
+
+    // loop {}
+
+    // load_es(udata_selector);
+    // load_fs(udata_selector);
+    // load_gs(udata_selector);
+
+    use x86::registers::flags;
+    flags::set_flags(flags::Flags::NT);
+
+    asm!("mov %esp, $0" : "=r" (sp));
+
+    println!("{:#x}", gdt::GDT_KERNEL_DATA.0);
+    println!("{:#x}", sp);
+    println!("{:#x}", 1 << 9);
+    println!("{:#x}", gdt::GDT_KERNEL_CODE.0);
+    println!("{:#x}", ip);
+    flush!();
 
     asm!("
          push $0; \
@@ -76,14 +101,16 @@ pub unsafe fn usermode(ip: u32, sp: u32, arg: u32) -> ! {
          push $3; \
          push $4"
          : //no output
-         : "r"(udata_selector),
+         : "r"(gdt::GDT_USER_DATA.0),
          "r"(sp),
          "r"(1 << 9) // interrupt enable flag
-         "r"(ucode_selector),
+         "r"(gdt::GDT_USER_CODE.0),
          "r"(ip)
          : //no clobbers
          : "intel", "volatile"
          );
+
+    // loop {}
 
     asm!("iret");
 

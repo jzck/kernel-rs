@@ -4,6 +4,7 @@ extern x86_start
 section .text
 bits 32
 start:
+
 	; our stack, located in bss, linker.ld puts bss at the end of the binary
 	mov esp, stack_top
 
