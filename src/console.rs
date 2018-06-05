@@ -3,7 +3,6 @@ extern crate core;
 
 use acpi;
 use keyboard::PS2;
-use io;
 use core::char;
 use vga::*;
 
@@ -57,6 +56,7 @@ fn help() -> Result<(), &'static str> {
     Ok(())
 }
 
+use x86::instructions::halt;
 /// Reboot the kernel
 ///
 /// If reboot failed, will loop on a halt cmd
@@ -70,7 +70,7 @@ fn reboot() -> ! {
     unsafe { PS2.ps2_8042_reset() }; // TODO unsafe
     println!("Unable to perform 8042 reboot. Kernel will be halted");
     flush!();
-    io::halt();
+    halt();
 }
 
 /// Shutdown the kernel
@@ -84,7 +84,7 @@ fn shutdown() -> ! {
         _ => println!("Unable to perform ACPI shutdown. Kernel will be halted"),
     }
     flush!();
-    io::halt();
+    halt();
 }
 
 fn hexdump(start: usize, end: usize) {
@@ -225,6 +225,7 @@ pub fn int3() -> Result<(), &'static str> {
     Ok(())
 }
 
+#[allow(unconditional_recursion)]
 pub fn overflow() -> Result<(), &'static str> {
     fn stack_overflow() {
         stack_overflow();

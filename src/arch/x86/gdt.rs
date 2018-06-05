@@ -1,10 +1,9 @@
 use x86::structures::gdt;
 use x86::structures::tss;
-use x86::structures::gdt::{Descriptor, SegmentSelector};
+use x86::structures::gdt::SegmentSelector;
 use x86::instructions::segmentation::*;
 use x86::instructions::tables::load_tss;
 use x86::PrivilegeLevel::{Ring0, Ring3};
-use x86::*;
 
 pub static mut GDT: gdt::Gdt = gdt::Gdt::new();
 pub static mut TSS: tss::TaskStateSegment = tss::TaskStateSegment::new();
@@ -42,6 +41,7 @@ pub unsafe fn init() {
     assert_eq!(tss_selector, GDT_TSS);
     assert_eq!(task_tss_selector, GDT_TASK_TSS);
 
+    // use x86::structures::gdt::Descriptor;
     // println!(
     //     "tr({:#x}):\n {:#?}",
     //     tss_selector.0,

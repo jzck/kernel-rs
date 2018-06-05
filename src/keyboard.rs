@@ -1,7 +1,7 @@
 extern crate core;
 
 use vga;
-use io::{self, Io, Pio};
+use x86::devices::io::{Io, Pio};
 
 const MAX_KEYS: usize = 59;
 const KEYMAP_US: [[u8; 2]; MAX_KEYS] = [
@@ -90,7 +90,8 @@ impl Ps2 {
     }
 
     pub fn ps2_8042_reset(&mut self) {
-        io::cli();
+        use x86::instructions::interrupts;
+        interrupts::disable();
         self.clear_buffer();
         self.status.write(0xFE);
     }

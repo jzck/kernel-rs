@@ -1,5 +1,5 @@
 use super::{ACPISDTHeader, ACPISDTIter};
-use io::{Io, Pio};
+use x86::devices::io::{Io, Pio};
 
 #[repr(C)]
 #[derive(Debug, Clone)]

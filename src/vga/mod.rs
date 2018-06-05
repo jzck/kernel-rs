@@ -1,3 +1,5 @@
+#![allow(unused_macros)]
+
 pub mod color;
 pub mod cursor;
 
@@ -15,19 +17,37 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
+// print wrapper macro around vga
 macro_rules! print {
     ($($arg:tt)*) => ({
         $crate::vga::print(format_args!($($arg)*));
     });
 }
 
+// flushed print
+macro_rules! fprint {
+    ($($arg:tt)*) => ({
+        print!($($arg)*);
+        flush!();
+    });
+}
+
+// print with a line feed
 macro_rules! println {
     ($fmt:expr) => (print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
 }
 
+// flushed println
+macro_rules! fprintln {
+    ($($arg:tt)*) => ({
+        println!($($arg)*);
+        flush!();
+    });
+}
+
 macro_rules! flush {
-    () => (unsafe { $crate::vga::VGA.flush() });
+    () => (#[allow(unused_unsafe)] unsafe { $crate::vga::VGA.flush() });
 }
 
 macro_rules! set_color {
@@ -125,7 +145,7 @@ impl Writer {
         self.buffer_pos -= 2;
         let i = self.buffer_pos;
         self.buffer[i] = b' ';
-        self.buffer[i + 1] = 0;
+        self.buffer[i + 1] = self.color_code.0;
         self.flush();
         // flush!();
     }

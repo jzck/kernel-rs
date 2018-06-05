@@ -1,15 +1,13 @@
 mod bump;
 mod recycle;
-mod stack_allocator;
+// mod stack_allocator;
 
 use multiboot2;
 use x86::structures::paging::*;
-use arch::x86::paging::ActivePageTable;
-use x86::*;
 
 use self::bump::BumpFrameAllocator;
 use self::recycle::RecycleAllocator;
-use self::stack_allocator::{Stack, StackAllocator};
+// use self::stack_allocator::{Stack, StackAllocator};
 
 pub trait FrameAllocator {
     fn allocate_frames(&mut self, size: usize) -> Option<PhysFrame>;

@@ -1,5 +1,5 @@
 use x86::structures::idt::*;
-use arch::x86::device::pic;
+use x86::devices::pic;
 
 #[macro_export]
 macro_rules! interrupt {
@@ -44,7 +44,9 @@ pub unsafe fn acknowledge(irq: usize) {
     }
 }
 
-interrupt!(0, pit, {});
+interrupt!(0, pit, {
+    fprintln!("got pit (irq0)");
+});
 
 interrupt!(1, keyboard, {
     ::keyboard::kbd_callback();

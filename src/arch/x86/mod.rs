@@ -46,13 +46,13 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     ::allocator::init(&mut active_table);
 
     // set up user stack
-    use x86::structures::paging::*;
+    // use x86::structures::paging::*;
     // for page in ::USER_STACK_RANGE {
     //     active_table.map(page, PageTableFlags::WRITABLE);
     // }
 
-    // set up pic & apic
-    device::init(&mut active_table);
+    // set up pic, pit
+    device::init();
 
     // primary CPU entry point
     ::kmain();
@@ -63,10 +63,10 @@ pub unsafe fn switch(ip: u32) -> ! {
     unreachable!();
 }
 
-pub unsafe fn usermode(ip: u32, mut sp: u32, arg: u32) -> ! {
-    use x86::structures::gdt::{Descriptor, SegmentSelector};
-    use x86::instructions::segmentation::*;
-    use x86::PrivilegeLevel::{Ring0, Ring3};
+pub unsafe fn usermode(ip: u32, sp: u32) -> ! {
+    // use x86::structures::gdt::{Descriptor, SegmentSelector};
+    // use x86::instructions::segmentation::*;
+    // use x86::PrivilegeLevel::{Ring0, Ring3};
 
     x86::instructions::interrupts::disable();
 
@@ -85,7 +85,7 @@ pub unsafe fn usermode(ip: u32, mut sp: u32, arg: u32) -> ! {
     use x86::registers::flags;
     flags::set_flags(flags::Flags::NT);
 
-    asm!("mov %esp, $0" : "=r" (sp));
+    // asm!("mov %esp, $0" : "=r" (sp));
 
     println!("{:#x}", gdt::GDT_KERNEL_DATA.0);
     println!("{:#x}", sp);

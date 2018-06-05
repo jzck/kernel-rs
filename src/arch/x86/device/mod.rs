@@ -1,9 +1,8 @@
-use arch::x86::paging::ActivePageTable;
-pub mod pic;
-pub mod local_apic;
+use x86::devices::pit;
+use x86::devices::pic;
 pub mod cpu;
 
-pub unsafe fn init(active_table: &mut ActivePageTable) {
+pub unsafe fn init() {
     pic::init();
-    // local_apic::init(active_table);
+    pit::init();
 }

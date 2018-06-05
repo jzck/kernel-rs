@@ -34,8 +34,6 @@ pub mod vga;
 pub mod keyboard;
 /// simplisitc kernel commands
 pub mod console;
-/// rust wrappers around cpu I/O instructions.
-pub mod io;
 /// ACPI self contained module
 pub mod acpi;
 /// Heap allocators
@@ -57,11 +55,6 @@ pub fn kmain() -> ! {
     // vga is *not* cpu specific
     vga::init();
 
-    // fn stack_overflow() {
-    //     stack_overflow();
-    // }
-    // stack_overflow();
-
     // unsafe {
     //     *(0xdead as *mut u32) = 42;
     // };
@@ -82,8 +75,7 @@ pub fn kmain() -> ! {
     // }
     // unreachable!()
 
-    process::ploop();
-
+    process::schedule();
     unreachable!();
 }
 

@@ -1,7 +1,7 @@
 // https://wiki.osdev.org/Text_Mode_Cursor
 // Protected mode cursor abstraction
 
-use io::{Io, Pio};
+use x86::devices::io::{Io, Pio};
 
 pub static mut CURSOR: Cursor = Cursor::new(0x3D4);
 
