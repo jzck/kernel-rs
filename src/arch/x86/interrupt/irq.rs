@@ -1,5 +1,6 @@
 use x86::structures::idt::*;
 use x86::devices::pic;
+use time;
 
 #[macro_export]
 macro_rules! interrupt {
@@ -45,7 +46,21 @@ pub unsafe fn acknowledge(irq: usize) {
 }
 
 interrupt!(0, pit, {
-    fprintln!("got pit (irq0)");
+    /// t = 1/f
+    /// pit freq = 1.193182 MHz
+    /// chan0 divisor = 2685
+    /// PIT_RATE in us
+    const PIT_RATE: u32 = 2_251;
+    {
+        let mut offset = time::OFFSET.lock();
+        let sum = offset.1 + PIT_RATE;
+        offset.1 = sum % 1_000_000;
+        offset.0 += sum / 1_000_000;
+        if sum > 1_000_000 {
+            fprintln!("uptime: {}s", offset.0);
+        }
+    }
+    unsafe { pic::MASTER.ack() };
 });
 
 interrupt!(1, keyboard, {

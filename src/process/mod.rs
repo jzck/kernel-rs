@@ -66,10 +66,8 @@ pub fn fork() -> i32 {
 }
 
 pub fn init() {
-    println!("init first line");
-    flush!();
+    fprintln!("init first line");
     // let i = self::fork();
     // println!("fork={}", i);
-    println!("init last line");
-    flush!();
+    fprintln!("init last line");
 }

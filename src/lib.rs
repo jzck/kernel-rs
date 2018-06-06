@@ -45,35 +45,17 @@ pub mod arch;
 pub use arch::x86::consts::*;
 /// process scheduling
 pub mod process;
+/// uptime counting
+pub mod time;
 
 /// kernel entry point. arch module is responsible for
 /// calling this once the core has loaded
 pub fn kmain() -> ! {
-    // heap avalaible for tracking freed frames
+    // memory init after heap is available
     memory::init_noncore();
 
-    // vga is *not* cpu specific
+    // vga is *not* cpu specific I think
     vga::init();
-
-    // unsafe {
-    //     *(0xdead as *mut u32) = 42;
-    // };
-
-    // x86::instructions::interrupts::int3();
-
-    // println!("flags: {:?}", x86::registers::flags::flags());
-    // flush!();
-
-    // let sp = (::USER_STACK_OFFSET + ::USER_STACK_SIZE).as_u32();
-    // let sp: u32;
-    // unsafe {
-    //     asm!("mov %ebp, $0" : "=r" (sp));
-    // }
-
-    // unsafe {
-    //     arch::x86::usermode(ip, sp, 0);
-    // }
-    // unreachable!()
 
     process::schedule();
     unreachable!();

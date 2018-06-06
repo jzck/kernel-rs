@@ -47,12 +47,6 @@ lazy_static! {
     };
 }
 
-// pub fn init(memory_controller: &mut ::memory::MemoryController) {
 pub fn init() {
-    // let double_fault_stack = memory_controller.alloc_stack(1)
-    //     .expect("could not allocate double fault stack");
-    // println!("DF stack: {:#?}", double_fault_stack);
-    // flush!();
-
     IDT.load();
 }

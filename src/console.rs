@@ -26,6 +26,7 @@ fn dispatch(command: &str) -> Result<(), &'static str> {
         "cpu" => self::cpu(),
         "int3" => self::int3(),
         "overflow" => self::overflow(),
+        "page_fault" => self::page_fault(),
 
         _ => Err("Command unknown. (h|help for help)"),
     }
@@ -46,12 +47,14 @@ fn help() -> Result<(), &'static str> {
     println!("help | h                     => Print this help");
     // println!("memory                       => Print memory areas");
     // println!("multiboot                    => Print multiboot information");
-    println!("reboot                       => Reboot");
     // println!("sections                     => Print elf sections");
+    println!("reboot                       => Reboot");
     println!("shutdown | halt | q          => Kill a kitten, then shutdown");
     println!("stack                        => Print kernel stack in a fancy way");
     println!("regs                         => Print controle register");
     println!("cpu                          => Print cpu information");
+    println!("overflow                     => triggers a stack overflow");
+    println!("page_fault                   => triggers a page fault on 0xdead");
     flush!();
     Ok(())
 }
@@ -213,7 +216,7 @@ pub fn regs() -> Result<(), &'static str> {
 
 /// Dump cpu info, should add power management info
 pub fn cpu() -> Result<(), &'static str> {
-    use arch::x86::device::cpu;
+    use arch::x86::devices::cpu;
     cpu::cpu_info().expect("cpu info not available");
     flush!();
     Ok(())
@@ -231,5 +234,12 @@ pub fn overflow() -> Result<(), &'static str> {
         stack_overflow();
     }
     stack_overflow();
+    Ok(())
+}
+
+pub fn page_fault() -> Result<(), &'static str> {
+    unsafe {
+        *(0xdead as *mut u32) = 42;
+    };
     Ok(())
 }

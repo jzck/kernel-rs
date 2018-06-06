@@ -3,7 +3,7 @@ extern crate x86;
 #[macro_use]
 pub mod paging;
 pub mod interrupt;
-pub mod device;
+pub mod devices;
 pub mod consts;
 
 pub mod gdt;
@@ -52,7 +52,7 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     // }
 
     // set up pic, pit
-    device::init();
+    devices::init();
 
     // primary CPU entry point
     ::kmain();
