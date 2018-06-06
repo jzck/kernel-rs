@@ -274,9 +274,9 @@ pub fn cpu_info() -> Result {
         if info.has_rtm() {
             print!(", rtm")
         };
-        if info.has_qm() {
-            print!(", qm")
-        };
+        // if info.has_qm() {
+        //     print!(", qm")
+        // };
         if info.has_fpu_cs_ds_deprecated() {
             print!(", fpu_seg")
         };

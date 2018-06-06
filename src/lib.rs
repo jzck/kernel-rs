@@ -43,8 +43,8 @@ pub mod memory;
 /// arch specific entry points
 pub mod arch;
 pub use arch::x86::consts::*;
-/// process scheduling
-pub mod process;
+/// concurrency management
+pub mod scheduling;
 /// uptime counting
 pub mod time;
 
@@ -57,7 +57,7 @@ pub fn kmain() -> ! {
     // vga is *not* cpu specific I think
     vga::init();
 
-    process::schedule();
+    scheduling::schedule();
     unreachable!();
 }
 
