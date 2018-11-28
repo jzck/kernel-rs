@@ -54,10 +54,11 @@ pub fn kmain() -> ! {
     // memory init after heap is available
     memory::init_noncore();
 
-    // vga is *not* cpu specific I think
+    // load vga after core because is *not* cpu specific I think
     vga::init();
 
-    scheduling::schedule();
+    // scheduler WIP
+    // scheduling::schedule();
     unreachable!();
 }
 

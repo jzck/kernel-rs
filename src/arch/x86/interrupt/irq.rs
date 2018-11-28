@@ -56,9 +56,6 @@ interrupt!(0, pit, {
         let sum = offset.1 + PIT_RATE;
         offset.1 = sum % 1_000_000;
         offset.0 += sum / 1_000_000;
-        if sum > 1_000_000 {
-            // fprintln!("uptime: {}s", offset.0);
-        }
     }
     unsafe { pic::MASTER.ack() };
 });

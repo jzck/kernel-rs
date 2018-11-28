@@ -2,6 +2,7 @@ extern crate core;
 // extern crate multiboot2;
 
 use acpi;
+use time;
 use keyboard::PS2;
 use core::char;
 use vga::*;
@@ -27,6 +28,9 @@ fn dispatch(command: &str) -> Result<(), &'static str> {
         "int3" => self::int3(),
         "overflow" => self::overflow(),
         "page_fault" => self::page_fault(),
+
+        // time
+        "uptime" => self::uptime(),
 
         _ => Err("Command unknown. (h|help for help)"),
     }
@@ -55,6 +59,13 @@ fn help() -> Result<(), &'static str> {
     println!("cpu                          => Print cpu information");
     println!("overflow                     => triggers a stack overflow");
     println!("page_fault                   => triggers a page fault on 0xdead");
+    flush!();
+    Ok(())
+}
+
+fn uptime() -> Result<(), &'static str> {
+    let mut offset = time::OFFSET.lock();
+    fprintln!("{}s", offset.0 + offset.1 / 1_000_000);
     flush!();
     Ok(())
 }

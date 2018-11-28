@@ -1,9 +1,10 @@
 mod process;
+mod sleep;
+
 mod fifo;
 
 use spin::Mutex;
-pub use self::process::*;
-
+pub use self::process::*; 
 lazy_static! {
     pub static ref SCHEDULER: Mutex<fifo::Fifo> = Mutex::new({
         let init_process: u32 = self::init as *const () as u32;
@@ -13,6 +14,7 @@ lazy_static! {
     });
 }
 
+/// Scheduler algorithm needs to implement this
 pub trait Scheduler {
     fn add_task(&mut self, ip: u32);
     fn next(&mut self) -> Option<Process>;
@@ -42,7 +44,9 @@ pub fn fork() -> i32 {
     0
 }
 
-pub fn sleep() {}
+pub fn sleep() {
+    
+}
 
 pub fn init() {
     fprintln!("init first line");

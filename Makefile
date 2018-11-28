@@ -6,8 +6,8 @@ TARGET	?= $(ARCH)-$(OS)
 
 all:
 	@printf "make kernel\t# build kernel binary\n"
-	@printf "make iso\t# build iso cdrom with grub\n"
-	@printf "make qemu\t# run qemu+gdb in tmux window\n"
+	@printf "make iso\t# build iso cdrom\n"
+	@printf "make qemu\t# run iso in qemu\n"
 
 ## COMPILE ASM (nasm)
 asm_source		:= $(wildcard src/arch/$(ARCH)/*.asm)
@@ -35,11 +35,12 @@ clean:
 
 .PHONY: clean kernel iso $(rust_os)
 
+# Bootloader recipes
+ISO	:= $(kernel:.bin=.iso)
+iso: $(ISO)
+include mk/grub.mk
+
 # Emulation recipes
 include mk/qemu.mk
-
-# Bootloader recipes
-include mk/grub.mk
-iso: $(grub-iso)
 
 kernel: $(kernel)
