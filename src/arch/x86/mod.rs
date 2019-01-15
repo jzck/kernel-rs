@@ -54,7 +54,7 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     // set up pic, pit
     devices::init();
 
-    // primary CPU entry point
+    // primary CPU entry point, architutecture independant now.
     ::kmain();
 }
 

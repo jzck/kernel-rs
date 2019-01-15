@@ -4,7 +4,7 @@
 //! processes...
 //! however it's stupid simple to implement!
 
-use alloc::VecDeque;
+use alloc::collections::vec_deque::VecDeque;
 
 use super::*;
 // use super::process::*;

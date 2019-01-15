@@ -1,7 +1,7 @@
 SHELL	:= /bin/bash
 
 ARCH	:= x86
-OS		:= bluesnow
+OS	:= bluesnow
 TARGET	?= $(ARCH)-$(OS)
 
 all:
@@ -23,10 +23,10 @@ $(rust_os): $(TARGET).json Makefile
 	TERM=xterm RUST_TARGET_PATH="$(shell pwd)" xargo build --target $(TARGET)
 
 ## LINKAGE
-kernel			:= build/$(OS)-$(ARCH).bin
+KERNEL			:= build/$(OS)-$(ARCH).bin
 linker_script	:= src/arch/$(ARCH)/linker.ld
 LD				:= /usr/bin/ld -m elf_i386 -L ./ -n --gc-sections
-$(kernel): $(rust_os) $(asm_object) $(linker_script) Makefile
+$(KERNEL): $(rust_os) $(asm_object) $(linker_script) Makefile
 	$(LD) -o $@ -T $(linker_script) $(asm_object) $(rust_os)
 
 clean:
@@ -36,11 +36,11 @@ clean:
 .PHONY: clean kernel iso $(rust_os)
 
 # Bootloader recipes
-ISO	:= $(kernel:.bin=.iso)
+ISO	:= $(KERNEL:.bin=.iso)
 iso: $(ISO)
 include mk/grub.mk
 
 # Emulation recipes
 include mk/qemu.mk
 
-kernel: $(kernel)
+kernel: $(KERNEL)

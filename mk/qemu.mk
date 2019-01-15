@@ -13,7 +13,7 @@ qemu:
 
 qemu-gdb:
 	gdb -q\
-		-symbols "$(kernel)" \
+		-symbols "$(KERNEL)" \
 		-ex "target remote :$(QEMU_GDB_PORT)"\
 		-ex "set arch i386"
 

@@ -5,7 +5,7 @@
 //!
 //! inspired from https://wiki.osdev.org/Blocking_Process
 
-use alloc::VecDeque;
+use alloc::collections::vec_deque::VecDeque;
 use super::*;
 
 struct Sleeper {

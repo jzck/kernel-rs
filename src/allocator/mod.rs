@@ -1,12 +1,10 @@
-pub use self::slab::Allocator;
-mod slab;
+// pub use self::ALLOCATOR;
 
-use x86::*;
 use x86::structures::paging::*;
 use arch::x86::paging::*;
 
 fn map_heap(active_table: &mut ActivePageTable) {
-    //zone for heap is predefines in `consts.rs`
+    //zone for heap is predefined in `consts.rs`
     for page in ::KERNEL_HEAP_RANGE {
         active_table.map(page, PageTableFlags::WRITABLE);
     }
@@ -20,5 +18,10 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
     map_heap(active_table);
 
     //slab allocator
-    Allocator::init(offset.as_u32() as usize, size as usize);
+    super::ALLOCATOR.init(offset.as_u32() as usize, size as usize);
+}
+
+#[alloc_error_handler]
+fn foo(_: core::alloc::Layout) -> ! {
+    panic!();
 }

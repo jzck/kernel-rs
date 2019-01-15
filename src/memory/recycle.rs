@@ -1,7 +1,7 @@
 //! Recycle allocator
 //! Uses freed frames if possible, then uses inner allocator
 
-use alloc::Vec;
+use alloc::vec::Vec;
 use x86::*;
 use x86::structures::paging::*;
 use super::*;
