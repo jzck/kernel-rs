@@ -12,7 +12,8 @@ qemu:
 		-monitor unix:${QEMU_SOCKET},server,nowait
 
 qemu-gdb:
-	gdb -q\
+	gdb\
+	    	-q\
 		-symbols "$(KERNEL)" \
 		-ex "target remote :$(QEMU_GDB_PORT)"\
 		-ex "set arch i386"
@@ -20,5 +21,6 @@ qemu-gdb:
 qemu-monitor:
 	$(QEMU_MONITOR)
 qemu-reload:
-	echo "change ide1-cd0 $(ISO)" | $(QEMU_MONITOR) &>-
-	echo "system_reset" | $(QEMU_MONITOR) &>-
+	echo "stop" | $(QEMU_MONITOR) &>/dev/null
+	echo "change ide1-cd0 $(ISO)" | $(QEMU_MONITOR) &>/dev/null
+	echo "system_reset" | $(QEMU_MONITOR) &>/dev/null

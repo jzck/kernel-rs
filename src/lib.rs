@@ -24,6 +24,8 @@ extern crate rlibc;
 extern crate slab_allocator;
 extern crate spin;
 
+extern crate bitflags;
+
 // used by arch/x86, need conditional compilation here
 extern crate x86;
 
@@ -44,7 +46,7 @@ pub mod pci;
 /// calling this once the core has loaded
 pub fn kmain() -> ! {
     // memory init after heap is available
-    memory::init_noncore();
+    // memory::init_noncore();
 
     // unsafe VGA
     unsafe { console::CONSOLE.init(); }
@@ -68,5 +70,4 @@ pub extern "C" fn panic_fmt(info: &core::panic::PanicInfo) -> ! {
 }
 
 #[global_allocator]
-// pub static ALLOCATOR: slab_allocator::LockedHeap = allocator::ALLOCATOR;
 pub static ALLOCATOR: slab_allocator::LockedHeap = slab_allocator::LockedHeap::empty();

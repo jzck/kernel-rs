@@ -54,7 +54,11 @@ impl Console {
             }
             b'\n' => {
                 unsafe { VGA.write_byte(b'\n'); }
-                self.exec();
+                if let Err(msg) = self.exec() {
+                    set_color!(Red);
+                    println!("{}", msg);
+                    set_color!();
+                }
                 self.command_len = 0;
                 self.prompt();
             }
@@ -83,9 +87,7 @@ impl Console {
     pub fn exec(&self) -> core::result::Result<(), &'static str> {
         let command = self.get_command();
         if let Err(msg) = command {
-            set_color!(Red);
-            println!("{}", msg);
-            set_color!();
+            return Err(msg)
         }
         match command.unwrap() {
             "help" | "h" => self::help(),
