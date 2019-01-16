@@ -1,5 +1,3 @@
-#![allow(unused_macros)]
-
 pub mod color;
 pub mod cursor;
 
@@ -52,9 +50,9 @@ macro_rules! flush {
 
 macro_rules! set_color {
     () => (unsafe { $crate::vga::VGA.color_code =
-        $crate::vga::ColorCode::new($crate::vga::Color::Black, $crate::vga::Color::Yellow)} );
+        $crate::vga::ColorCode::new($crate::vga::Color::White, $crate::vga::Color::Black)} );
     ($fg:ident) => (unsafe { $crate::vga::VGA.color_code =
-        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::Yellow)} );
+        $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::Black)} );
     ($fg:ident, $bg:ident) => (unsafe { $crate::vga::VGA.color_code =
         $crate::vga::ColorCode::new($crate::vga::Color::$fg, $crate::vga::Color::$bg)} );
 }
@@ -83,24 +81,10 @@ impl Writer {
     pub const fn new() -> Writer {
         Writer {
             buffer_pos: 0,
-            color_code: ColorCode::new(Color::Black, Color::Yellow),
+            color_code: ColorCode::new(Color::White, Color::Black),
             buffer: [0; BUFFER_ROWS * BUFFER_COLS],
             command: [b'\0'; 10],
             command_len: 0,
-        }
-    }
-
-    pub fn prompt(&mut self) {
-        set_color!(Blue);
-        self.write_str("> ");
-        set_color!();
-        flush!();
-    }
-
-    pub fn backspace(&mut self) {
-        if self.command_len > 0 {
-            self.command_len -= 1;
-            self.erase_byte();
         }
     }
 
@@ -111,35 +95,6 @@ impl Writer {
         }
     }
 
-    pub fn keypress(&mut self, ascii: u8) {
-        match ascii {
-            b'\n' if self.command_len == 0 => {
-                self.write_byte(b'\n');
-                self.prompt();
-            }
-            b'\n' => {
-                self.write_byte(b'\n');
-                if let Err(msg) = console::exec(&self) {
-                    set_color!(Red, Yellow);
-                    println!("Something wrong: {}", msg);
-                    set_color!();
-                }
-                self.command_len = 0;
-                self.prompt();
-            }
-            _ if self.command_len >= 10 => (),
-            byte if self.command_len == 0 && byte == b' ' => (),
-            byte => {
-                if self.command_len >= 10 {
-                    return;
-                };
-                self.command[self.command_len] = byte;
-                self.write_byte(byte);
-                self.command_len += 1;
-            }
-        }
-        self.flush();
-    }
 
     pub fn erase_byte(&mut self) {
         self.buffer_pos -= 2;
@@ -170,7 +125,7 @@ impl Writer {
         }
     }
 
-    fn write_str(&mut self, s: &str) {
+    pub fn write_str(&mut self, s: &str) {
         for byte in s.bytes() {
             self.write_byte(byte)
         }
@@ -200,7 +155,7 @@ impl Writer {
         for col in (0..BUFFER_COLS / 2).map(|x| x * 2) {
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col)] = b' ';
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col + 1)] =
-                ColorCode::new(Color::Black, Color::Yellow).0;
+                ColorCode::new(Color::White, Color::Black).0;
         }
 
         self.buffer_pos = (BUFFER_ROWS - 1) * BUFFER_COLS;
@@ -215,32 +170,5 @@ impl fmt::Write for Writer {
             self.write_byte(byte)
         }
         Ok(())
-    }
-}
-
-pub fn init() {
-    // set_color!(Yellow, Red);
-    // print!(
-    //     "{}{}{}{}{}{}{}{}{}{}{}{}{}{}",
-    //     format_args!("{: ^80}", r#"        ,--,               "#),
-    //     format_args!("{: ^80}", r#"      ,--.'|      ,----,   "#),
-    //     format_args!("{: ^80}", r#"   ,--,  | :    .'   .' \  "#),
-    //     format_args!("{: ^80}", r#",---.'|  : '  ,----,'    | "#),
-    //     format_args!("{: ^80}", r#";   : |  | ;  |    :  .  ; "#),
-    //     format_args!("{: ^80}", r#"|   | : _' |  ;    |.'  /  "#),
-    //     format_args!("{: ^80}", r#":   : |.'  |  `----'/  ;   "#),
-    //     format_args!("{: ^80}", r#"|   ' '  ; :    /  ;  /    "#),
-    //     format_args!("{: ^80}", r#"\   \  .'. |   ;  /  /-,   "#),
-    //     format_args!("{: ^80}", r#" `---`:  | '  /  /  /.`|   "#),
-    //     format_args!("{: ^80}", r#"      '  ; |./__;      :   "#),
-    //     format_args!("{: ^80}", r#"      |  : ;|   :    .'    "#),
-    //     format_args!("{: ^80}", r#"      '  ,/ ;   | .'       "#),
-    //     format_args!("{: ^80}", r#"      '--'  `---'          "#)
-    // );
-    unsafe {
-        VGA.prompt();
-    }
-    unsafe {
-        VGA.flush();
     }
 }

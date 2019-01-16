@@ -38,6 +38,7 @@ pub mod arch;
 pub use arch::x86::consts::*;
 pub mod scheduling;
 pub mod time;
+pub mod pci;
 
 /// kernel entry point. arch module is responsible for
 /// calling this once the core has loaded
@@ -45,9 +46,10 @@ pub fn kmain() -> ! {
     // memory init after heap is available
     memory::init_noncore();
 
-    // load vga after core because is *not* cpu specific I think
-    vga::init();
+    // unsafe VGA
+    unsafe { console::CONSOLE.init(); }
 
+    pci::lspci();
     // scheduler WIP
     // scheduling::schedule();
     unreachable!();

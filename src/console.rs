@@ -7,56 +7,126 @@ use keyboard::PS2;
 use core::char;
 use vga::*;
 
-fn dispatch(command: &str) -> Result<(), &'static str> {
-    match command {
-        "help" | "h" => self::help(),
+pub static mut CONSOLE: Console = self::Console::new();
 
-        // multiboot
-        // "memory"                    => self::mb2_memory(),
-        // "multiboot"                 => self::mb2_info(),
-        // "sections"                  => self::mb2_sections(),
-
-        // ACPI
-        "acpi" => self::acpi_info(),
-        "reboot" => self::reboot(),
-        "shutdown" | "halt" | "q" => self::shutdown(),
-
-        // x86 specific
-        "stack" => self::print_stack(),
-        "regs" => self::regs(),
-        "cpu" => self::cpu(),
-        "int3" => self::int3(),
-        "overflow" => self::overflow(),
-        "page_fault" => self::page_fault(),
-
-        // time
-        "uptime" => self::uptime(),
-
-        _ => Err("Command unknown. (h|help for help)"),
-    }
+pub struct Console {
+    command: [u8; 10],
+    command_len: usize,
 }
 
-pub fn exec(cli: &Writer) -> Result<(), &'static str> {
-    let command = cli.get_command()?;
-    if let Err(msg) = self::dispatch(command) {
-        set_color!(Red);
-        println!("`{}`: {}", command, msg);
-        set_color!();
+impl Console {
+    pub const fn new() -> Console {
+        Console {
+            command: [b'\0'; 10],
+            command_len: 0,
+        }
     }
-    Ok(())
+
+    pub fn init(&self) {
+        set_color!();
+        // print!("{}", format_args!("{: ^4000}", r#" "#));
+        unsafe {
+            // VGA.buffer_pos = 0;
+            self.prompt();
+            VGA.flush();
+        }
+    }
+
+    pub fn backspace(&mut self) {
+        if self.command_len > 0 {
+            self.command_len -= 1;
+            unsafe { VGA.erase_byte(); }
+        }
+    }
+
+    pub fn prompt(&self) {
+        set_color!(Blue);
+        unsafe { VGA.write_str("> "); }
+        set_color!();
+        flush!();
+    }
+
+    pub fn keypress(&mut self, ascii: u8) {
+        match ascii {
+            b'\n' if self.command_len == 0 => {
+                unsafe { VGA.write_byte(b'\n'); }
+                self.prompt();
+            }
+            b'\n' => {
+                unsafe { VGA.write_byte(b'\n'); }
+                self.exec();
+                self.command_len = 0;
+                self.prompt();
+            }
+            // _ if self.command_len >= 10 => (),
+            // byte if self.command_len == 0 && byte == b' ' => (),
+            byte => {
+                if self.command_len >= 10 {
+                    return;
+                };
+                self.command[self.command_len] = byte;
+                unsafe { VGA.write_byte(byte); }
+                self.command_len += 1;
+            }
+        }
+        flush!();
+    }
+
+
+    fn get_command(&self) -> Result<&str, &'static str> {
+        match core::str::from_utf8(&self.command) {
+            Ok(y) => Ok(&y[..self.command_len]),
+            Err(_) => Err("Command is not utf8"),
+        }
+    }
+
+    pub fn exec(&self) -> core::result::Result<(), &'static str> {
+        let command = self.get_command();
+        if let Err(msg) = command {
+            set_color!(Red);
+            println!("{}", msg);
+            set_color!();
+        }
+        match command.unwrap() {
+            "help" | "h" => self::help(),
+
+            // multiboot
+            // "memory"                    => self::mb2_memory(),
+            // "multiboot"                 => self::mb2_info(),
+            // "sections"                  => self::mb2_sections(),
+
+            // ACPI
+            "acpi" => self::acpi_info(),
+            "reboot" => self::reboot(),
+            "shutdown" | "halt" | "q" => self::shutdown(),
+
+            // x86 specific
+            "stack" => self::print_stack(),
+            "regs" => self::regs(),
+            "cpu" => self::cpu(),
+            "int3" => self::int3(),
+            "overflow" => self::overflow(),
+            "page_fault" => self::page_fault(),
+
+            // time
+            "uptime" => self::uptime(),
+
+            _ => Err("Command unknown. (try help)"),
+        }
+    }
 }
 
 fn help() -> Result<(), &'static str> {
-    println!("acpi                         => Return acpi state (ENABLED|DISABLE)");
-    println!("help | h                     => Print this help");
+    println!("help | h                     => print this help");
     // println!("memory                       => Print memory areas");
     // println!("multiboot                    => Print multiboot information");
     // println!("sections                     => Print elf sections");
-    println!("reboot                       => Reboot");
-    println!("shutdown | halt | q          => Kill a kitten, then shutdown");
-    println!("stack                        => Print kernel stack in a fancy way");
-    println!("regs                         => Print controle register");
-    println!("cpu                          => Print cpu information");
+    println!("reboot                       => reboot");
+    println!("shutdown | halt | q          => acpi shutdown");
+    println!("acpi                         => acpi state");
+    println!("stack                        => print kernel stack in a fancy way");
+    println!("regs                         => print controle register");
+    println!("cpu                          => print cpu information");
     println!("overflow                     => triggers a stack overflow");
     println!("page_fault                   => triggers a page fault on 0xdead");
     flush!();

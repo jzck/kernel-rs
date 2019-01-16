@@ -1,6 +1,6 @@
 extern crate core;
 
-use vga;
+use console;
 use x86::devices::io::{Io, Pio};
 
 const MAX_KEYS: usize = 59;
@@ -133,13 +133,13 @@ pub fn kbd_callback() {
                 0x38 => ALT = !is_release,
                 0x1D => CTRL = !is_release,
                 0x0E if !is_release => {
-                    vga::VGA.backspace();
+                    console::CONSOLE.backspace();
                 }
                 _ => {}
             },
             Some(ascii) if !is_release => {
                 let sym = if SHIFT { ascii[1] } else { ascii[0] };
-                vga::VGA.keypress(sym);
+                console::CONSOLE.keypress(sym);
             }
             _ => {}
         }
