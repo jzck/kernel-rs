@@ -23,5 +23,5 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
 
 #[alloc_error_handler]
 fn foo(_: core::alloc::Layout) -> ! {
-    panic!();
+    panic!("alloc_error_handler");
 }

@@ -101,3 +101,63 @@ pub fn init_noncore() {
         }
     }
 }
+
+
+/// for console
+#[allow(unconditional_recursion)]
+pub fn overflow() {
+    overflow();
+}
+
+/// for console
+pub fn page_fault() {
+    unsafe {
+        *(0xdead as *mut u32) = 42;
+    };
+}
+
+/// Print the kernel stack
+pub fn print_stack() {
+    fn hexdump(start: usize, end: usize) {
+        let mut address = 0;
+        let data = unsafe { core::slice::from_raw_parts_mut(start as *mut u8, end - start) };
+        while address <= data.len() {
+            let next_end = core::cmp::min(address + 16, data.len());
+            print_line(&data[address..next_end], address + start);
+            address = address + 16;
+        }
+        println!("");
+    }
+
+    fn is_control(c: char) -> bool {
+        !(c >= ' ' && c <= '~')
+    }
+
+    fn print_line(line: &[u8], address: usize) {
+        print!("\n{:#08x}: ", address);
+        for byte in line {
+            print!("{:02x} ", *byte);
+        }
+        let length: usize = 16 - line.len();
+        for _ in 0..length {
+            print!("   ");
+        }
+        print!("|");
+        for byte in line {
+            match is_control(*byte as char) {
+                true => print!("."),
+                false => print!("{}", *byte as char),
+            };
+        }
+        print!("|");
+    }
+
+    let esp: usize;
+    let ebp: usize;
+    unsafe { asm!("" : "={esp}"(esp), "={ebp}"(ebp):::) };
+    println!("esp = {:#x}", esp);
+    println!("ebp = {:#x}", ebp);
+    println!("size = {:#X} bytes", ebp - esp);
+    hexdump(esp, ebp);
+    flush!();
+}

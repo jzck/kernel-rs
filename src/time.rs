@@ -15,3 +15,8 @@ pub fn realtime() -> (u32, u32) {
     let sum = start.1 + offset.1;
     (start.0 + offset.0 + sum / 1_000_000, sum % 1_000_000)
 }
+
+pub fn uptime() {
+    let mut offset = self::OFFSET.lock();
+    println!("{}s", offset.0 + offset.1 / 1_000_000);
+}

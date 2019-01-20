@@ -51,7 +51,9 @@ pub fn kmain() -> ! {
     // unsafe VGA
     unsafe { console::CONSOLE.init(); }
 
-    pci::lspci();
+    if let Ok(slot) = pci::get_ide1() {
+        println!("found IDE at slot {}", slot);
+    }
     // scheduler WIP
     // scheduling::schedule();
     unreachable!();

@@ -126,17 +126,9 @@ impl Iterator for ACPISDTIter {
     }
 }
 
-fn is_init() -> Result<(), &'static str> {
-    if unsafe { ACPI.valid } {
-        Ok(())
-    } else {
-        Err("ACPI is not initialized")
-    }
-}
-
 /// Initalized the ACPI module
 pub fn init() -> Result<(), &'static str> {
-    if let Ok(()) = is_init() {
+    if unsafe{ACPI.valid} {
         return Ok(());
     }
     unsafe { ACPI.init() }
@@ -144,7 +136,7 @@ pub fn init() -> Result<(), &'static str> {
 
 /// Load the ACPI module, addr given is a ptr to RSDP
 pub fn load(rsdp_addr: u32) -> Result<(), &'static str> {
-    if let Ok(()) = is_init() {
+    if unsafe{ACPI.valid} {
         return Ok(());
     }
     unsafe { ACPI.load(rsdp_addr) }
@@ -152,32 +144,30 @@ pub fn load(rsdp_addr: u32) -> Result<(), &'static str> {
 
 /// Proceed to ACPI shutdown
 /// This function doesn't work with Virtual Box yet
-pub fn shutdown() -> Result<(), &'static str> {
-    is_init()?;
-    dsdt::shutdown(fadt::get_controlblock()?)
+pub fn shutdown() {
+    if unsafe{ACPI.valid} { return }
+    dsdt::shutdown(fadt::get_controlblock().unwrap());
 }
 
 /// Proceed to ACPI reboot
 /// This function need ACPI in v2
-pub fn reboot() -> Result<(), &'static str> {
-    is_init()?;
+pub fn reboot() {
+    if unsafe {!ACPI.valid} {
+        println!("ACPI not initialized");
+    }
     if unsafe { ACPI.v2 } {
-        fadt::reboot()
+        fadt::reboot().unwrap()
     } else {
-        Err("ACPI reboot only available in ACPI v2+")
+        println!("ACPI reboot only available in ACPI v2+");
     }
 }
 
 /// Display state of ACPI
-pub fn info() -> Result<(), &'static str> {
-    is_init()?;
-    println!(
-        "ACPI STATE:\n    {}",
-        if fadt::is_enable()? {
-            "ENABLED"
-        } else {
-            "DISABLED"
-        }
-    );
-    Ok(())
+pub fn info() {
+    if unsafe { !ACPI.valid } { println!("ACPI not initialized"); return }
+    match fadt::is_enable() {
+        Ok(True) => println!("ACPI is disabled"),
+        Ok(False) => println!("ACPI is disabled"),
+        Err(msg) => println!("error while checking ACPI")
+    }
 }

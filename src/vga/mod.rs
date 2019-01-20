@@ -4,8 +4,6 @@ pub mod cursor;
 pub use self::color::{Color, ColorCode};
 use self::cursor::CURSOR;
 
-use console;
-
 pub static mut VGA: Writer = self::Writer::new();
 
 #[derive(Debug, Clone, Copy)]
@@ -16,6 +14,7 @@ struct ScreenChar {
 }
 
 // print wrapper macro around vga
+#[allow(unused_macros)]
 macro_rules! print {
     ($($arg:tt)*) => ({
         $crate::vga::print(format_args!($($arg)*));
@@ -23,6 +22,7 @@ macro_rules! print {
 }
 
 // flushed print
+#[allow(unused_macros)]
 macro_rules! fprint {
     ($($arg:tt)*) => ({
         print!($($arg)*);
@@ -31,12 +31,15 @@ macro_rules! fprint {
 }
 
 // print with a line feed
+#[allow(unused_macros)]
 macro_rules! println {
+    () => ({print!("\n")});
     ($fmt:expr) => (print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
 }
 
 // flushed println
+#[allow(unused_macros)]
 macro_rules! fprintln {
     ($($arg:tt)*) => ({
         println!($($arg)*);
@@ -73,8 +76,6 @@ pub struct Writer {
     pub buffer_pos: usize,
     pub color_code: ColorCode,
     buffer: [u8; BUFFER_ROWS * BUFFER_COLS],
-    command: [u8; 10],
-    command_len: usize,
 }
 
 impl Writer {
@@ -83,18 +84,8 @@ impl Writer {
             buffer_pos: 0,
             color_code: ColorCode::new(Color::White, Color::Black),
             buffer: [0; BUFFER_ROWS * BUFFER_COLS],
-            command: [b'\0'; 10],
-            command_len: 0,
         }
     }
-
-    pub fn get_command(&self) -> Result<&str, &'static str> {
-        match core::str::from_utf8(&self.command) {
-            Ok(y) => Ok(&y[..self.command_len]),
-            Err(_) => Err("Command is not utf8 char"),
-        }
-    }
-
 
     pub fn erase_byte(&mut self) {
         self.buffer_pos -= 2;
@@ -102,27 +93,27 @@ impl Writer {
         self.buffer[i] = b' ';
         self.buffer[i + 1] = self.color_code.0;
         self.flush();
-        // flush!();
     }
 
     pub fn write_byte(&mut self, byte: u8) {
-        let i = self.buffer_pos;
-
         match byte {
             b'\n' => {
                 let current_line = self.buffer_pos / (BUFFER_COLS);
                 self.buffer_pos = (current_line + 1) * BUFFER_COLS;
             }
             byte => {
-                self.buffer[i] = byte;
-                self.buffer[i + 1] = self.color_code.0;
+                self.buffer[self.buffer_pos] = byte;
+                self.buffer[self.buffer_pos + 1] = self.color_code.0;
                 self.buffer_pos += 2;
             }
         }
 
         if self.buffer_pos >= self.buffer.len() {
             self.scroll();
+            self.flush();
         }
+        // flushing here is correct but slow
+        // self.flush();
     }
 
     pub fn write_str(&mut self, s: &str) {
@@ -132,9 +123,7 @@ impl Writer {
     }
 
     fn flush_cursor(&self) {
-        unsafe {
-            CURSOR.flush(self.buffer_pos / 2);
-        }
+        unsafe { CURSOR.flush(self.buffer_pos / 2); }
     }
 
     pub fn flush(&mut self) {
@@ -157,7 +146,6 @@ impl Writer {
             self.buffer[((BUFFER_ROWS - 1) * BUFFER_COLS) + (col + 1)] =
                 ColorCode::new(Color::White, Color::Black).0;
         }
-
         self.buffer_pos = (BUFFER_ROWS - 1) * BUFFER_COLS;
     }
 }

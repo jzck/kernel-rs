@@ -1,10 +1,8 @@
 extern crate raw_cpuid;
 
-use core::fmt::Result;
-
 use self::raw_cpuid::CpuId;
 
-pub fn cpu_info() -> Result {
+pub fn cpu_info() {
     let cpuid = CpuId::new();
 
     if let Some(info) = cpuid.get_vendor_info() {
@@ -285,6 +283,4 @@ pub fn cpu_info() -> Result {
         };
         println!("");
     }
-
-    Ok(())
 }

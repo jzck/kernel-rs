@@ -17,10 +17,6 @@ pub unsafe extern "C" fn x86_rust_start(multiboot_info_addr: usize) {
     // parse multiboot2 info
     let boot_info = multiboot2::load(multiboot_info_addr);
 
-    // println!("{:?}", boot_info);
-    // flush!();
-    // asm!("hlt");
-
     // ACPI must be intialized BEFORE paging is active
     if let Some(rsdp) = boot_info.rsdp_v2_tag() {
         acpi::load(rsdp).expect("ACPI failed");
@@ -115,4 +111,31 @@ pub unsafe fn usermode(ip: u32, sp: u32) -> ! {
     asm!("iret");
 
     unreachable!();
+}
+
+/// Dump control registers
+pub fn regs() {
+    use x86::registers::control::*;
+    use x86::instructions::tables::tr;
+    use x86::instructions::segmentation::*;
+    use x86::registers::flags::*;
+    use x86::structures::gdt;
+    println!("cr0  = {:?}", Cr0::read());
+    println!("cr3  = {:?}", Cr3::read());
+    println!("cr4  = {:?}", Cr4::read());
+    println!("flags= {:?}", flags());
+    println!("tr   = {:?}", tr());
+    println!("ss   = {:?}", ss());
+    println!("cs   = {:?}", cs());
+    println!("ds   = {:?}", ds());
+    println!("es   = {:?}", es());
+    println!("fs   = {:?}", fs());
+    println!("gs   = {:?}", gs());
+    unsafe {
+        println!(
+            "tss = {:#?}",
+            gdt::Descriptor(::arch::x86::gdt::GDT.table[tr().index() as usize])
+        );
+    }
+    flush!();
 }
