@@ -9,7 +9,8 @@ qemu:
 		-enable-kvm\
 		-curses\
 		-gdb tcp::$(QEMU_GDB_PORT)\
-		-monitor unix:${QEMU_SOCKET},server,nowait
+		-monitor unix:${QEMU_SOCKET},server,nowait\
+		-drive file=disk,if=ide,index=1
 
 qemu-gdb:
 	gdb\

@@ -67,8 +67,6 @@ pub fn print(args: fmt::Arguments) {
     }
 }
 
-extern crate core;
-
 const BUFFER_ROWS: usize = 25;
 const BUFFER_COLS: usize = 80 * 2;
 
@@ -153,7 +151,7 @@ impl Writer {
 // trait needed by formatting macros
 use core::fmt;
 impl fmt::Write for Writer {
-    fn write_str(&mut self, s: &str) -> ::core::fmt::Result {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
         for byte in s.bytes() {
             self.write_byte(byte)
         }

@@ -1,5 +1,3 @@
-extern crate core;
-
 use console;
 use x86::devices::io::{Io, Pio};
 

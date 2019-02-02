@@ -15,6 +15,7 @@
 // x86 specific
 #![feature(abi_x86_interrupt)]
 
+// extern crate core;
 extern crate alloc;
 #[macro_use]
 extern crate lazy_static;
@@ -39,11 +40,12 @@ pub mod memory;
 pub mod arch;
 pub use arch::x86::consts::*;
 pub mod scheduling;
+#[allow(dead_code)]
 pub mod time;
 pub mod pci;
 
-/// kernel entry point. arch module is responsible for
-/// calling this once the core has loaded
+/// kernel entry point.
+/// ::arch is responsible for calling this once the core has loaded.
 pub fn kmain() -> ! {
     // memory init after heap is available
     // memory::init_noncore();
@@ -51,9 +53,11 @@ pub fn kmain() -> ! {
     // unsafe VGA
     unsafe { console::CONSOLE.init(); }
 
-    if let Ok(slot) = pci::get_ide1() {
-        println!("found IDE at slot {}", slot);
+    if let Some(ide) = pci::get_first(0x1, 0x1) {
+        println!("found IDE at slot {}", ide.slot);
+        pci::ide::init(ide);
     }
+
     // scheduler WIP
     // scheduling::schedule();
     unreachable!();

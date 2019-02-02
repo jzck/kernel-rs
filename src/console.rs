@@ -1,6 +1,3 @@
-extern crate core;
-// extern crate multiboot2;
-
 use vga::*;
 use alloc::collections::BTreeMap;
 
@@ -29,7 +26,6 @@ lazy_static! {
         commands.insert("stack", ::memory::print_stack as fn());
         commands.insert("page_fault", ::memory::page_fault as fn());
         commands.insert("overflow", ::memory::overflow as fn());
-        commands.insert("overflow", ::memory::overflow as fn());
 
         //pci
         commands.insert("lspci", ::pci::lspci as fn());
@@ -39,7 +35,7 @@ lazy_static! {
 
 fn help() {
     println!("The following commands are available:");
-    for (key, val) in COMMANDS.iter() {
+    for (key, _val) in COMMANDS.iter() {
         println!("{}", key);
     }
 }

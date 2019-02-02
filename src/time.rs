@@ -17,6 +17,6 @@ pub fn realtime() -> (u32, u32) {
 }
 
 pub fn uptime() {
-    let mut offset = self::OFFSET.lock();
+    let offset = self::OFFSET.lock();
     println!("{}s", offset.0 + offset.1 / 1_000_000);
 }

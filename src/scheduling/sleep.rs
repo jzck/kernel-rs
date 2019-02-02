@@ -3,7 +3,7 @@
 //! way the scheduling algorithms don't have to worry about
 //! managing these
 //!
-//! inspired from https://wiki.osdev.org/Blocking_Process
+//! https://wiki.osdev.org/Blocking_Process
 
 use alloc::collections::vec_deque::VecDeque;
 use super::*;

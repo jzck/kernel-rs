@@ -128,33 +128,27 @@ impl Iterator for ACPISDTIter {
 
 /// Initalized the ACPI module
 pub fn init() -> Result<(), &'static str> {
-    if unsafe{ACPI.valid} {
-        return Ok(());
-    }
+    if unsafe{ACPI.valid} { return Ok(()); }
     unsafe { ACPI.init() }
 }
 
 /// Load the ACPI module, addr given is a ptr to RSDP
 pub fn load(rsdp_addr: u32) -> Result<(), &'static str> {
-    if unsafe{ACPI.valid} {
-        return Ok(());
-    }
+    if unsafe{!ACPI.valid} { return Ok(()); }
     unsafe { ACPI.load(rsdp_addr) }
 }
 
 /// Proceed to ACPI shutdown
 /// This function doesn't work with Virtual Box yet
 pub fn shutdown() {
-    if unsafe{ACPI.valid} { return }
-    dsdt::shutdown(fadt::get_controlblock().unwrap());
+    if unsafe{!ACPI.valid} { return; }
+    dsdt::shutdown(fadt::get_controlblock().unwrap()).unwrap();
 }
 
 /// Proceed to ACPI reboot
 /// This function need ACPI in v2
 pub fn reboot() {
-    if unsafe {!ACPI.valid} {
-        println!("ACPI not initialized");
-    }
+    if unsafe {!ACPI.valid} { println!("ACPI not initialized"); }
     if unsafe { ACPI.v2 } {
         fadt::reboot().unwrap()
     } else {
@@ -166,8 +160,8 @@ pub fn reboot() {
 pub fn info() {
     if unsafe { !ACPI.valid } { println!("ACPI not initialized"); return }
     match fadt::is_enable() {
-        Ok(True) => println!("ACPI is disabled"),
-        Ok(False) => println!("ACPI is disabled"),
-        Err(msg) => println!("error while checking ACPI")
+        Ok(true) => println!("ACPI is disabled"),
+        Ok(false) => println!("ACPI is disabled"),
+        Err(msg) => println!("error while checking ACPI: {}", msg)
     }
 }
