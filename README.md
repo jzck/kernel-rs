@@ -1,3 +1,5 @@
+# !! Switched to ziglang -> [new repo here](https://github.com/jzck/kernel-zig) !!
+
 Kernel from scratch (KFS) series of projects at Ecole 42 !
 
 ### [documentation](https://jzck.github.io/kernel/bluesnow/index.html)
